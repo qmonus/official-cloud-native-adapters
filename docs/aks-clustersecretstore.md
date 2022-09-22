@@ -6,7 +6,7 @@ Azure Kubernetes Service（以下、AKS）への [Cluster Secret Store](https://
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.1.0`
+- Version: `v0.1.2`
 - Import path: `qmonus.net/adapter/official/kubernetes/secrets/aks/clustersecretstore`
 
 ## Level
@@ -19,6 +19,7 @@ Best Practice: ベストプラクティスにもとづく実装
    * [Azure CLIのバージョンを最新化](https://docs.microsoft.com/ja-jp/cli/azure/update-azure-cli)してください。
    * [EnableOIDCIssuerPreview 機能フラグの登録](https://docs.microsoft.com/ja-jp/azure/aks/cluster-configuration#register-the-enableoidcissuerpreview-feature-flag)を行ってください。
    * [aks-preview CLI 拡張機能のインストール](https://docs.microsoft.com/ja-jp/azure/aks/cluster-configuration#install-the-aks-preview-cli-extension)を行ってください。
+   * [OIDC Issuer を備えた AKS クラスターを更新](https://docs.microsoft.com/ja-jp/azure/aks/cluster-configuration#update-an-aks-cluster-with-oidc-issuer)してください。
    * 以下のコマンドから、OIDC発行者URLを取得します。ここで、`${myAksName}`はAKSクラスター名、`${myResourceGroup}`はAKSクラスターが所属するリソースグループです。
    ```bash
    $ az aks show -n ${myAksName} -g ${myResourceGroup} --query "oidcIssuerProfile.issuerUrl" -otsv

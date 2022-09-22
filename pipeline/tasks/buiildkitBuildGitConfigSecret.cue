@@ -42,6 +42,9 @@ import (
 		imageFullNameDigest: {
 			description: "Full name of the image with its SHA digest"
 		}
+		imageDigest: {
+			description: "SHA digest of the image"
+		}
 	}
 	workspaces: [{
 		name: "shared"
@@ -92,15 +95,22 @@ import (
 		script: """
 			jq -rj ' .[\"containerimage.digest\"]' \\
 			  < $(workspaces.shared.path)/meta.json \\
-			  | tee /tekton/results/imageFullNameDigest
+			  | tee /tekton/results/imageDigest
 
 			"""
 	}, {
-		name:  "dump-result"
+		name:  "dump-imagefullnametag"
 		image: "bash:latest"
 		script: """
 			#!/usr/bin/env bash
 			echo -n $(params.imageRegistryPath)/$(params.imageShortName):$(params.imageTag) | tee /tekton/results/imageFullNameTag
+			"""
+	}, {
+		name:  "dump-imagefullnamedigest"
+		image: "bash:latest"
+		script: """
+			#!/usr/bin/env bash
+			cat <(echo -n $(params.imageRegistryPath)/$(params.imageShortName)@) /tekton/results/imageDigest | tee /tekton/results/imageFullNameDigest
 			"""
 	}]
 }
