@@ -20,6 +20,7 @@ DesignPattern: {
 	_buildTask:           string
 	_imageFullNameTag:    string
 	_imageFullNameDigest: string
+	_imageDigest:         string
 
 	if pipelineParameters.image != "" {
 		_buildTask: {
@@ -36,11 +37,17 @@ DesignPattern: {
 			prefix: _imageName
 			key:    "imageFullNameDigest"
 		}.out
+		_imageDigest: {
+			utils.#addPrefix
+			prefix: _imageName
+			key:    "imageDigest"
+		}.out
 	}
 	if pipelineParameters.image == "" {
 		_buildTask:           "build"
 		_imageFullNameTag:    "imageFullNameTag"
 		_imageFullNameDigest: "imageFullNameDigest"
+		_imageDigest:         "imageDigest"
 	}
 
 	pipelines: {
@@ -63,6 +70,7 @@ DesignPattern: {
 			results: {
 				"\(_imageFullNameTag)":    tasks["\(_buildTask)"].results.imageFullNameTag
 				"\(_imageFullNameDigest)": tasks["\(_buildTask)"].results.imageFullNameDigest
+				"\(_imageDigest)":         tasks["\(_buildTask)"].results.imageDigest
 			}
 		}
 	}

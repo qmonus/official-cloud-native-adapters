@@ -6,7 +6,7 @@ Google Kubernetes Engine（以下、GKE）への [Cluster Secret Store](https://
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.1.0`
+- Version: `v0.1.2`
 - Import path: `qmonus.net/adapter/official/kubernetes/secrets/gke/clustersecretstore`
 
 ## Level

@@ -46,6 +46,12 @@ import (
 	workspaces: [{
 		name: "shared"
 	}]
+
+	volumes: [{
+		name: "tmpdir"
+		emptyDir: {}
+	}]
+
 	steps: list.Concat([[{
 		name:   "make-params-json"
 		image:  "python"
@@ -96,8 +102,18 @@ import (
 					name: "$(params.gitTokenSecretName)"
 					key:  "token"
 				}
+			}, {
+				name:  "TMPDIR"
+				value: "/tmpdir"
 			}]
+
+			volumeMounts: [{
+				mountPath: "/tmpdir"
+				name:      "tmpdir"
+			}]
+
 			workingDir: "$(workspaces.shared.path)/source/$(params.pathToSource)"
+
 			resources: {
 				requests: {
 					cpu:    "1"
@@ -128,7 +144,16 @@ import (
 					name: "$(params.gitTokenSecretName)"
 					key:  "token"
 				}
+			}, {
+				name:  "TMPDIR"
+				value: "/tmpdir"
 			}]
+
+			volumeMounts: [{
+				mountPath: "/tmpdir"
+				name:      "tmpdir"
+			}]
+
 			workingDir: "$(workspaces.shared.path)/source/$(params.pathToSource)"
 			resources: {
 				requests: {
