@@ -12,6 +12,7 @@ DesignPattern: {
 	pipelineParameters: {
 		useDebug:       bool | *false
 		repositoryKind: string | *""
+		resourcePriority: "high" | *"medium"
 	}
 
 	pipelines: {
@@ -25,6 +26,7 @@ DesignPattern: {
 				"compile": compileDesignPattern.#Builder & {
 					input: {
 						useDebug: pipelineParameters.useDebug
+						resourcePriority: pipelineParameters.resourcePriority
 					}
 					runAfter: ["checkout"]
 					approvalRequired: true

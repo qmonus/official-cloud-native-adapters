@@ -9,6 +9,7 @@ DesignPattern: {
 
 	pipelineParameters: {
 		useDebug: bool | *false
+		resourcePriority: "high" | *"medium"
 	}
 
 	composites: [
@@ -17,6 +18,7 @@ DesignPattern: {
 			pipelineParams: {
 				useDebug:    pipelineParameters.useDebug
 				deployPhase: "app"
+				resourcePriority: pipelineParameters.resourcePriority
 			}
 		},
 	]

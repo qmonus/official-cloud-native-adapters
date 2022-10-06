@@ -11,7 +11,8 @@ import (
 	phase: "setup" | "app" | *""
 
 	// TaskBuilder Developper Defined Parameter
-	useDebug: bool | *false
+	useDebug:         bool | *false
+	resourcePriority: "high" | *"medium"
 	...
 }
 
@@ -115,13 +116,25 @@ import (
 			workingDir: "$(workspaces.shared.path)/source/$(params.pathToSource)"
 
 			resources: {
-				requests: {
-					cpu:    "1"
-					memory: "512Mi"
+				if _input.resourcePriority == "medium" {
+					requests: {
+						cpu:    "1"
+						memory: "512Mi"
+					}
+					limits: {
+						cpu:    "1"
+						memory: "512Mi"
+					}
 				}
-				limits: {
-					cpu:    "1"
-					memory: "512Mi"
+				if _input.resourcePriority == "high" {
+					requests: {
+						cpu:    "1"
+						memory: "1Gi"
+					}
+					limits: {
+						cpu:    "1"
+						memory: "1Gi"
+					}
 				}
 			}
 		},
@@ -156,13 +169,25 @@ import (
 
 			workingDir: "$(workspaces.shared.path)/source/$(params.pathToSource)"
 			resources: {
-				requests: {
-					cpu:    "1"
-					memory: "512Mi"
+				if _input.resourcePriority == "medium" {
+					requests: {
+						cpu:    "1"
+						memory: "512Mi"
+					}
+					limits: {
+						cpu:    "1"
+						memory: "512Mi"
+					}
 				}
-				limits: {
-					cpu:    "1"
-					memory: "512Mi"
+				if _input.resourcePriority == "high" {
+					requests: {
+						cpu:    "1"
+						memory: "1Gi"
+					}
+					limits: {
+						cpu:    "1"
+						memory: "1Gi"
+					}
 				}
 			}
 		},

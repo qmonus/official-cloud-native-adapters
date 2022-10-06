@@ -5,7 +5,7 @@ ESOの[Custom Resource Definition](https://github.com/external-secrets/external-
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.1.2`
+- Version: `v0.2.0`
 - Import path `qmonus.net/adapter/official/kubernetes/secrets/eso`
 
 ## Level
