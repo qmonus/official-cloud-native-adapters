@@ -13,9 +13,11 @@ DesignPattern: {
 	pipelineParameters: {
 		useDebug:    bool | *false
 		deployPhase: "app" | "setup" | *""
+		resourcePriority: "high" | *"medium"
 	}
 	let _deployPhase = pipelineParameters.deployPhase
 	let _useDebug = pipelineParameters.useDebug
+	let _resourcePriority = pipelineParameters.resourcePriority
 	let _stage = {
 		if _deployPhase == "setup" {
 			_deployPhase
@@ -33,6 +35,7 @@ DesignPattern: {
 					input: {
 						phase:    _deployPhase
 						useDebug: _useDebug
+						resourcePriority: _resourcePriority
 					}
 					runAfter: ["checkout"]
 				}
