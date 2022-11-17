@@ -6,7 +6,7 @@ Azure Kubernetes Service（以下、AKS）への [Cluster Secret Store](https://
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.2.1`
+- Version: `v0.3.0`
 - Import path: `qmonus.net/adapter/official/kubernetes/secrets/aks/clustersecretstore`
 
 ## Level
@@ -63,5 +63,13 @@ Kubernetes, Microsoft Azure
 | --- | --- | --- | --- | --- |
 | clustersecretstore | kubernetes | external-secrets.io/v1beta1 | ClusterSecretStore | Azure AD Workload IdentityによるKey Vaultアクセス権限が付与されたKubernetes Service Accountを指定してAzureへの認証を行います |
 
+## Usage
+```yaml
+designPatterns:
+  - pattern: qmonus.net/adapter/official/kubernetes/secrets/aks/clustersecretstore
+    params:
+      azureKeyContainerName:  $(params.azureKeyContainerName)
+```
+
 ## Code
-[aks-clustersecretstore](../kubernetes/secrets/aks/clustersecretstore/)
+[aks-clustersecretstore](../../kubernetes/secrets/aks/clustersecretstore/)

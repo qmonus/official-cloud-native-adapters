@@ -9,11 +9,19 @@ import (
 DesignPattern: {
 	name: "deploy:kustomization"
 
+	pipelineParameters: {
+		repositoryKind: string | *""
+	}
+
 	pipelines: {
 		"deploy": {
 			tasks: {
-				"checkout": gitCheckout.#Builder
-				"compile":  kustomization.#Builder & {
+				"checkout": gitCheckout.#Builder & {
+					input: {
+						repositoryKind: pipelineParameters.repositoryKind
+					}
+				}
+				"compile": kustomization.#Builder & {
 					runAfter: ["checkout"]
 				}
 				"deploy": deploymentWorker.#Builder & {

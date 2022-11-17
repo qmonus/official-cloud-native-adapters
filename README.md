@@ -72,14 +72,23 @@ Adapterを利用する際の制限を示します。
 デプロイ先のプラットフォームを記載しています。
 
 現在利用可能なクラウドプラットフォームはGoogle Cloud PlatformもしくはMicrosoft Azureとなります。また、それぞれのプラットフォームにおけるマネージドKubernetesサービスを利用可能です。
+CI/CD Adapter等でプラットフォームを問わずに使用できるものについては General / Platform Free と記載しています。
 
 **Parameters**
 
 Adapterで利用するパラメータ名とその説明をしています。パラメータは、QVS ConfigやAssemblyLineを作成する際にも必要となります。
+CI/CD Adapterでは、以下2種類のパラメータについてそれぞれ記載しています。
+- Adapter Options: QVS Configで指定するパラメータで、コンパイル時に生成されるワークフローを決定します。
+- Parameters: 生成されるTekton Pipeline/Taskで指定されるパラメータを示します。
 
 **Resources**
 
-PlatformとなるクラウドプラットフォームやマネージドKubernetesに作成されるリソースを示します。
+Infrastructure Adapter: Platformとなるクラウド環境やマネージドKubernetesサービスに作成されるリソースを示します。  
+CI/CD Adapter:  生成される Tekton Pipeline/Task リソースを示します。
+
+**Usage**
+
+QVS ConfigでAdapterを指定する際の記載例を示します。
 
 **Code**
 

@@ -5,7 +5,7 @@ ESOの[Custom Resource Definition](https://github.com/external-secrets/external-
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.2.1`
+- Version: `v0.3.0`
 - Import path `qmonus.net/adapter/official/kubernetes/secrets/eso`
 
 ## Level
@@ -34,5 +34,14 @@ ESOインストールによって作成されるリソース一覧について�
 
 https://artifacthub.io/packages/helm/external-secrets-operator/external-secrets?modal=template
 
+## Usage
+```yaml
+designPatterns:
+  - pattern: qmonus.net/adapter/official/kubernetes/secrets/eso
+    params:
+      version: "0.5.1"
+      k8sNamespace: $(params.k8sNamespace)
+```
+
 ## Code
-[secrets-eso](../kubernetes/secrets/eso/)
+[secrets-eso](../../kubernetes/secrets/eso/)

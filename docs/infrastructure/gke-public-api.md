@@ -8,7 +8,7 @@ Google Kubernetes Engineで動作するAPIアプリケーション公開用のCl
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.2.1`
+- Version: `v0.3.0`
 - Import path: `qmonus.net/adapter/official/kubernetes/gke/publicapi`
 
 ## Level
@@ -54,5 +54,26 @@ Kubernetes, Google Cloud
 | ingress | kubernetes | networking.k8s.io/v1 | Ingress | Serviceに対する外部からのアクセスを管理します |
 | managedcertificate | kubernetes | networking.gke.io/v1 | ManagedCertificate | Ingressリソースで利用するマネージドSSL証明書を定義します |
 
+## Usage
+```yaml
+designPatterns:
+  - pattern: qmonus.net/adapter/official/kubernetes/deployment/simple
+    params:
+      appName: public-api-test-app
+      k8sNamespace: $(params.k8sNamespace)
+      imageName: $(params.imageName)
+      port: $(params.port)
+      replicas: $(params.replicas)
+  - pattern: qmonus.net/adapter/official/kubernetes/gke/publicapi
+    params:
+      appName: public-api-test-app
+      k8sNamespace: $(params.k8sNamespace)
+      port: $(params.port)
+      domainName: $(params.domainName)
+      gcpExternalAddressName: $(params.gcpExternalAddressName)
+      gcpSecurityPolicyName: $(params.gcpSecurityPolicyName)
+      gcpSslPolicyName: $(params.gcpSslPolicyName)
+```
+
 ## Code
-[gke-public-api](../kubernetes/gke/publicapi/)
+[gke-public-api](../../kubernetes/gke/publicapi/)

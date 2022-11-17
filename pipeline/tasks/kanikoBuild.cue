@@ -33,7 +33,7 @@ import (
 			default: "Dockerfile"
 		}
 		pathToContext: {
-			desc:    "The path to the build context, used by Kaniko - within the workspace (https://github.com/GoogleContainerTools/kaniko#kaniko-build-contexts). The git clone directory is set by the GIT init container which setup the git input resource - see https://github.com/knative/build-pipeline/blob/master/pkg/reconciler/v1beta1/taskrun/resources/pod.go#L107"
+			desc:    "The path to the build context"
 			default: "."
 		}
 		imageShortName: {

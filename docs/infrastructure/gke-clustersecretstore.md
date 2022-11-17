@@ -6,7 +6,7 @@ Google Kubernetes Engine（以下、GKE）への [Cluster Secret Store](https://
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.2.1`
+- Version: `v0.3.0`
 - Import path: `qmonus.net/adapter/official/kubernetes/secrets/gke/clustersecretstore`
 
 ## Level
@@ -49,5 +49,15 @@ Kubernetes, Google Cloud
 | serviceaccount | kubernetes	 | v1 | Service | Google Service Accountを指定して権限を借用します |
 | clustersecretstore | kubernetes	 | external-secrets.io/v1beta1 | ClusterSecretStore | Workload IdentityによるGCPアクセス権限が付与されたKubernetes Service Accountを指定してGCPへの認証を行います |
 
+## Usage
+```yaml
+designPatterns:
+  - pattern: qmonus.net/adapter/official/kubernetes/secrets/gke/clustersecretstore
+    params:
+      smGcpProject:       $(params.smGcpProject)
+      k8sClusterName:     $(params.k8sClusterName)
+      k8sClusterLocation: $(params.k8sClusterLocation)
+```
+
 ## Code
-[gke-clustersecretstore](../kubernetes/secrets/gke/clustersecretstore/)
+[gke-clustersecretstore](../../kubernetes/secrets/gke/clustersecretstore/)
