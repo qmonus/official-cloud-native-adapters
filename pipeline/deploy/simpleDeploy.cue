@@ -8,7 +8,8 @@ DesignPattern: {
 	name: "deploy:simpleDeploy"
 
 	pipelineParameters: {
-		useDebug: bool | *false
+		repositoryKind:   string | *""
+		useDebug:         bool | *false
 		resourcePriority: "high" | *"medium"
 	}
 
@@ -16,8 +17,9 @@ DesignPattern: {
 		{
 			pattern: simple.DesignPattern
 			pipelineParams: {
-				useDebug:    pipelineParameters.useDebug
-				deployPhase: "app"
+				repositoryKind:   pipelineParameters.repositoryKind
+				useDebug:         pipelineParameters.useDebug
+				deployPhase:      "app"
 				resourcePriority: pipelineParameters.resourcePriority
 			}
 		},

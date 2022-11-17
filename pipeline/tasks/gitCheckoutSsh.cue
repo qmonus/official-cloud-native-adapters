@@ -1,34 +1,17 @@
-package gitCheckout
+package gitCheckoutSsh
 
 import (
 	"qmonus.net/adapter/official/pipeline/schema"
 )
 
 #BuildInput: {
-	repositoryKind: "gitlab" | *"github"
 	...
 }
 
 #Builder: schema.#TaskBuilder
 #Builder: {
-	name:  "git-checkout"
+	name:  "git-checkout-ssh"
 	input: #BuildInput
-
-	// Sets the git-token prefix string for the specified git-provider
-	let _gitToken = {
-		if input.repositoryKind == "github" {
-			"$(GIT_TOKEN)"
-		}
-
-		if input.repositoryKind == "gitlab" {
-			"oauth2:$(GIT_TOKEN)"
-		}
-
-		if input.repositoryKind == "" {
-			"$(GIT_TOKEN)"
-		}
-
-	}
 
 	prefixAllParams: true
 
@@ -43,7 +26,7 @@ import (
 			desc:    "Subdirectory in the source directory to clone Git repository"
 			default: ""
 		}
-		gitTokenSecretName: desc: "Git token sercret name"
+		gitSshKeySecretName: desc: "Git ssh key sercret name"
 	}
 	workspaces: [{
 		name: "shared"
@@ -71,7 +54,7 @@ import (
 		// The clean process is based on the following.
 		// ref: https://github.com/tektoncd/catalog/blob/main/task/git-clone/0.5/git-clone.yaml
 		//
-		// The reason for putting a blank line at the end is 
+		// The reason for putting a blank line at the end is
 		// to leave the last line break after evaluation
 		script: """
 			if [ "${GIT_REPO_DELETE_EXISTING}" = "true" ]; then
@@ -90,23 +73,25 @@ import (
 		name:  "git-clone"
 		image: "docker:git"
 		env: [{
-			name: "GIT_TOKEN"
-			valueFrom: secretKeyRef: {
-				key:  "token"
-				name: "$(params.gitTokenSecretName)"
-			}
+			name:  "GIT_SSH_COMMAND"
+			value: "ssh -i /root/.ssh/id_git -o StrictHostKeyChecking=no"
 		}, {
 			name:  "GIT_CHECKOUT_DIR"
 			value: "$(workspaces.shared.path)/source/$(params.gitCheckoutSubDirectory)"
 		}]
 		args: [
 			"clone",
-			"https://\(_gitToken)@$(params.gitRepositoryUrl)",
+			"ssh://git@$(params.gitRepositoryUrl)",
 			"$(GIT_CHECKOUT_DIR)",
 		]
 		command: [
 			"/usr/bin/git",
 		]
+		volumeMounts: [{
+			name:      "ssh-key"
+			mountPath: "/root/.ssh"
+			readOnly:  true
+		}]
 	}, {
 		name:  "git-checkout"
 		image: "docker:git"
@@ -120,8 +105,29 @@ import (
 
 			"""
 		env: [{
+			name:  "GIT_SSH_COMMAND"
+			value: "ssh -i /root/.ssh/id_git -o StrictHostKeyChecking=no"
+		}, {
 			name:  "GIT_CHECKOUT_DIR"
 			value: "$(workspaces.shared.path)/source/$(params.gitCheckoutSubDirectory)"
 		}]
+		volumeMounts: [{
+			name:      "ssh-key"
+			mountPath: "/root/.ssh"
+			readOnly:  true
+		}]
+	}]
+	volumes: [{
+		name: "ssh-key"
+		secret: {
+			secretName: "$(params.gitSshKeySecretName)"
+			// permission should be 0400
+			// use decimal valule, because the type must be int32
+			defaultMode: 256
+			items: [{
+				key:  "ssh_key"
+				path: "id_git"
+			}]
+		}
 	}]
 }

@@ -11,8 +11,9 @@ DesignPattern: {
 	name: "deploy:preview"
 
 	pipelineParameters: {
-		useDebug:    bool | *false
-		deployPhase: "app" | "setup" | *""
+		repositoryKind:   string | *""
+		useDebug:         bool | *false
+		deployPhase:      "app" | "setup" | *""
 		resourcePriority: "high" | *"medium"
 	}
 	let _deployPhase = pipelineParameters.deployPhase
@@ -30,11 +31,15 @@ DesignPattern: {
 	pipelines: {
 		"\(_stage)": {
 			tasks: {
-				"checkout": gitCheckout.#Builder
-				"compile":  compileDesignPattern.#Builder & {
+				"checkout": gitCheckout.#Builder & {
 					input: {
-						phase:    _deployPhase
-						useDebug: _useDebug
+						repositoryKind: pipelineParameters.repositoryKind
+					}
+				}
+				"compile": compileDesignPattern.#Builder & {
+					input: {
+						phase:            _deployPhase
+						useDebug:         _useDebug
 						resourcePriority: _resourcePriority
 					}
 					runAfter: ["checkout"]

@@ -4,6 +4,7 @@ import (
 	"strings"
 	"qmonus.net/adapter/official/pipeline:utils"
 	"qmonus.net/adapter/official/pipeline/tasks:gitCheckout"
+	"qmonus.net/adapter/official/pipeline/tasks:gitCheckoutSsh"
 	"qmonus.net/adapter/official/pipeline/tasks:kanikoBuild"
 )
 
@@ -11,11 +12,13 @@ DesignPattern: {
 	name: "build:kaniko"
 
 	pipelineParameters: {
-		image: string | *""
+		image:          string | *""
+		repositoryKind: string | *""
 		buildArgs: [string]: {
 			name:    string
 			default: string
 		}
+		useSshKey: bool | *false
 	}
 
 	let _imageName = strings.ToLower(pipelineParameters.image)
@@ -49,7 +52,35 @@ DesignPattern: {
 	pipelines: {
 		build: {
 			tasks: {
-				"checkout":      gitCheckout.#Builder
+				"checkout": {
+					let _repositoryKind = pipelineParameters.repositoryKind
+					let _useSshKey = pipelineParameters.useSshKey
+
+					if _repositoryKind == "bitbucket" {
+						gitCheckoutSsh.#Builder & {
+							input: {
+								repositoryKind: _repositoryKind
+							}
+						}
+					}
+
+					if _repositoryKind != "bitbucket" {
+						if _useSshKey {
+							gitCheckoutSsh.#Builder & {
+								input: {
+									repositoryKind: _repositoryKind
+								}
+							}
+						}
+						if !_useSshKey {
+							gitCheckout.#Builder & {
+								input: {
+									repositoryKind: _repositoryKind
+								}
+							}
+						}
+					}
+				}
 				"\(_buildTask)": kanikoBuild.#Builder & {
 					input: {
 						image:     _imageName

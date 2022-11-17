@@ -5,7 +5,7 @@
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.2.1`
+- Version: `v0.3.0`
 - Import path: `qmonus.net/adapter/official/kubernetes/deployment/simple`
 
 ## Level
@@ -36,5 +36,25 @@ Kubernetes
 | --- | --- | --- | --- | --- |
 | deployment | kubernetes | apps/v1 | Deployment | デプロイするPodリソースを定義します |
 
+## Usage
+```yaml
+designPatterns:
+  - pattern: qmonus.net/adapter/official/kubernetes/deployment/simple
+    params:
+      appName: simple-test-app
+      k8sNamespace: $(params.k8sNamespace)
+      imageName: $(params.imageName)
+      args: 
+        - "--some"
+        - "--options"
+      env:
+        - name: "MESSAGE"
+          value: "hello world"
+        - name: "MESSAGE2"
+          value: "hello qmonus"
+      port: $(params.port)
+      replicas: $(params.replicas)
+```
+
 ## Code
-[simple-deployment](../kubernetes/deployment/simple/)
+[simple-deployment](../../kubernetes/deployment/simple/)
