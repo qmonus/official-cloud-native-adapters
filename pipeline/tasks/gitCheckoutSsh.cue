@@ -16,7 +16,7 @@ import (
 	prefixAllParams: true
 
 	params: {
-		gitRepositoryUrl: desc: "URL of the GIT repository without protocol"
+		gitCloneUrl: desc: "URL of the GIT repository without protocol"
 		gitRevision: desc:      "Git source revision"
 		gitRepositoryDeleteExisting: {
 			desc:    "Clean out of the destination directory if it already exists before cloning"
@@ -81,7 +81,7 @@ import (
 		}]
 		args: [
 			"clone",
-			"ssh://git@$(params.gitRepositoryUrl)",
+			"$(params.gitCloneUrl)",
 			"$(GIT_CHECKOUT_DIR)",
 		]
 		command: [

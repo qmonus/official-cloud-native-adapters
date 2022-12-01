@@ -17,15 +17,15 @@ import (
 	// Sets the git-token prefix string for the specified git-provider
 	let _gitToken = {
 		if input.repositoryKind == "github" {
-			"$(GIT_TOKEN)"
+			"${GIT_TOKEN}"
 		}
 
 		if input.repositoryKind == "gitlab" {
-			"oauth2:$(GIT_TOKEN)"
+			"oauth2:${GIT_TOKEN}"
 		}
 
 		if input.repositoryKind == "" {
-			"$(GIT_TOKEN)"
+			"${GIT_TOKEN}"
 		}
 
 	}
@@ -33,7 +33,7 @@ import (
 	prefixAllParams: true
 
 	params: {
-		gitRepositoryUrl: desc: "URL of the GIT repository without protocol"
+		gitCloneUrl: desc: "URL of the GIT repository with https protocol"
 		gitRevision: desc:      "Git source revision"
 		gitRepositoryDeleteExisting: {
 			desc:    "Clean out of the destination directory if it already exists before cloning"
@@ -89,6 +89,12 @@ import (
 	}, {
 		name:  "git-clone"
 		image: "docker:git"
+		script: """
+			set +x
+			GIT_REPOSITORY_URL=`echo $(params.gitCloneUrl) | sed "s/https:\\/\\///g"`
+			/usr/bin/git clone https://\(_gitToken)@${GIT_REPOSITORY_URL} ${GIT_CHECKOUT_DIR}
+			set -x
+			"""
 		env: [{
 			name: "GIT_TOKEN"
 			valueFrom: secretKeyRef: {
@@ -99,14 +105,6 @@ import (
 			name:  "GIT_CHECKOUT_DIR"
 			value: "$(workspaces.shared.path)/source/$(params.gitCheckoutSubDirectory)"
 		}]
-		args: [
-			"clone",
-			"https://\(_gitToken)@$(params.gitRepositoryUrl)",
-			"$(GIT_CHECKOUT_DIR)",
-		]
-		command: [
-			"/usr/bin/git",
-		]
 	}, {
 		name:  "git-checkout"
 		image: "docker:git"

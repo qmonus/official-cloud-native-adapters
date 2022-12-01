@@ -1,4 +1,4 @@
-package buiildkitBuildGitConfigSecret
+package buildkitBuildGitConfigSecret
 
 import (
 	"qmonus.net/adapter/official/pipeline/schema"

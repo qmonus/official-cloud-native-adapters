@@ -11,6 +11,7 @@ DesignPattern: {
 		repositoryKind:   string | *""
 		useDebug:         bool | *false
 		resourcePriority: "high" | *"medium"
+		useSshKey:        bool | *false
 	}
 
 	composites: [
@@ -21,6 +22,7 @@ DesignPattern: {
 				useDebug:         pipelineParameters.useDebug
 				deployPhase:      "app"
 				resourcePriority: pipelineParameters.resourcePriority
+				useSshKey:        pipelineParameters.useSshKey
 			}
 		},
 	]

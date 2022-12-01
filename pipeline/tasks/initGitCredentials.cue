@@ -24,10 +24,6 @@ import (
 			"oauth2:$(GIT_TOKEN)"
 		}
 
-		if input.repositoryKind == "bitbucket" {
-			"x-token-auth:$(GIT_TOKEN)"
-		}
-
 		if input.repositoryKind == "" {
 			"$(GIT_TOKEN)"
 		}
@@ -57,8 +53,8 @@ import (
 			"config",
 			"--file",
 			"$(workspaces.shared.path)/.gitconfig",
-			"url.https://\(_gitToken)@github.com/.insteadOf",
-			"https://github.com/",
+			"url.https://\(_gitToken)@.insteadOf",
+			"https://",
 		]
 		command: [
 			"/usr/bin/git",

@@ -6,19 +6,21 @@ import (
 	"qmonus.net/adapter/official/pipeline/tasks:gitCheckout"
 	"qmonus.net/adapter/official/pipeline/tasks:initGitCredentials"
 	"qmonus.net/adapter/official/pipeline/tasks:dockerLoginGcp"
-	"qmonus.net/adapter/official/pipeline/tasks:buiildkitBuildGitConfigSecret"
+	"qmonus.net/adapter/official/pipeline/tasks:buildkitBuildGitConfigSecret"
 )
 
 DesignPattern: {
 	name: "build:buildkitGcpGitConfigSecret"
 
 	pipelineParameters: {
-		image: string | *""
+		image:          string | *""
+		repositoryKind: string | *""
 	}
 
 	let _imageName = strings.ToLower(pipelineParameters.image)
 
 	_buildTask:           string
+	_loginTask:           string
 	_imageFullNameTag:    string
 	_imageFullNameDigest: string
 	_imageDigest:         string
@@ -27,6 +29,10 @@ DesignPattern: {
 		_buildTask: {
 			utils.#concatKebab
 			input: [_imageName, "build"]
+		}.out
+		_loginTask: {
+			utils.#concatKebab
+			input: [_imageName, "docker-login-gcp"]
 		}.out
 		_imageFullNameTag: {
 			utils.#addPrefix
@@ -46,6 +52,7 @@ DesignPattern: {
 	}
 	if pipelineParameters.image == "" {
 		_buildTask:           "build"
+		_loginTask:           "docker-login-gcp"
 		_imageFullNameTag:    "imageFullNameTag"
 		_imageFullNameDigest: "imageFullNameDigest"
 		_imageDigest:         "imageDigest"
@@ -54,21 +61,34 @@ DesignPattern: {
 	pipelines: {
 		build: {
 			tasks: {
-				"checkout":             gitCheckout.#Builder
-				"init-git-credentials": initGitCredentials.#Builder & {
-					runAfter: ["checkout"]
+				"checkout": {
+					let _repositoryKind = pipelineParameters.repositoryKind
+					gitCheckout.#Builder & {
+						input: {
+							repositoryKind: _repositoryKind
+						}
+					}
 				}
-				"docker-login-gcp": dockerLoginGcp.#Builder & {
+				"init-git-credentials": {
+					let _repositoryKind = pipelineParameters.repositoryKind
+					initGitCredentials.#Builder & {
+						runAfter: ["checkout"]
+						input: {
+							repositoryKind: _repositoryKind
+						}
+					}
+				}
+				"\(_loginTask)": dockerLoginGcp.#Builder & {
 					input: {
 						image: _imageName
 					}
 					runAfter: ["init-git-credentials"]
 				}
-				"\(_buildTask)": buiildkitBuildGitConfigSecret.#Builder & {
+				"\(_buildTask)": buildkitBuildGitConfigSecret.#Builder & {
 					input: {
 						image: _imageName
 					}
-					runAfter: ["docker-login-gcp"]
+					runAfter: ["\(_loginTask)"]
 				}
 			}
 			results: {
