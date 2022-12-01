@@ -8,7 +8,7 @@ Google Kubernetes Engineで動作するAPIアプリケーション公開用のCl
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.3.0`
+- Version: `v0.4.0`
 - Import path: `qmonus.net/adapter/official/kubernetes/gke/publicapi`
 
 ## Level

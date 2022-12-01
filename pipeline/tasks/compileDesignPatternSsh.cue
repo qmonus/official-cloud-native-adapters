@@ -1,4 +1,4 @@
-package compileDesignPattern
+package compileDesignPatternSsh
 
 import (
 	"list"
@@ -18,7 +18,7 @@ import (
 
 #Builder: schema.#TaskBuilder
 #Builder: {
-	name: "compile-design-pattern"
+	name: "compile-design-pattern-ssh"
 
 	input:  #BuildInput
 	prefix: input.phase
@@ -35,13 +35,13 @@ import (
 			desc:    "Relative path from source directory"
 			default: ""
 		}
-		appConfigPath: desc:      "Path to application config"
-		gitTokenSecretName: desc: "Git token sercret name"
+		appConfigPath: desc: "Path to application config"
 		for i in appconfigParams {
 			"\(i)": {
 				desc: params[i].desc | *"Parameter used in AppConfig"
 			}
 		}
+		gitSshKeySecretName: desc: "Git ssh key sercret name"
 	}
 
 	workspaces: [{
@@ -51,6 +51,18 @@ import (
 	volumes: [{
 		name: "tmpdir"
 		emptyDir: {}
+	}, {
+		name: "ssh-key"
+		secret: {
+			secretName: "$(params.gitSshKeySecretName)"
+			// permission should be 0400
+			// use decimal valule, because the type must be int32
+			defaultMode: 256
+			items: [{
+				key:  "ssh_key"
+				path: "id_git"
+			}]
+		}
 	}]
 
 	steps: list.Concat([[{
@@ -98,19 +110,20 @@ import (
 				"--setup",
 			]
 			env: [{
-				name: "GIT_TOKEN"
-				valueFrom: secretKeyRef: {
-					name: "$(params.gitTokenSecretName)"
-					key:  "token"
-				}
-			}, {
 				name:  "TMPDIR"
 				value: "/tmpdir"
+			}, {
+				name:  "GIT_SSH_KEY_PATH"
+				value: "/root/.ssh/id_git"
 			}]
 
 			volumeMounts: [{
 				mountPath: "/tmpdir"
 				name:      "tmpdir"
+			}, {
+				name:      "ssh-key"
+				mountPath: "/root/.ssh"
+				readOnly:  true
 			}]
 
 			workingDir: "$(workspaces.shared.path)/source/$(params.pathToSource)"
@@ -152,19 +165,20 @@ import (
 				"$(workspaces.shared.path)/params.json",
 			]
 			env: [{
-				name: "GIT_TOKEN"
-				valueFrom: secretKeyRef: {
-					name: "$(params.gitTokenSecretName)"
-					key:  "token"
-				}
-			}, {
 				name:  "TMPDIR"
 				value: "/tmpdir"
+			}, {
+				name:  "GIT_SSH_KEY_PATH"
+				value: "/root/.ssh/id_git"
 			}]
 
 			volumeMounts: [{
 				mountPath: "/tmpdir"
 				name:      "tmpdir"
+			}, {
+				name:      "ssh-key"
+				mountPath: "/root/.ssh"
+				readOnly:  true
 			}]
 
 			workingDir: "$(workspaces.shared.path)/source/$(params.pathToSource)"

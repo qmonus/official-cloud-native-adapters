@@ -80,6 +80,7 @@ Adapterで利用するパラメータ名とその説明をしています。パ�
 CI/CD Adapterでは、以下2種類のパラメータについてそれぞれ記載しています。
 - Adapter Options: QVS Configで指定するパラメータで、コンパイル時に生成されるワークフローを決定します。
 - Parameters: 生成されるTekton Pipeline/Taskで指定されるパラメータを示します。
+- Results Parameters: Qmonus Value StreamでTekton Pipeline/Taskを実行した後に、Resultsとして保持するパラメータを示します。Resultsの値は後段のPipelineへ渡すようにAssemblyLineで指定することができます。
 
 **Resources**
 

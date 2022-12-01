@@ -21,6 +21,7 @@ DesignPattern: {
 	let _imageName = strings.ToLower(pipelineParameters.image)
 
 	_buildTask:           string
+	_loginTask:           string
 	_imageFullNameTag:    string
 	_imageFullNameDigest: string
 	_imageDigest:         string
@@ -29,6 +30,10 @@ DesignPattern: {
 		_buildTask: {
 			utils.#concatKebab
 			input: [_imageName, "build"]
+		}.out
+		_loginTask: {
+			utils.#concatKebab
+			input: [_imageName, "docker-login-azure"]
 		}.out
 		_imageFullNameTag: {
 			utils.#addPrefix
@@ -48,6 +53,7 @@ DesignPattern: {
 	}
 	if pipelineParameters.image == "" {
 		_buildTask:           "build"
+		_loginTask:           "docker-login-azure"
 		_imageFullNameTag:    "imageFullNameTag"
 		_imageFullNameDigest: "imageFullNameDigest"
 		_imageDigest:         "imageDigest"
@@ -85,7 +91,7 @@ DesignPattern: {
 						}
 					}
 				}
-				"docker-login-azure": dockerLoginAzure.#Builder & {
+				"\(_loginTask)": dockerLoginAzure.#Builder & {
 					input: {
 						image: _imageName
 					}
@@ -95,7 +101,7 @@ DesignPattern: {
 					input: {
 						image: _imageName
 					}
-					runAfter: ["docker-login-azure"]
+					runAfter: ["\(_loginTask)"]
 				}
 			}
 			results: {

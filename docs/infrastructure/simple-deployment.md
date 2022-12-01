@@ -5,7 +5,7 @@
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.3.0`
+- Version: `v0.4.0`
 - Import path: `qmonus.net/adapter/official/kubernetes/deployment/simple`
 
 ## Level
