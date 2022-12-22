@@ -104,4 +104,5 @@ import (
 	volumes: [...corev1.#Volume]
 	workspaces: [...tekton.#WorkspaceDeclaration]
 	results: [string]: #TaskResult
+	sidecars: [...tekton.#Sidecar]
 }
