@@ -6,7 +6,7 @@ Azure Kubernetes Service（以下、AKS）への [Cluster Secret Store](https://
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.4.0`
+- Version: `v0.5.0`
 - Import path: `qmonus.net/adapter/official/kubernetes/secrets/aks/clustersecretstore`
 
 ## Level
