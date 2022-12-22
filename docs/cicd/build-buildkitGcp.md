@@ -3,7 +3,7 @@ Qmonus Value Streamを用いて、Gitリポジトリに格納されているDock
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.4.0`
+- Version: `v0.5.0`
 - Import path `qmonus.net/adapter/official/pipeline/build:buildkitGcp`
 
 ## Level
