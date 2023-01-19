@@ -35,11 +35,11 @@ import (
 			desc:    "Relative path from source directory"
 			default: ""
 		}
-		appConfigPath: desc:      "Path to application config"
+		qvsConfigPath: desc:      "Path to QVS Config"
 		gitTokenSecretName: desc: "Git token sercret name"
 		for i in appconfigParams {
 			"\(i)": {
-				desc: params[i].desc | *"Parameter used in AppConfig"
+				desc: params[i].desc | *"Parameter used in QVS Config"
 			}
 		}
 	}
@@ -92,7 +92,7 @@ import (
 				"-o",
 				"$(workspaces.shared.path)/manifests/manifests-setup.yml",
 				"-c",
-				"$(params.appConfigPath)",
+				"$(params.qvsConfigPath)",
 				"-p",
 				"$(workspaces.shared.path)/params.json",
 				"--setup",
@@ -147,7 +147,7 @@ import (
 				"-o",
 				"$(workspaces.shared.path)/manifests/manifests-app.yml",
 				"-c",
-				"$(params.appConfigPath)",
+				"$(params.qvsConfigPath)",
 				"-p",
 				"$(workspaces.shared.path)/params.json",
 			]

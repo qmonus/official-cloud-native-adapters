@@ -3,7 +3,7 @@ Qmonus Value Streamを用いて、指定のGitリポジトリに格納されて�
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.5.0`
+- Version: `v0.6.0`
 - Import path `qmonus.net/adapter/official/pipeline/build:kaniko`
 
 

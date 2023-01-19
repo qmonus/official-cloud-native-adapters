@@ -11,7 +11,7 @@ RUN --mount=type=secret,id=gitconfig,dst=/root/.gitconfig git clone https://gith
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.5.0`
+- Version: `v0.6.0`
 - Import path `qmonus.net/adapter/official/pipeline/build:buildkitGcpGitConfigSecret`
 
 ## Level
@@ -44,7 +44,7 @@ Artifact Registry, Google Cloud Platform
 | gitRepositoryDeleteExisting  | bool | no | true | trueの場合、Git Checkoutする時に指定先のディレクトリが存在している場合に削除する |  | no |
 | gitCheckoutSubDirectory | string | no | "" | GitのCheckout作業をするパス名 |  | no |
 | gitTokenSecretName | string | yes | - | Gitのアクセストークンを保管しているk8s Secret名 |  | yes |
-| gcpServiceAccountSecretName | string | yes | - | GCP サービスアカウントのjsonキーを保管しているk8s Secret名 |  | no |
+| gcpServiceAccountSecretName | string | yes | - | GCP サービスアカウントのjsonキーを保管しているk8s Secret名 |  | yes |
 | gcpProjectId | string | yes | - | GCPのプロジェクト名 |  | yes |
 | containerRegistry | string | yes | "" | コンテナレジストリのエンドポイント | asia-northeast1-docker.pkg.dev | no |
 | cacheImageName | string | yes | - | ビルドする際のキャッシュの出力先 |  asia-northeast1-docker.pkg.dev/<br>${project_id}/sample/nginx:buildcache | no |
