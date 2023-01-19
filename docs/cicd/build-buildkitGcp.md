@@ -3,7 +3,7 @@ Qmonus Value Streamを用いて、Gitリポジトリに格納されているDock
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.5.0`
+- Version: `v0.6.0`
 - Import path `qmonus.net/adapter/official/pipeline/build:buildkitGcp`
 
 ## Level
@@ -37,7 +37,7 @@ Artifact Registry, Google Cloud Platform
 | gitCheckoutSubDirectory | string | no | "" | GitのCheckout作業をするパス名 | | no |
 | gitTokenSecretName | string | yes | - | Gitのアクセストークンを保管しているk8s Secret名 | | yes |
 | gitSshKeySecretName | string | yes | - | GitのSSH Keyを保管しているk8s Secret名 | | yes |
-| gcpServiceAccountSecretName | string | yes | - | GCP サービスアカウントのjsonキーを保管しているk8s Secret名 | | no |
+| gcpServiceAccountSecretName | string | yes | - | GCP サービスアカウントのjsonキーを保管しているk8s Secret名 | | yes |
 | gcpProjectId | string | yes | - | GCPのプロジェクト名 | | yes |
 | containerRegistry | string | yes | "" | コンテナレジストリのエンドポイント | asia-northeast1-docker.pkg.dev | no |
 | cacheImageName | string | yes | - | ビルドする際のキャッシュの出力先 | asia-northeast1-docker.pkg.dev/<br>${project_Id}/sample/nginx:buildcache | no | 

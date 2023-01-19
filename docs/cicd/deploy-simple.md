@@ -3,7 +3,7 @@ Qmonus Value Streamを用いて、アプリケーションをユーザーの実�
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.5.0`
+- Version: `v0.6.0`
 - Import path `qmonus.net/adapter/official/pipeline/deploy:simple`
 
 ## Level
@@ -12,7 +12,7 @@ Best Practice: ベストプラクティスにもとづく実装
 ## Prerequisites / Constraints
 
 ### Constraints
-* appConfigPathで指定しているQVS Configにデプロイ対象となるInfrastructure Adapterが指定されている必要があります。
+* qvsConfigPathで指定しているQVS Configにデプロイ対象となるInfrastructure Adapterが指定されている必要があります。
   
 ## Platform
 General / Platform Free
@@ -36,7 +36,7 @@ General / Platform Free
 | gitCheckoutSubDirectory | string | no | "" | GitのCheckout作業をするパス名 | | no |
 | gitTokenSecretName | string | yes | - | Gitのアクセストークンを保管しているk8s Secret名 | | yes |
 | pathToSource | string | no | "" | ソースディレクトリからの相対パス |  | no |
-| appConfigPath | string | yes | - | QVS Config(旧称：Application Config)のパス | .valuestream/qvs.yaml | yes |
+| qvsConfigPath | string | yes | - | QVS Config(旧称：Application Config)のパス | .valuestream/qvs.yaml | yes |
 | appName | string | yes | - | QVSにおけるApplication名 | nginx | yes |
 | qvsDeploymentName | string | yes | - | QVSにおけるDeployment名 | staging | yes |
 | deployStateName | string | no | main | pulumi-stack名のSuffixとして使用される | | no |

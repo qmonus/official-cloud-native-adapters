@@ -74,7 +74,7 @@ import (
 		image: "docker:git"
 		env: [{
 			name:  "GIT_SSH_COMMAND"
-			value: "ssh -i /root/.ssh/id_git -o StrictHostKeyChecking=no"
+			value: "ssh -i /root/.ssh/id_git -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error"
 		}, {
 			name:  "GIT_CHECKOUT_DIR"
 			value: "$(workspaces.shared.path)/source/$(params.gitCheckoutSubDirectory)"
@@ -106,7 +106,7 @@ import (
 			"""
 		env: [{
 			name:  "GIT_SSH_COMMAND"
-			value: "ssh -i /root/.ssh/id_git -o StrictHostKeyChecking=no"
+			value: "ssh -i /root/.ssh/id_git -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error"
 		}, {
 			name:  "GIT_CHECKOUT_DIR"
 			value: "$(workspaces.shared.path)/source/$(params.gitCheckoutSubDirectory)"
