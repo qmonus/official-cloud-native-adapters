@@ -11,7 +11,6 @@ RUN --mount=type=secret,id=gitconfig,dst=/root/.gitconfig git clone https://gith
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.6.0`
 - Import path `qmonus.net/adapter/official/pipeline/build:buildkitGcpGitConfigSecret`
 
 ## Level

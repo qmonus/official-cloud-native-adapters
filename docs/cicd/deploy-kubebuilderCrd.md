@@ -4,7 +4,6 @@ Qmonus Value Streamを用いて、Kustomizeで管理されたCRD（Custom Resour
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.6.0`
 - Import path `qmonus.net/adapter/official/pipeline/deploy:kubebuilderCrdInstall`
 
 ## Level

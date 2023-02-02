@@ -3,7 +3,6 @@ Qmonus Value Streamを用いて、Gitリポジトリに格納されているDock
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.6.0`
 - Import path `qmonus.net/adapter/official/pipeline/build:buildkitGcp`
 
 ## Level
@@ -40,9 +39,9 @@ Artifact Registry, Google Cloud Platform
 | gcpServiceAccountSecretName | string | yes | - | GCP サービスアカウントのjsonキーを保管しているk8s Secret名 | | yes |
 | gcpProjectId | string | yes | - | GCPのプロジェクト名 | | yes |
 | containerRegistry | string | yes | "" | コンテナレジストリのエンドポイント | asia-northeast1-docker.pkg.dev | no |
-| cacheImageName | string | yes | - | ビルドする際のキャッシュの出力先 | asia-northeast1-docker.pkg.dev/<br>${project_Id}/sample/nginx:buildcache | no | 
+| cacheImageName | string | yes | - | ビルドする際のキャッシュの出力先 | asia-northeast1-docker.pkg.dev/<br>${project_id}/sample/nginx:buildcache | no |
 | dockerfile | string | yes | Dockerfile | ビルドするdockerfileのファイル名 | | no |
-| imageRegistryPath | string | no | - | ビルドしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | asia-northeast1-docker.pkg.dev/<br>${project_Id}/sample | no |
+| imageRegistryPath | string | no | - | ビルドしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | asia-northeast1-docker.pkg.dev/<br>${project_id}/sample | no |
 | imageShortName | string | yes | - | ビルドするコンテナイメージの省略名 | nginx | no |
 | imageTag | string | yes | - | コンテナイメージのタグ名 | v1.0.0 | no |
 | pathToContext | string | yes | . | ソースディレクトリからの相対パス | | no |
