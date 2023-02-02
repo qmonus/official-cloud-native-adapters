@@ -10,7 +10,8 @@ DesignPattern: {
 	name: "imageScan:trivyGcp"
 
 	pipelineParameters: {
-		image: string | *""
+		image:        string | *""
+		shouldNotify: bool | *false
 	}
 
 	let _imageName = strings.ToLower(pipelineParameters.image)
@@ -31,7 +32,11 @@ DesignPattern: {
 		scan: {
 			tasks: {
 				"\(_scanTask)": {
-					trivyImageScanGcp.#Builder
+					trivyImageScanGcp.#Builder & {
+						input: {
+							shouldNotify: pipelineParameters.shouldNotify
+						}
+					}
 				}
 			}
 		}

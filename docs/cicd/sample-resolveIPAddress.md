@@ -3,7 +3,6 @@ Qmonus Value Streamを用いて、**事前にデプロイされた**Kubernetes S
 
 ## Module
 - Module: `qmonus.net/adapter/official`
-- Version: `v0.6.0`
 - Import path `qmonus.net/adapter/official/pipeline/sample:resolveIPAddress`
 
 ## Level
