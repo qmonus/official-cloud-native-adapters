@@ -77,15 +77,16 @@ import (
 
 				# extract target name and number of vulnerabilities
 				results=$(cat $(workspaces.shared.path)/trivy-result.txt | grep -B 2 "^Total")
+				if  [ $? -eq 1 ]; then
+				  echo "No vulnerabilities were found."
+				  exit 0
+				fi
 				# remove separator and decorate results
 				results=$(echo "${results}" | sed '/^=/d' | sed 's/\\(^Total.*$\\)/\\*\\1\\*/' | sed ':l; N; s/\\n/\\\\n/; b l;')
-				# if  [ $? -eq 1 ]; then
-				#   echo "No vulnerabilities were found."
-				# fi
 				if [ -z "$(params.mentionTarget)" ]; then
-				  message="*Image scan completed.*\\n${results}"
+				  message=":x: *Image scan completed.*\\n${results}"
 				else
-				  message="$(params.mentionTarget)\\n*Image scan completed.*\\n${results}"
+				  message="$(params.mentionTarget)\\n:x: *Image scan completed.*\\n${results}"
 				fi
 				curl -s -X POST -H "Content-Type: application/json" -d "{\\"message\\":\\"${message}\\", \\"severity\\":\\"Warn\\"}" \\
 				  ${VS_API_ENDPOINT}/apis/v1/projects/$(context.taskRun.namespace)/taskruns/$(context.taskRun.name)/notification

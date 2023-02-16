@@ -27,10 +27,6 @@ Container Registry/Artifact Registry, Google Cloud Platform
 | image | string | no | "" | 生成されるTaskのtrivy-image-scanに接頭語を付与します。また、[Results Parameters](#results-parameters) の変数名にも同様に接頭語を与えます。複数のビルド Taskを使用してValue Streamを実行する際、本パラメータにビルドするイメージ名を指定することでTaskを区別することができます。| nginx |
 | shouldNotify | bool | no | False | 脆弱性診断の結果をSlackで通知するか | True |
 
-> **Warning**
->
-> 脆弱性が検知されなかった場合でもSlackで通知されますが、今後は脆弱性が発見された場合のみ通知する仕様に修正する予定です。
-
 ### Parameters
 | Parameter Name | Type | Required | Default | Description | Example | Auto Binding |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -56,7 +52,7 @@ Slackのメンションの詳細については、[ドキュメント](https://a
 | --- | --- | --- | --- |
 | trivy-image-scan | scan | - | 指定のコンテナレジストリのイメージに対して、Trivyによる脆弱性診断を実行します。 |
 | dump-result | scan | - | 脆弱性診断の結果を出力します。 |
-| notice-result | scan | - | 脆弱性診断の結果をSlackで通知します。Adapter OptionsのshouldNotifyをTrueにした場合に生成されます。 |
+| notice-result | scan | - | 脆弱性診断が発見された場合に結果をSlackで通知します。Adapter OptionsのshouldNotifyをTrueにした場合に生成されます。 |
 
 ## Usage
 ``` yaml
