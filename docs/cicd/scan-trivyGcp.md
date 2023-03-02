@@ -18,7 +18,7 @@ Qmonus Value Streamへ認証情報を登録するサービスアカウントの�
 * Artifact Registry: `roles/artifactregistry.reader`
 
 ## Platform
-Container Registry/Artifact Registry, Google Cloud Platform
+Container Registry/Artifact Registry, Google Cloud
 ## Parameters
 
 ### Adapter Options
