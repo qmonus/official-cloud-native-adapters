@@ -71,7 +71,7 @@ Adapterを利用する際の制限を示します。
 
 デプロイ先のプラットフォームを記載しています。
 
-現在利用可能なクラウドプラットフォームはGoogle Cloud PlatformもしくはMicrosoft Azureとなります。また、それぞれのプラットフォームにおけるマネージドKubernetesサービスを利用可能です。
+現在利用可能なクラウドプラットフォームはGoogle CloudもしくはMicrosoft Azureとなります。また、それぞれのプラットフォームにおけるマネージドKubernetesサービスを利用可能です。
 CI/CD Adapter等でプラットフォームを問わずに使用できるものについては General / Platform Free と記載しています。
 
 **Parameters**

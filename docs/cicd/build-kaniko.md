@@ -17,7 +17,7 @@ Qmonus Value Streamへ認証情報を登録するサービスアカウントの�
 * Container Registry: `roles/storage.admin`
   
 ## Platform
-Google Cloud Platform
+Google Cloud
 ## Parameters
 
 ### Adapter Options
