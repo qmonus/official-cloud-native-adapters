@@ -5,7 +5,7 @@ import (
 )
 
 #BuildInput: {
-	repositoryKind: "gitlab" | "bitbucket" | *"github"
+	repositoryKind: "gitlab" | *"github"
 	...
 }
 
@@ -17,17 +17,12 @@ import (
 	// Sets the git-token prefix string for the specified git-provider
 	let _gitToken = {
 		if input.repositoryKind == "github" {
-			"$(GIT_TOKEN)"
+			"${GIT_TOKEN}:x-oauth-basic"
 		}
 
 		if input.repositoryKind == "gitlab" {
-			"oauth2:$(GIT_TOKEN)"
+			"oauth2:${GIT_TOKEN}"
 		}
-
-		if input.repositoryKind == "" {
-			"$(GIT_TOKEN)"
-		}
-
 	}
 
 	prefixAllParams: true
@@ -49,15 +44,11 @@ import (
 				name: "$(params.gitTokenSecretName)"
 			}
 		}]
-		args: [
-			"config",
-			"--file",
-			"$(workspaces.shared.path)/.gitconfig",
-			"url.https://\(_gitToken)@.insteadOf",
-			"https://",
-		]
-		command: [
-			"/usr/bin/git",
-		]
+		script: """
+			set +x
+			GIT_TOKEN=`echo ${GIT_TOKEN} | sed "s/^ //" | sed "s/^　//" | sed "s/ $//" | sed "s/　$//"`
+			git config --file $(workspaces.shared.path)/.gitconfig url.https://\(_gitToken)@.insteadOf https://
+			set -x
+			"""
 	}]
 }

@@ -17,15 +17,11 @@ import (
 	// Sets the git-token prefix string for the specified git-provider
 	let _gitToken = {
 		if input.repositoryKind == "github" {
-			"${GIT_TOKEN}"
+			"${GIT_TOKEN}:x-oauth-basic"
 		}
 
 		if input.repositoryKind == "gitlab" {
 			"oauth2:${GIT_TOKEN}"
-		}
-
-		if input.repositoryKind == "" {
-			"${GIT_TOKEN}"
 		}
 
 	}
@@ -34,7 +30,7 @@ import (
 
 	params: {
 		gitCloneUrl: desc: "URL of the GIT repository with https protocol"
-		gitRevision: desc:      "Git source revision"
+		gitRevision: desc: "Git source revision"
 		gitRepositoryDeleteExisting: {
 			desc:    "Clean out of the destination directory if it already exists before cloning"
 			default: "true"
@@ -87,12 +83,13 @@ import (
 
 			"""
 	}, {
-		name:  "git-clone"
-		image: "docker:git"
+		name:   "git-clone"
+		image:  "docker:git"
 		script: """
 			set +x
 			GIT_REPOSITORY_URL=`echo $(params.gitCloneUrl) | sed "s/https:\\/\\///g"`
-			/usr/bin/git clone https://\(_gitToken)@${GIT_REPOSITORY_URL} ${GIT_CHECKOUT_DIR}
+			GIT_TOKEN=`echo ${GIT_TOKEN} | sed "s/^ //" | sed "s/^　//" | sed "s/ $//" | sed "s/　$//"`
+			git clone https://\(_gitToken)@${GIT_REPOSITORY_URL} ${GIT_CHECKOUT_DIR}
 			set -x
 			"""
 		env: [{

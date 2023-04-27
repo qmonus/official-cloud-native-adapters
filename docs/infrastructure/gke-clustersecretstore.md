@@ -20,10 +20,10 @@ Best Practice: ベストプラクティスにもとづく実装
      * GSAを任意の名前で作成してください。GSAの名前は、[Parameters](#parameters)の`gsaName`として指定する必要があります。default値を使用する場合はGSAの名前を"external-secrets-operator"として作成してください。
      * GSAにSecret Managerへの読み取り権限として、`roles/secretmanager.secretAccessor` を付与してください。
    * Workload Identityの設定
-     * KSAにGSAのポリシーをバインディング、および`roles/iam.workloadIdentityUser`を付与してください。
+     * KSAにGSAのポリシーをバインディング、および`roles/iam.serviceAccountTokenCreator`を付与してください。
      ```bash
      # gcloudコマンド例（Secret Managerが存在するプロジェクトで実行してください）
-     gcloud iam service-accounts add-iam-policy-binding ${gsaName}@${gsaGcpProject}.iam.gserviceaccount.com --role roles/iam.workloadIdentityUser --member "serviceAccount:${k8sClusterGcpProject}.svc.id.goog[${ksaNamespace}/${appName}]"
+     gcloud iam service-accounts add-iam-policy-binding ${gsaName}@${gsaGcpProject}.iam.gserviceaccount.com --role roles/iam.serviceAccountTokenCreator --member "serviceAccount:${k8sClusterGcpProject}.svc.id.goog[${ksaNamespace}/${appName}]"
      ```
      また、変数として記載している`${gsaGcpProject}`、`${k8sClusterGcpProject}`、`${ksaNamespace}`、`${appName}` は、それぞれ[Parameters](#parameters)の`gsaGcpProject`（defaultでは`smGcpProject`と一致）、`k8sClusterGcpProject`（defaultでは`smGcpProject`と一致）、`ksaNamespace`（defaultでは"qmonus-system"） 、`appName`（defaultでは"gcp-secret-manager"）と一致させる必要があります。
 

@@ -17,7 +17,7 @@ import (
 
 	params: {
 		gitCloneUrl: desc: "URL of the GIT repository without protocol"
-		gitRevision: desc:      "Git source revision"
+		gitRevision: desc: "Git source revision"
 		gitRepositoryDeleteExisting: {
 			desc:    "Clean out of the destination directory if it already exists before cloning"
 			default: "true"
