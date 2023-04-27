@@ -14,8 +14,8 @@ import (
 }
 
 #PipelineBuilder: {
-	stage:     string
-	env:       string
+	stage:        string
+	env:          string
 	k8sNamespace: string | *""
 	appconfigSecrets: [...string]
 	tasks: [string]:   #TaskBuilder

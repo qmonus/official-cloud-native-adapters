@@ -14,7 +14,7 @@ import (
 
 	params: {
 		appName: desc:              "Application Name of QmonusVS"
-		k8sNamespace: desc:            "Namespace of a deploy resource"
+		k8sNamespace: desc:         "Namespace of a deploy resource"
 		kubeconfigSecretName: desc: "The secret name of Kubeconfig"
 	}
 

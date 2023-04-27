@@ -23,12 +23,12 @@ DesignPattern: {
 			params: {
 				charts: [
 					{
-						qvsResourceId:     _qvsResourceId
-						helmReleaseName:   _helmReleaseName
-						helmChartName:     _helmChartName
-						helmChartVersion:  parameters.version
-						k8sNamespace:      parameters.k8sNamespace
-						helmChartRepoUrl:  _helmChartRepoUrl
+						qvsResourceId:    _qvsResourceId
+						helmReleaseName:  _helmReleaseName
+						helmChartName:    _helmChartName
+						helmChartVersion: parameters.version
+						k8sNamespace:     parameters.k8sNamespace
+						helmChartRepoUrl: _helmChartRepoUrl
 					},
 				]
 			}

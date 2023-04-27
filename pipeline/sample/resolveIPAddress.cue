@@ -13,7 +13,7 @@ DesignPattern: {
 				"resolve-ip-address": resolveIPAddress.#Builder
 			}
 			results: {
-				"ipAddress":    tasks["resolve-ip-address"].results.ipAddress
+				"ipAddress": tasks["resolve-ip-address"].results.ipAddress
 			}
 		}
 	}

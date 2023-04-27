@@ -38,7 +38,7 @@ import (
 	let _workingDir = "$(workspaces.shared.path)/pulumi/$(params.appName)-$(params.qvsDeploymentName)-$(params.deployStateName)"
 
 	params: {
-		appName: desc:    "Application Name of QmonusVS"
+		appName: desc:           "Application Name of QmonusVS"
 		qvsDeploymentName: desc: "Deployment Name of QmonusVS"
 		deployStateName: {
 			desc:    "Used as pulumi-stack name suffix"
@@ -53,7 +53,7 @@ import (
 		}
 		if _input.useGcpCred {
 			gcpServiceAccountSecretName: desc: "The secret name of GCP SA credential"
-			gcpProjectId: desc:      "The Project ID of a deploy resource target"
+			gcpProjectId: desc:                "The Project ID of a deploy resource target"
 			k8sClusterName: {
 				desc:    "The kubernetes cluster name of a deploy resource target"
 				default: ""

@@ -13,10 +13,10 @@ DesignPattern: {
 		appName:      string
 		k8sNamespace: string
 		imageName:    string
-		args?:        [...string]
-		env?:         [..._#env]
-		port:         string
-		replicas:     string | *"1"
+		args?: [...string]
+		env?: [..._#env]
+		port:     string
+		replicas: string | *"1"
 
 		_#env: {
 			name:  string
