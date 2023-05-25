@@ -1,40 +1,40 @@
-package preview
+package simpleDeployByPulumiYaml
 
 import (
 	"qmonus.net/adapter/official/pipeline/tasks:gitCheckout"
 	"qmonus.net/adapter/official/pipeline/tasks:gitCheckoutSsh"
-	"qmonus.net/adapter/official/pipeline/tasks:compileDesignPattern"
-	"qmonus.net/adapter/official/pipeline/tasks:compileDesignPatternSsh"
-	"qmonus.net/adapter/official/pipeline/tasks:deploymentWorker"
-	"qmonus.net/adapter/official/pipeline/tasks:deploymentWorkerPreview"
+	"qmonus.net/adapter/official/pipeline/tasks:compileAdapterIntoPulumiYaml"
+	"qmonus.net/adapter/official/pipeline/tasks:compileAdapterIntoPulumiYamlSsh"
+	"qmonus.net/adapter/official/pipeline/tasks:deployByPulumiYaml"
 )
 
 DesignPattern: {
-	name: "deploy:preview"
+	name: "deploy:simpleDeployByPulumiYaml"
 
 	pipelineParameters: {
 		repositoryKind:   string | *""
 		useDebug:         bool | *false
-		deployPhase:      "app" | "setup" | *""
+		deployPhase:      "app" | *""
 		resourcePriority: "high" | *"medium"
 		useSshKey:        bool | *false
+		useCred: {
+			kubernetes: bool | *false
+			gcp:        bool | *false
+			aws:        bool | *false
+			azure:      bool | *false
+		}
+		importStackName: string | *""
 	}
 	let _repositoryKind = pipelineParameters.repositoryKind
 	let _useDebug = pipelineParameters.useDebug
 	let _deployPhase = pipelineParameters.deployPhase
 	let _resourcePriority = pipelineParameters.resourcePriority
+	let _useCred = pipelineParameters.useCred
 	let _useSshKey = pipelineParameters.useSshKey
-	let _stage = {
-		if _deployPhase == "setup" {
-			_deployPhase
-		}
-		if _deployPhase != "setup" {
-			"deploy-preview"
-		}
-	}
+	let _importStackName = pipelineParameters.importStackName
 
 	pipelines: {
-		"\(_stage)": {
+		deploy: {
 			tasks: {
 				"checkout": {
 					if _repositoryKind == "bitbucket" || _repositoryKind == "backlog" {
@@ -64,11 +64,12 @@ DesignPattern: {
 				}
 				"compile": {
 					if _repositoryKind == "bitbucket" || _repositoryKind == "backlog" {
-						compileDesignPatternSsh.#Builder & {
+						compileAdapterIntoPulumiYamlSsh.#Builder & {
 							input: {
 								phase:            _deployPhase
 								useDebug:         _useDebug
 								resourcePriority: _resourcePriority
+								importStackName:  _importStackName
 							}
 							runAfter: ["checkout"]
 						}
@@ -76,40 +77,35 @@ DesignPattern: {
 
 					if _repositoryKind != "bitbucket" && _repositoryKind != "backlog" {
 						if _useSshKey {
-							compileDesignPatternSsh.#Builder & {
+							compileAdapterIntoPulumiYamlSsh.#Builder & {
 								input: {
 									phase:            _deployPhase
 									useDebug:         _useDebug
 									resourcePriority: _resourcePriority
+									importStackName:  _importStackName
 								}
 								runAfter: ["checkout"]
 							}
 						}
 						if !_useSshKey {
-							compileDesignPattern.#Builder & {
+							compileAdapterIntoPulumiYaml.#Builder & {
 								input: {
 									phase:            _deployPhase
 									useDebug:         _useDebug
 									resourcePriority: _resourcePriority
+									importStackName:  _importStackName
 								}
 								runAfter: ["checkout"]
 							}
 						}
 					}
 				}
-				"deploy-preview": deploymentWorkerPreview.#Builder & {
+				"deploy": deployByPulumiYaml.#Builder & {
 					input: {
-						phase: _deployPhase
+						phase:   _deployPhase
+						useCred: _useCred
 					}
 					runAfter: ["compile"]
-					approvalRequired: true
-				}
-				"deploy-after-approval": deploymentWorker.#Builder & {
-					input: {
-						phase:            _deployPhase
-						resourcePriority: _resourcePriority
-					}
-					runAfter: ["deploy-preview"]
 				}
 			}
 		}

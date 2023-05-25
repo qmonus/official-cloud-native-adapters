@@ -1,33 +1,31 @@
-package deploymentWorker
+package deployByPulumiYaml
 
 import (
+	"list"
 	"qmonus.net/adapter/official/pipeline/schema"
 	"qmonus.net/adapter/official/pipeline/base"
 )
 
 #BuildInput: {
-	phase:            "setup" | "app" | *""
-	useGcpCred:       bool | *false
-	resourcePriority: "high" | *"medium"
+	phase: "setup" | *""
+	useCred: {
+		kubernetes: bool | *false
+		gcp:        bool | *false
+		aws:        bool | *false
+		azure:      bool | *false
+	}
 	...
 }
 
 #Builder: schema.#TaskBuilder
 #Builder: {
-	name: "deployment-worker"
+	name: "deploy-by-pulumi-yaml"
 
 	input:  #BuildInput
 	prefix: input.phase
 
 	let _input = input
-	let _configPath = {
-		if _input.phase == "" {
-			"$(workspaces.shared.path)/manifests"
-		}
-		if _input.phase != "" {
-			"$(workspaces.shared.path)/manifests/manifests-\(_input.phase).yml"
-		}
-	}
+	let _configPath = "$(workspaces.shared.path)/manifests/"
 	let _pulumiStackSuffixDefault = {
 		if _input.phase == "" {
 			"main"
@@ -36,7 +34,9 @@ import (
 			_input.phase
 		}
 	}
-	let _workingDir = "$(workspaces.shared.path)/pulumi/$(params.appName)-$(params.qvsDeploymentName)-$(params.deployStateName)"
+
+	let _stack = "$(params.appName)-$(params.qvsDeploymentName)-$(params.deployStateName)"
+	let _workingDir = "$(workspaces.shared.path)/pulumi/\(_stack)"
 
 	params: {
 		appName: desc:           "Application Name of QmonusVS"
@@ -45,20 +45,20 @@ import (
 			desc:    "Used as pulumi-stack name suffix"
 			default: _pulumiStackSuffixDefault
 		}
-		providerType: {
-			desc:    "Deployment-worker provider type"
-			default: "kubernetes"
-		}
-		if !_input.useGcpCred {
+		if _input.useCred.kubernetes {
 			kubeconfigSecretName: desc: "The secret name of Kubeconfig"
 		}
-		if _input.useGcpCred {
+		if _input.useCred.gcp {
 			gcpServiceAccountSecretName: desc: "The secret name of GCP SA credential"
-			gcpProjectId: desc:                "The Project ID of a deploy resource target"
-			k8sClusterName: {
-				desc:    "The kubernetes cluster name of a deploy resource target"
-				default: ""
-			}
+		}
+		if _input.useCred.aws {
+			awsCredentialName: desc: "The secret name of AWS credential"
+		}
+		if _input.useCred.azure {
+			azureClientId: desc:         "Azure Client ID"
+			azureTenantId: desc:         "Azure Tenant ID"
+			azureSubscriptionId: desc:   "Azure Subscription ID"
+			azureClientSecretName: desc: "Credential Name of Azure Client Secret"
 		}
 	}
 	steps: [{
@@ -102,89 +102,95 @@ import (
 		workingDir: "/opt"
 	}, {
 		name:    "deploy"
-		image:   "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/deployment-worker:\(base.config.qmonusDeploymentWorkerRevision)"
+		image:   "pulumi/pulumi-base"
 		onError: "continue"
-		args: [
-			"--design-pattern=$(params.providerType)",
-			if _input.useGcpCred {
-				"--cluster-project=$(params.gcpProjectId)"
-				"--cluster-name=$(params.k8sClusterName)"
-			},
-			"--solarray-env=local",
-			"--namespace=$(context.taskRun.namespace)-$(params.appName)-$(params.qvsDeploymentName)",
-			"--app-version=$(params.deployStateName)",
-			"--disabled-stack-validation",
-			"--local-state-path=\(_workingDir)",
-		]
-		env: [
-			if !_input.useGcpCred {
+		script:  """
+		#!/usr/bin/env bash
+		set -o nounset
+		set -o xtrace
+		pulumi login ${PULUMI_BACKEND_URL}
+		pulumi stack select --create \(_stack)
+		pulumi up -y -r -v=9 --diff --stack \(_stack)
+		"""
+		env:     list.FlattenN([
 				{
-					name:  "KUBECONFIG"
-					value: "/secret/kubeconfig"
-				}
-			},
-			if _input.useGcpCred {
-				{
-					name:  "GOOGLE_APPLICATION_CREDENTIALS"
-					value: "/secret/account.json"
-				}
+				name:  "PULUMI_BACKEND_URL"
+				value: "file://\(_workingDir)"
 			},
 			{
-				name:  "CONFIG_PATH"
-				value: _configPath
+				name:  "PULUMI_CONFIG_PASSPHRASE"
+				value: "/src/PULUMI_CONFIG_PASSPHRASE"
 			},
-			if _input.resourcePriority == "medium" {
-				{
-					name:  "GOMEMLIMIT"
-					value: "700MiB"
-				}
+			if _input.useCred.kubernetes {
+				name:  "KUBECONFIG"
+				value: "/secret/kubernetes/kubeconfig"
 			},
-			if _input.resourcePriority == "high" {
-				{
-					name:  "GOMEMLIMIT"
-					value: "1534MiB"
-				}
+			if _input.useCred.gcp {
+				name:  "GOOGLE_CREDENTIALS"
+				value: "/secret/gcp/account.json"
 			},
-		]
+			if _input.useCred.aws {
+				name:  "AWS_SHARED_CREDENTIALS_FILE"
+				value: "/secret/aws/credentials"
+			},
+			if _input.useCred.azure {
+				[
+					{
+						name:  "ARM_CLIENT_ID"
+						value: "$(params.azureClientId)"
+					},
+					{
+						name:  "ARM_TENANT_ID"
+						value: "$(params.azureTenantId)"
+					},
+					{
+						name:  "ARM_SUBSCRIPTION_ID"
+						value: "$(params.azureSubscriptionId)"
+					},
+					{
+						name: "ARM_CLIENT_SECRET"
+						valueFrom: secretKeyRef: {
+							name: "$(params.azureClientSecretName)"
+							key:  "secret"
+						}
+					},
+				]
+			},
+		], -1)
 		resources: {
-			if _input.resourcePriority == "medium" {
-				requests: {
-					cpu:    "1"
-					memory: "1Gi"
-				}
-				limits: {
-					cpu:    "1"
-					memory: "1Gi"
-				}
+			requests: {
+				cpu:    "1"
+				memory: "2Gi"
 			}
-			if _input.resourcePriority == "high" {
-				requests: {
-					cpu:    "1"
-					memory: "2Gi"
-				}
-				limits: {
-					cpu:    "1"
-					memory: "2Gi"
-				}
+			limits: {
+				cpu:    "1"
+				memory: "2Gi"
 			}
 		}
 		volumeMounts: [
-			if !_input.useGcpCred {
+			if _input.useCred.kubernetes {
 				{
-					mountPath: "/secret"
+					mountPath: "/secret/kubernetes"
 					name:      "user-kubeconfig"
 					readOnly:  true
 				}
 			},
-			if _input.useGcpCred {
+			if _input.useCred.gcp {
 				{
-					mountPath: "/secret"
+					mountPath: "/secret/gcp"
 					name:      "gcp-secret"
 					readOnly:  true
 				}
 			},
+			if _input.useCred.aws {
+				{
+					mountPath: "/secret/aws"
+					name:      "aws-secret"
+					readOnly:  true
+				}
+			},
 		]
-		workingDir: "/opt"
+		workingDir: "\(_configPath)"
 	}, {
 		name:   "upload-state"
 		image:  "google/cloud-sdk:365.0.1-slim@sha256:2575543b18e06671eac29aae28741128acfd0e4376257f3f1246d97d00059dcb"
@@ -224,7 +230,7 @@ import (
 		workingDir: "/opt"
 	}]
 	volumes: [
-		if !_input.useGcpCred {
+		if _input.useCred.kubernetes {
 			{
 				name: "user-kubeconfig"
 				secret: {
@@ -236,7 +242,7 @@ import (
 				}
 			}
 		},
-		if _input.useGcpCred {
+		if _input.useCred.gcp {
 			{
 				name: "gcp-secret"
 				secret: {
@@ -245,6 +251,18 @@ import (
 						path: "account.json"
 					}]
 					secretName: "$(params.gcpServiceAccountSecretName)"
+				}
+			}
+		},
+		if _input.useCred.aws {
+			{
+				name: "aws-secret"
+				secret: {
+					items: [{
+						key:  "profile"
+						path: "credentials"
+					}]
+					secretName: "$(params.awsCredentialName)"
 				}
 			}
 		},
