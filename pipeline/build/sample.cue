@@ -58,6 +58,9 @@ DesignPattern: {
 					approvalRequired: true
 				}
 				"deploy": deploymentWorker.#Builder & {
+					input: {
+						resourcePriority: pipelineParameters.resourcePriority
+					}
 					runAfter: ["compile"]
 				}
 			}

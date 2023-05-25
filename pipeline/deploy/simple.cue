@@ -98,7 +98,8 @@ DesignPattern: {
 				}
 				"deploy": deploymentWorker.#Builder & {
 					input: {
-						phase: _deployPhase
+						phase:            _deployPhase
+						resourcePriority: _resourcePriority
 					}
 					runAfter: ["compile"]
 				}

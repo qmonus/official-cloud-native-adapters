@@ -10,7 +10,8 @@ DesignPattern: {
 	name: "deploy:kustomization"
 
 	pipelineParameters: {
-		repositoryKind: string | *""
+		resourcePriority: "high" | *"medium"
+		repositoryKind:   string | *""
 	}
 
 	pipelines: {
@@ -25,6 +26,9 @@ DesignPattern: {
 					runAfter: ["checkout"]
 				}
 				"deploy": deploymentWorker.#Builder & {
+					input: {
+						resourcePriority: pipelineParameters.resourcePriority
+					}
 					runAfter: ["compile"]
 				}
 			}
