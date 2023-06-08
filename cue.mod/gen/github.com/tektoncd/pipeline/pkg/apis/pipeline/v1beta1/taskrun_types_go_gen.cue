@@ -7,8 +7,8 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/pod"
-	duckv1beta1 "knative.dev/pkg/apis/duck/v1beta1"
 	corev1 "k8s.io/api/core/v1"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
 )
 
 // TaskRunSpec defines the desired state of TaskRun
@@ -17,6 +17,7 @@ import (
 	debug?: null | #TaskRunDebug @go(Debug,*TaskRunDebug)
 
 	// +optional
+	// +listType=atomic
 	params?: [...#Param] @go(Params,[]Param)
 
 	// +optional
@@ -32,58 +33,114 @@ import (
 	// +optional
 	taskSpec?: null | #TaskSpec @go(TaskSpec,*TaskSpec)
 
-	// Used for cancelling a taskrun (and maybe more later on)
+	// Used for cancelling a TaskRun (and maybe more later on)
 	// +optional
 	status?: #TaskRunSpecStatus @go(Status)
 
-	// Time after which the build times out. Defaults to 1 hour.
+	// Status message for cancellation.
+	// +optional
+	statusMessage?: #TaskRunSpecStatusMessage @go(StatusMessage)
+
+	// Retries represents how many times this TaskRun should be retried in the event of Task failure.
+	// +optional
+	retries?: int @go(Retries)
+
+	// Time after which one retry attempt times out. Defaults to 1 hour.
 	// Specified build timeout should be less than 24h.
 	// Refer Go's ParseDuration documentation for expected format: https://golang.org/pkg/time/#ParseDuration
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
 	// PodTemplate holds pod specific configuration
-	podTemplate?: null | pod.#Template @go(PodTemplate,*github.com/tektoncd/pipeline/pkg/apis/pipeline/pod.Template)
+	podTemplate?: null | pod.#Template @go(PodTemplate,*pod.Template)
 
 	// Workspaces is a list of WorkspaceBindings from volumes to workspaces.
 	// +optional
+	// +listType=atomic
 	workspaces?: [...#WorkspaceBinding] @go(Workspaces,[]WorkspaceBinding)
+
+	// Overrides to apply to Steps in this TaskRun.
+	// If a field is specified in both a Step and a StepOverride,
+	// the value from the StepOverride will be used.
+	// This field is only supported when the alpha feature gate is enabled.
+	// +optional
+	// +listType=atomic
+	stepOverrides?: [...#TaskRunStepOverride] @go(StepOverrides,[]TaskRunStepOverride)
+
+	// Overrides to apply to Sidecars in this TaskRun.
+	// If a field is specified in both a Sidecar and a SidecarOverride,
+	// the value from the SidecarOverride will be used.
+	// This field is only supported when the alpha feature gate is enabled.
+	// +optional
+	// +listType=atomic
+	sidecarOverrides?: [...#TaskRunSidecarOverride] @go(SidecarOverrides,[]TaskRunSidecarOverride)
+
+	// Compute resources to use for this TaskRun
+	computeResources?: null | corev1.#ResourceRequirements @go(ComputeResources,*corev1.ResourceRequirements)
 }
 
-// TaskRunSpecStatus defines the taskrun spec status the user can provide
+// TaskRunSpecStatus defines the TaskRun spec status the user can provide
 #TaskRunSpecStatus: string
 
 // TaskRunSpecStatusCancelled indicates that the user wants to cancel the task,
 // if not already cancelled or terminated
 #TaskRunSpecStatusCancelled: "TaskRunCancelled"
 
+// TaskRunSpecStatusMessage defines human readable status messages for the TaskRun.
+#TaskRunSpecStatusMessage: string // #enumTaskRunSpecStatusMessage
+
+#enumTaskRunSpecStatusMessage:
+	#TaskRunCancelledByPipelineMsg |
+	#TaskRunCancelledByPipelineTimeoutMsg
+
+// TaskRunCancelledByPipelineMsg indicates that the PipelineRun of which this
+// TaskRun was a part of has been cancelled.
+#TaskRunCancelledByPipelineMsg: #TaskRunSpecStatusMessage & "TaskRun cancelled as the PipelineRun it belongs to has been cancelled."
+
+// TaskRunCancelledByPipelineTimeoutMsg indicates that the TaskRun was cancelled because the PipelineRun running it timed out.
+#TaskRunCancelledByPipelineTimeoutMsg: #TaskRunSpecStatusMessage & "TaskRun cancelled as the PipelineRun it belongs to has timed out."
+
 // TaskRunDebug defines the breakpoint config for a particular TaskRun
 #TaskRunDebug: {
 	// +optional
+	// +listType=atomic
 	breakpoint?: [...string] @go(Breakpoint,[]string)
 }
 
 // TaskRunInputs holds the input values that this task was invoked with.
 #TaskRunInputs: {
 	// +optional
+	// +listType=atomic
 	resources?: [...#TaskResourceBinding] @go(Resources,[]TaskResourceBinding)
 
 	// +optional
+	// +listType=atomic
 	params?: [...#Param] @go(Params,[]Param)
 }
 
 // TaskRunOutputs holds the output values that this task was invoked with.
 #TaskRunOutputs: {
 	// +optional
+	// +listType=atomic
 	resources?: [...#TaskResourceBinding] @go(Resources,[]TaskResourceBinding)
 }
 
 // TaskRunStatus defines the observed state of TaskRun
 #TaskRunStatus: {
-	duckv1beta1.#Status
+	duckv1.#Status
 
 	#TaskRunStatusFields
 }
+
+// TaskRunConditionType is an enum used to store TaskRun custom
+// conditions such as one used in spire results verification
+#TaskRunConditionType: string // #enumTaskRunConditionType
+
+#enumTaskRunConditionType:
+	#TaskRunConditionResultsVerified
+
+// TaskRunConditionResultsVerified is a Condition Type that indicates that the results were verified by spire
+#TaskRunConditionResultsVerified: #TaskRunConditionType & "SignedResultsVerified"
 
 // TaskRunReason is an enum used to store all TaskRun reason for
 // the Succeeded condition that are controlled by the TaskRun itself. Failure
@@ -95,8 +152,14 @@ import (
 	#TaskRunReasonRunning |
 	#TaskRunReasonSuccessful |
 	#TaskRunReasonFailed |
+	#TaskRunReasonToBeRetried |
 	#TaskRunReasonCancelled |
-	#TaskRunReasonTimedOut
+	#TaskRunReasonTimedOut |
+	#TaskRunReasonImagePullFailed |
+	#TaskRunReasonResultsVerified |
+	#TaskRunReasonsResultsVerificationFailed |
+	#AwaitingTaskRunResults |
+	#TaskRunReasonResultLargerThanAllowedLimit
 
 // TaskRunReasonStarted is the reason set when the TaskRun has just started
 #TaskRunReasonStarted: #TaskRunReason & "Started"
@@ -110,11 +173,36 @@ import (
 // TaskRunReasonFailed is the reason set when the TaskRun completed with a failure
 #TaskRunReasonFailed: #TaskRunReason & "Failed"
 
-// TaskRunReasonCancelled is the reason set when the Taskrun is cancelled by the user
+// TaskRunReasonToBeRetried is the reason set when the last TaskRun execution failed, and will be retried
+#TaskRunReasonToBeRetried: #TaskRunReason & "ToBeRetried"
+
+// TaskRunReasonCancelled is the reason set when the TaskRun is cancelled by the user
 #TaskRunReasonCancelled: #TaskRunReason & "TaskRunCancelled"
 
-// TaskRunReasonTimedOut is the reason set when the Taskrun has timed out
+// TaskRunReasonTimedOut is the reason set when one TaskRun execution has timed out
 #TaskRunReasonTimedOut: #TaskRunReason & "TaskRunTimeout"
+
+// TaskRunReasonResolvingTaskRef indicates that the TaskRun is waiting for
+// its taskRef to be asynchronously resolved.
+#TaskRunReasonResolvingTaskRef: "ResolvingTaskRef"
+
+// TaskRunReasonImagePullFailed is the reason set when the step of a task fails due to image not being pulled
+#TaskRunReasonImagePullFailed: #TaskRunReason & "TaskRunImagePullFailed"
+
+// TaskRunReasonResultsVerified is the reason set when the TaskRun results are verified by spire
+#TaskRunReasonResultsVerified: #TaskRunReason & "TaskRunResultsVerified"
+
+// TaskRunReasonsResultsVerificationFailed is the reason set when the TaskRun results are failed to verify by spire
+#TaskRunReasonsResultsVerificationFailed: #TaskRunReason & "TaskRunResultsVerificationFailed"
+
+// AwaitingTaskRunResults is the reason set when waiting upon `TaskRun` results and signatures to verify
+#AwaitingTaskRunResults: #TaskRunReason & "AwaitingTaskRunResults"
+
+// TaskRunReasonResultLargerThanAllowedLimit is the reason set when one of the results exceeds its maximum allowed limit of 1 KB
+#TaskRunReasonResultLargerThanAllowedLimit: #TaskRunReason & "TaskRunResultLargerThanAllowedLimit"
+
+// TaskRunReasonStopSidecarFailed indicates that the sidecar is not properly stopped.
+#TaskRunReasonStopSidecarFailed: "TaskRunStopSidecarFailed"
 
 // TaskRunStatusFields holds the fields of TaskRun's status.  This is defined
 // separately and inlined so that other types can readily consume these fields
@@ -124,51 +212,72 @@ import (
 	podName: string @go(PodName)
 
 	// StartTime is the time the build is actually started.
-	// +optional
 	startTime?: null | metav1.#Time @go(StartTime,*metav1.Time)
 
 	// CompletionTime is the time the build completed.
-	// +optional
 	completionTime?: null | metav1.#Time @go(CompletionTime,*metav1.Time)
 
 	// Steps describes the state of each build step container.
 	// +optional
+	// +listType=atomic
 	steps?: [...#StepState] @go(Steps,[]StepState)
 
+	// Deprecated.
 	// CloudEvents describe the state of each cloud event requested via a
 	// CloudEventResource.
 	// +optional
+	// +listType=atomic
 	cloudEvents?: [...#CloudEventDelivery] @go(CloudEvents,[]CloudEventDelivery)
 
 	// RetriesStatus contains the history of TaskRunStatus in case of a retry in order to keep record of failures.
 	// All TaskRunStatus stored in RetriesStatus will have no date within the RetriesStatus as is redundant.
 	// +optional
+	// +listType=atomic
 	retriesStatus?: [...#TaskRunStatus] @go(RetriesStatus,[]TaskRunStatus)
 
-	// Results from Resources built during the taskRun. currently includes
+	// Results from Resources built during the TaskRun. currently includes
 	// the digest of build container images
 	// +optional
+	// +listType=atomic
 	resourcesResult?: [...#PipelineResourceResult] @go(ResourcesResult,[]PipelineResourceResult)
 
 	// TaskRunResults are the list of results written out by the task's containers
 	// +optional
+	// +listType=atomic
 	taskResults?: [...#TaskRunResult] @go(TaskRunResults,[]TaskRunResult)
 
 	// The list has one entry per sidecar in the manifest. Each entry is
 	// represents the imageid of the corresponding sidecar.
+	// +listType=atomic
 	sidecars?: [...#SidecarState] @go(Sidecars,[]SidecarState)
 
 	// TaskSpec contains the Spec from the dereferenced Task definition used to instantiate this TaskRun.
 	taskSpec?: null | #TaskSpec @go(TaskSpec,*TaskSpec)
+
+	// Provenance contains some key authenticated metadata about how a software artifact was built (what sources, what inputs/outputs, etc.).
+	// +optional
+	provenance?: null | #Provenance @go(Provenance,*Provenance)
+
+	// SpanContext contains tracing span context fields
+	spanContext?: {[string]: string} @go(SpanContext,map[string]string)
 }
 
-// TaskRunResult used to describe the results of a task
-#TaskRunResult: {
-	// Name the given name
+// TaskRunStepOverride is used to override the values of a Step in the corresponding Task.
+#TaskRunStepOverride: {
+	// The name of the Step to override.
 	name: string @go(Name)
 
-	// Value the given value of the result
-	value: string @go(Value)
+	// The resource requirements to apply to the Step.
+	resources: corev1.#ResourceRequirements @go(Resources)
+}
+
+// TaskRunSidecarOverride is used to override the values of a Sidecar in the corresponding Task.
+#TaskRunSidecarOverride: {
+	// The name of the Sidecar to override.
+	name: string @go(Name)
+
+	// The resource requirements to apply to the Sidecar.
+	resources: corev1.#ResourceRequirements @go(Resources)
 }
 
 // StepState reports the results of running a step in a Task.
