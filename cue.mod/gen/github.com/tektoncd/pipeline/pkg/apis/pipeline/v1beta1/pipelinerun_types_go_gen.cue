@@ -7,8 +7,10 @@ package v1beta1
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"github.com/tektoncd/pipeline/pkg/apis/pipeline/pod"
-	duckv1beta1 "knative.dev/pkg/apis/duck/v1beta1"
-	runv1alpha1 "github.com/tektoncd/pipeline/pkg/apis/run/v1alpha1"
+	duckv1 "knative.dev/pkg/apis/duck/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"github.com/tektoncd/pipeline/pkg/apis/run/v1beta1"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // PipelineRun represents a single execution of a Pipeline. PipelineRuns are how
@@ -42,25 +44,20 @@ import (
 	// Resources is a list of bindings specifying which actual instances of
 	// PipelineResources to use for the resources the Pipeline has declared
 	// it needs.
+	// +listType=atomic
 	resources?: [...#PipelineResourceBinding] @go(Resources,[]PipelineResourceBinding)
 
 	// Params is a list of parameter names and values.
+	// +listType=atomic
 	params?: [...#Param] @go(Params,[]Param)
 
 	// +optional
 	serviceAccountName?: string @go(ServiceAccountName)
 
-	// Deprecated: use taskRunSpecs.ServiceAccountName instead
-	// +optional
-	serviceAccountNames?: [...#PipelineRunSpecServiceAccountName] @go(ServiceAccountNames,[]PipelineRunSpecServiceAccountName)
-
 	// Used for cancelling a pipelinerun (and maybe more later on)
 	// +optional
 	status?: #PipelineRunSpecStatus @go(Status)
 
-	// This is an alpha field. You must set the "enable-api-fields" feature flag to "alpha"
-	// for this field to be supported.
-	//
 	// Time after which the Pipeline times out.
 	// Currently three keys are accepted in the map
 	// pipeline, tasks and finally
@@ -68,21 +65,24 @@ import (
 	// +optional
 	timeouts?: null | #TimeoutFields @go(Timeouts,*TimeoutFields)
 
+	// Timeout Deprecated: use pipelineRunSpec.Timeouts.Pipeline instead
 	// Time after which the Pipeline times out. Defaults to never.
 	// Refer to Go's ParseDuration documentation for expected format: https://golang.org/pkg/time/#ParseDuration
 	// +optional
 	timeout?: null | metav1.#Duration @go(Timeout,*metav1.Duration)
 
 	// PodTemplate holds pod specific configuration
-	podTemplate?: null | pod.#Template @go(PodTemplate,*github.com/tektoncd/pipeline/pkg/apis/pipeline/pod.Template)
+	podTemplate?: null | pod.#Template @go(PodTemplate,*pod.Template)
 
 	// Workspaces holds a set of workspace bindings that must match names
 	// with those declared in the pipeline.
 	// +optional
+	// +listType=atomic
 	workspaces?: [...#WorkspaceBinding] @go(Workspaces,[]WorkspaceBinding)
 
 	// TaskRunSpecs holds a set of runtime specs
 	// +optional
+	// +listType=atomic
 	taskRunSpecs?: [...#PipelineTaskRunSpec] @go(TaskRunSpecs,[]PipelineTaskRunSpec)
 }
 
@@ -101,10 +101,6 @@ import (
 // PipelineRunSpecStatus defines the pipelinerun spec status the user can provide
 #PipelineRunSpecStatus: string
 
-// PipelineRunSpecStatusCancelledDeprecated Deprecated: indicates that the user wants to cancel the task,
-// if not already cancelled or terminated (replaced by "Cancelled")
-#PipelineRunSpecStatusCancelledDeprecated: "PipelineRunCancelled"
-
 // PipelineRunSpecStatusCancelled indicates that the user wants to cancel the task,
 // if not already cancelled or terminated
 #PipelineRunSpecStatusCancelled: "Cancelled"
@@ -122,24 +118,9 @@ import (
 // until some condition is met
 #PipelineRunSpecStatusPending: "PipelineRunPending"
 
-// PipelineRef can be used to refer to a specific instance of a Pipeline.
-// Copied from CrossVersionObjectReference: https://github.com/kubernetes/kubernetes/blob/169df7434155cbbc22f1532cba8e0a9588e29ad8/pkg/apis/autoscaling/types.go#L64
-#PipelineRef: {
-	// Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names
-	name?: string @go(Name)
-
-	// API version of the referent
-	// +optional
-	apiVersion?: string @go(APIVersion)
-
-	// Bundle url reference to a Tekton Bundle.
-	// +optional
-	bundle?: string @go(Bundle)
-}
-
 // PipelineRunStatus defines the observed state of PipelineRun
 #PipelineRunStatus: {
-	duckv1beta1.#Status
+	duckv1.#Status
 
 	#PipelineRunStatusFields
 }
@@ -198,28 +179,45 @@ import (
 // and no new Tasks will be scheduled by the controller, but final tasks are now running
 #PipelineRunReasonStoppedRunningFinally: #PipelineRunReason & "StoppedRunningFinally"
 
+// ChildStatusReference is used to point to the statuses of individual TaskRuns and Runs within this PipelineRun.
+#ChildStatusReference: {
+	runtime.#TypeMeta
+
+	// Name is the name of the TaskRun or Run this is referencing.
+	name?: string @go(Name)
+
+	// PipelineTaskName is the name of the PipelineTask this is referencing.
+	pipelineTaskName?: string @go(PipelineTaskName)
+
+	// WhenExpressions is the list of checks guarding the execution of the PipelineTask
+	// +optional
+	// +listType=atomic
+	whenExpressions?: [...#WhenExpression] @go(WhenExpressions,[]WhenExpression)
+}
+
 // PipelineRunStatusFields holds the fields of PipelineRunStatus' status.
 // This is defined separately and inlined so that other types can readily
 // consume these fields via duck typing.
 #PipelineRunStatusFields: {
 	// StartTime is the time the PipelineRun is actually started.
-	// +optional
 	startTime?: null | metav1.#Time @go(StartTime,*metav1.Time)
 
 	// CompletionTime is the time the PipelineRun completed.
-	// +optional
 	completionTime?: null | metav1.#Time @go(CompletionTime,*metav1.Time)
 
+	// Deprecated - use ChildReferences instead.
 	// map of PipelineRunTaskRunStatus with the taskRun name as the key
 	// +optional
 	taskRuns?: {[string]: null | #PipelineRunTaskRunStatus} @go(TaskRuns,map[string]*PipelineRunTaskRunStatus)
 
+	// Deprecated - use ChildReferences instead.
 	// map of PipelineRunRunStatus with the run name as the key
 	// +optional
 	runs?: {[string]: null | #PipelineRunRunStatus} @go(Runs,map[string]*PipelineRunRunStatus)
 
 	// PipelineResults are the list of results written out by the pipeline task's containers
 	// +optional
+	// +listType=atomic
 	pipelineResults?: [...#PipelineRunResult] @go(PipelineResults,[]PipelineRunResult)
 
 	// PipelineRunSpec contains the exact spec used to instantiate the run
@@ -227,7 +225,24 @@ import (
 
 	// list of tasks that were skipped due to when expressions evaluating to false
 	// +optional
+	// +listType=atomic
 	skippedTasks?: [...#SkippedTask] @go(SkippedTasks,[]SkippedTask)
+
+	// list of TaskRun and Run names, PipelineTask names, and API versions/kinds for children of this PipelineRun.
+	// +optional
+	// +listType=atomic
+	childReferences?: [...#ChildStatusReference] @go(ChildReferences,[]ChildStatusReference)
+
+	// FinallyStartTime is when all non-finally tasks have been completed and only finally tasks are being executed.
+	// +optional
+	finallyStartTime?: null | metav1.#Time @go(FinallyStartTime,*metav1.Time)
+
+	// Provenance contains some key authenticated metadata about how a software artifact was built (what sources, what inputs/outputs, etc.).
+	// +optional
+	provenance?: null | #Provenance @go(Provenance,*Provenance)
+
+	// SpanContext contains tracing span context fields
+	spanContext?: {[string]: string} @go(SpanContext,map[string]string)
 }
 
 // SkippedTask is used to describe the Tasks that were skipped due to their When Expressions
@@ -237,10 +252,59 @@ import (
 	// Name is the Pipeline Task name
 	name: string @go(Name)
 
+	// Reason is the cause of the PipelineTask being skipped.
+	reason: #SkippingReason @go(Reason)
+
 	// WhenExpressions is the list of checks guarding the execution of the PipelineTask
 	// +optional
+	// +listType=atomic
 	whenExpressions?: [...#WhenExpression] @go(WhenExpressions,[]WhenExpression)
 }
+
+// SkippingReason explains why a PipelineTask was skipped.
+#SkippingReason: string // #enumSkippingReason
+
+#enumSkippingReason:
+	#WhenExpressionsSkip |
+	#ParentTasksSkip |
+	#StoppingSkip |
+	#GracefullyCancelledSkip |
+	#GracefullyStoppedSkip |
+	#MissingResultsSkip |
+	#PipelineTimedOutSkip |
+	#TasksTimedOutSkip |
+	#FinallyTimedOutSkip |
+	#None
+
+// WhenExpressionsSkip means the task was skipped due to at least one of its when expressions evaluating to false
+#WhenExpressionsSkip: #SkippingReason & "When Expressions evaluated to false"
+
+// ParentTasksSkip means the task was skipped because its parent was skipped
+#ParentTasksSkip: #SkippingReason & "Parent Tasks were skipped"
+
+// StoppingSkip means the task was skipped because the pipeline run is stopping
+#StoppingSkip: #SkippingReason & "PipelineRun was stopping"
+
+// GracefullyCancelledSkip means the task was skipped because the pipeline run has been gracefully cancelled
+#GracefullyCancelledSkip: #SkippingReason & "PipelineRun was gracefully cancelled"
+
+// GracefullyStoppedSkip means the task was skipped because the pipeline run has been gracefully stopped
+#GracefullyStoppedSkip: #SkippingReason & "PipelineRun was gracefully stopped"
+
+// MissingResultsSkip means the task was skipped because it's missing necessary results
+#MissingResultsSkip: #SkippingReason & "Results were missing"
+
+// PipelineTimedOutSkip means the task was skipped because the PipelineRun has passed its overall timeout.
+#PipelineTimedOutSkip: #SkippingReason & "PipelineRun timeout has been reached"
+
+// TasksTimedOutSkip means the task was skipped because the PipelineRun has passed its Timeouts.Tasks.
+#TasksTimedOutSkip: #SkippingReason & "PipelineRun Tasks timeout has been reached"
+
+// FinallyTimedOutSkip means the task was skipped because the PipelineRun has passed its Timeouts.Finally.
+#FinallyTimedOutSkip: #SkippingReason & "PipelineRun Finally timeout has been reached"
+
+// None means the task was not skipped
+#None: #SkippingReason & "None"
 
 // PipelineRunResult used to describe the results of a pipeline
 #PipelineRunResult: {
@@ -248,7 +312,7 @@ import (
 	name: string @go(Name)
 
 	// Value is the result returned from the execution of this PipelineRun
-	value: string @go(Value)
+	value: #ParamValue @go(Value)
 }
 
 // PipelineRunTaskRunStatus contains the name of the PipelineTask for this TaskRun and the TaskRun's Status
@@ -260,44 +324,25 @@ import (
 	// +optional
 	status?: null | #TaskRunStatus @go(Status,*TaskRunStatus)
 
-	// ConditionChecks maps the name of a condition check to its Status
-	// +optional
-	conditionChecks?: {[string]: null | #PipelineRunConditionCheckStatus} @go(ConditionChecks,map[string]*PipelineRunConditionCheckStatus)
-
 	// WhenExpressions is the list of checks guarding the execution of the PipelineTask
 	// +optional
+	// +listType=atomic
 	whenExpressions?: [...#WhenExpression] @go(WhenExpressions,[]WhenExpression)
 }
 
-// PipelineRunRunStatus contains the name of the PipelineTask for this Run and the Run's Status
+// PipelineRunRunStatus contains the name of the PipelineTask for this CustomRun or Run and the CustomRun or Run's Status
 #PipelineRunRunStatus: {
 	// PipelineTaskName is the name of the PipelineTask.
 	pipelineTaskName?: string @go(PipelineTaskName)
 
-	// Status is the RunStatus for the corresponding Run
+	// Status is the CustomRunStatus for the corresponding CustomRun or Run
 	// +optional
-	status?: null | runv1alpha1.#RunStatus @go(Status,*runv1alpha1.RunStatus)
+	status?: null | v1beta1.#CustomRunStatus @go(Status,*github.com/tektoncd/pipeline/pkg/apis/run/v1beta1.CustomRunStatus)
 
 	// WhenExpressions is the list of checks guarding the execution of the PipelineTask
 	// +optional
+	// +listType=atomic
 	whenExpressions?: [...#WhenExpression] @go(WhenExpressions,[]WhenExpression)
-}
-
-// PipelineRunConditionCheckStatus returns the condition check status
-#PipelineRunConditionCheckStatus: {
-	// ConditionName is the name of the Condition
-	conditionName?: string @go(ConditionName)
-
-	// Status is the ConditionCheckStatus for the corresponding ConditionCheck
-	// +optional
-	status?: null | #ConditionCheckStatus @go(Status,*ConditionCheckStatus)
-}
-
-// PipelineRunSpecServiceAccountName can be used to configure specific
-// ServiceAccountName for a concrete Task
-#PipelineRunSpecServiceAccountName: {
-	taskName?:           string @go(TaskName)
-	serviceAccountName?: string @go(ServiceAccountName)
 }
 
 // PipelineRunList contains a list of PipelineRun
@@ -321,5 +366,17 @@ import (
 #PipelineTaskRunSpec: {
 	pipelineTaskName?:       string               @go(PipelineTaskName)
 	taskServiceAccountName?: string               @go(TaskServiceAccountName)
-	taskPodTemplate?:        null | pod.#Template @go(TaskPodTemplate,*github.com/tektoncd/pipeline/pkg/apis/pipeline/pod.Template)
+	taskPodTemplate?:        null | pod.#Template @go(TaskPodTemplate,*pod.Template)
+
+	// +listType=atomic
+	stepOverrides?: [...#TaskRunStepOverride] @go(StepOverrides,[]TaskRunStepOverride)
+
+	// +listType=atomic
+	sidecarOverrides?: [...#TaskRunSidecarOverride] @go(SidecarOverrides,[]TaskRunSidecarOverride)
+
+	// +optional
+	metadata?: null | #PipelineTaskMetadata @go(Metadata,*PipelineTaskMetadata)
+
+	// Compute resources to use for this TaskRun
+	computeResources?: null | corev1.#ResourceRequirements @go(ComputeResources,*corev1.ResourceRequirements)
 }

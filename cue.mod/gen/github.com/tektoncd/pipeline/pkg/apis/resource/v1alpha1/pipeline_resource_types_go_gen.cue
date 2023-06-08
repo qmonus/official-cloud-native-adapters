@@ -15,9 +15,7 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	#PipelineResourceTypeGit |
 	#PipelineResourceTypeStorage |
 	#PipelineResourceTypeImage |
-	#PipelineResourceTypeCluster |
 	#PipelineResourceTypePullRequest |
-	#PipelineResourceTypeCloudEvent |
 	#PipelineResourceTypeGCS
 
 // PipelineResourceTypeGit indicates that this source is a GitHub repo.
@@ -29,14 +27,8 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 // PipelineResourceTypeImage indicates that this source is a docker Image.
 #PipelineResourceTypeImage: "image"
 
-// PipelineResourceTypeCluster indicates that this source is a k8s cluster Image.
-#PipelineResourceTypeCluster: "cluster"
-
 // PipelineResourceTypePullRequest indicates that this source is a SCM Pull Request.
 #PipelineResourceTypePullRequest: "pullRequest"
-
-// PipelineResourceTypeCloudEvent indicates that this source is a cloud event URI
-#PipelineResourceTypeCloudEvent: "cloudEvent"
 
 // PipelineResourceTypeGCS is the subtype for the GCSResources, which is backed by a GCS blob/directory.
 #PipelineResourceTypeGCS: "gcs"
@@ -74,10 +66,13 @@ import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	// +optional
 	description?: string @go(Description)
 	type:         string @go(Type)
+
+	// +listType=atomic
 	params: [...#ResourceParam] @go(Params,[]ResourceParam)
 
 	// Secrets to fetch to populate some of resource fields
 	// +optional
+	// +listType=atomic
 	secrets?: [...#SecretParam] @go(SecretParams,[]SecretParam)
 }
 
