@@ -7,7 +7,8 @@ import (
 )
 
 #BuildInput: {
-	phase: "setup" | *""
+	phase:                "app" | *""
+	pulumiCredentialName: string
 	useCred: {
 		kubernetes: bool | *false
 		gcp:        bool | *false
@@ -25,7 +26,7 @@ import (
 	prefix: input.phase
 
 	let _input = input
-	let _configPath = "$(workspaces.shared.path)/manifests/"
+	let _configPath = "$(workspaces.shared.path)/manifests/pulumi/"
 	let _pulumiStackSuffixDefault = {
 		if _input.phase == "" {
 			"main"
@@ -118,8 +119,11 @@ import (
 				value: "file://\(_workingDir)"
 			},
 			{
-				name:  "PULUMI_CONFIG_PASSPHRASE"
-				value: "/src/PULUMI_CONFIG_PASSPHRASE"
+				name: "PULUMI_CONFIG_PASSPHRASE"
+				valueFrom: secretKeyRef: {
+					name: _input.pulumiCredentialName
+					key:  "passphrase"
+				}
 			},
 			if _input.useCred.kubernetes {
 				name:  "KUBECONFIG"

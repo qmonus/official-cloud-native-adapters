@@ -12,11 +12,12 @@ DesignPattern: {
 	name: "deploy:simpleDeployByPulumiYaml"
 
 	pipelineParameters: {
-		repositoryKind:   string | *""
-		useDebug:         bool | *false
-		deployPhase:      "app" | *""
-		resourcePriority: "high" | *"medium"
-		useSshKey:        bool | *false
+		repositoryKind:       string | *""
+		useDebug:             bool | *false
+		deployPhase:          "app" | *""
+		resourcePriority:     "high" | *"medium"
+		useSshKey:            bool | *false
+		pulumiCredentialName: string
 		useCred: {
 			kubernetes: bool | *false
 			gcp:        bool | *false
@@ -29,6 +30,7 @@ DesignPattern: {
 	let _useDebug = pipelineParameters.useDebug
 	let _deployPhase = pipelineParameters.deployPhase
 	let _resourcePriority = pipelineParameters.resourcePriority
+	let _pulumiCredentialName = pipelineParameters.pulumiCredentialName
 	let _useCred = pipelineParameters.useCred
 	let _useSshKey = pipelineParameters.useSshKey
 	let _importStackName = pipelineParameters.importStackName
@@ -102,8 +104,9 @@ DesignPattern: {
 				}
 				"deploy": deployByPulumiYaml.#Builder & {
 					input: {
-						phase:   _deployPhase
-						useCred: _useCred
+						phase:                _deployPhase
+						pulumiCredentialName: _pulumiCredentialName
+						useCred:              _useCred
 					}
 					runAfter: ["compile"]
 				}
