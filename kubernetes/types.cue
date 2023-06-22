@@ -9,7 +9,8 @@ import (
 	backendconfigv1 "k8s.io/ingress-gce/pkg/apis/backendconfig/v1"
 	frontendconfigv1beta1 "k8s.io/ingress-gce/pkg/apis/frontendconfig/v1beta1"
 	networkingGkev1 "github.com/GoogleCloudPlatform/gke-managed-certs/pkg/apis/networking.gke.io/v1"
-	clustersecretstore "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
+	externalsecretsv1beta1 "github.com/external-secrets/external-secrets/apis/externalsecrets/v1beta1"
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 )
 
 _KubernetesResource: {
@@ -89,7 +90,7 @@ _KubernetesClusteredResource: {
 
 #ClusterSecretStore: _KubernetesClusteredResource & {
 	base.#ResourceBase
-	clustersecretstore.#ClusterSecretStore
+	externalsecretsv1beta1.#ClusterSecretStore
 
 	apiVersion: "external-secrets.io/v1beta1"
 	kind:       "ClusterSecretStore"
@@ -97,6 +98,22 @@ _KubernetesClusteredResource: {
 		controller:      ""
 		refreshInterval: 300
 	}
+}
+
+#ExternalSecret: _KubernetesResource & {
+	base.#ResourceBase
+	externalsecretsv1beta1.#ExternalSecret
+
+	apiVersion: "external-secrets.io/v1beta1"
+	kind:       "ExternalSecret"
+}
+
+#Certificate: _KubernetesResource & {
+	base.#ResourceBase
+	certmanagerv1.#Certificate
+
+	apiVersion: "cert-manager.io/v1"
+	kind:       "Certificate"
 }
 
 #ChartOpts: {

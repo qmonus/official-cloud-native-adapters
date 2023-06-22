@@ -12,26 +12,30 @@ DesignPattern: {
 	name: "deploy:simpleDeployByPulumiYaml"
 
 	pipelineParameters: {
-		repositoryKind:   string | *""
-		useDebug:         bool | *false
-		deployPhase:      "app" | *""
-		resourcePriority: "high" | *"medium"
-		useSshKey:        bool | *false
+		repositoryKind:       string | *""
+		useDebug:             bool | *false
+		deployPhase:          "app" | *""
+		resourcePriority:     "high" | *"medium"
+		useSshKey:            bool | *false
+		pulumiCredentialName: string
 		useCred: {
 			kubernetes: bool | *false
 			gcp:        bool | *false
 			aws:        bool | *false
 			azure:      bool | *false
 		}
-		importStackName: string | *""
+		importStackName:   string | *""
+		useBastionSshCred: bool | *false
 	}
 	let _repositoryKind = pipelineParameters.repositoryKind
 	let _useDebug = pipelineParameters.useDebug
 	let _deployPhase = pipelineParameters.deployPhase
 	let _resourcePriority = pipelineParameters.resourcePriority
+	let _pulumiCredentialName = pipelineParameters.pulumiCredentialName
 	let _useCred = pipelineParameters.useCred
 	let _useSshKey = pipelineParameters.useSshKey
 	let _importStackName = pipelineParameters.importStackName
+	let _useBastionSshCred = pipelineParameters.useBastionSshCred
 
 	pipelines: {
 		deploy: {
@@ -102,8 +106,10 @@ DesignPattern: {
 				}
 				"deploy": deployByPulumiYaml.#Builder & {
 					input: {
-						phase:   _deployPhase
-						useCred: _useCred
+						phase:                _deployPhase
+						pulumiCredentialName: _pulumiCredentialName
+						useCred:              _useCred
+						useBastionSshCred:    _useBastionSshCred
 					}
 					runAfter: ["compile"]
 				}

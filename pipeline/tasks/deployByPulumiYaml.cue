@@ -7,7 +7,8 @@ import (
 )
 
 #BuildInput: {
-	phase: "setup" | *""
+	phase:                "app" | *""
+	pulumiCredentialName: string
 	useCred: {
 		kubernetes: bool | *false
 		gcp:        bool | *false
@@ -25,7 +26,7 @@ import (
 	prefix: input.phase
 
 	let _input = input
-	let _configPath = "$(workspaces.shared.path)/manifests/"
+	let _configPath = "$(workspaces.shared.path)/manifests/pulumi/"
 	let _pulumiStackSuffixDefault = {
 		if _input.phase == "" {
 			"main"
@@ -59,6 +60,13 @@ import (
 			azureTenantId: desc:         "Azure Tenant ID"
 			azureSubscriptionId: desc:   "Azure Subscription ID"
 			azureClientSecretName: desc: "Credential Name of Azure Client Secret"
+		}
+		if _input.useBastionSshCred {
+			bastionSshHost: desc:                   "Bastion SSH host name or ip address"
+			bastionSshUserName: desc:               "Bastion SSH user name"
+			bastionSshKeySecretName: desc:          "Bastion SSH private key secret name"
+			sshPortForwardingDestinationHost: desc: "Port forwarding destination host name or IP address"
+			sshPortForwardingDestinationPort: desc: "Port forwarding destination port"
 		}
 	}
 	steps: [{
@@ -118,8 +126,11 @@ import (
 				value: "file://\(_workingDir)"
 			},
 			{
-				name:  "PULUMI_CONFIG_PASSPHRASE"
-				value: "/src/PULUMI_CONFIG_PASSPHRASE"
+				name: "PULUMI_CONFIG_PASSPHRASE"
+				valueFrom: secretKeyRef: {
+					name: _input.pulumiCredentialName
+					key:  "passphrase"
+				}
 			},
 			if _input.useCred.kubernetes {
 				name:  "KUBECONFIG"
@@ -229,6 +240,23 @@ import (
 		]
 		workingDir: "/opt"
 	}]
+	if _input.useBastionSshCred {
+		sidecars: [{
+			name:  "ssh-port-forwarding"
+			image: "linuxserver/openssh-server"
+			command: ["ssh"]
+			args: [ "-4",
+				"-NL", "$(params.sshPortForwardingDestinationPort):$(params.sshPortForwardingDestinationHost):$(params.sshPortForwardingDestinationPort)", "$(params.bastionSshUserName)@$(params.bastionSshHost)",
+				"-i", "/root/.ssh/id_rsa",
+				"-o", "StrictHostKeyChecking=no",
+				"-o", "UserKnownHostsFile=/dev/null",
+			]
+			volumeMounts: [{
+				name:      "bastion-ssh-key"
+				mountPath: "/root/.ssh"
+			}]
+		}]
+	}
 	volumes: [
 		if _input.useCred.kubernetes {
 			{
@@ -263,6 +291,19 @@ import (
 						path: "credentials"
 					}]
 					secretName: "$(params.awsCredentialName)"
+				}
+			}
+		},
+		if _input.useBastionSshCred {
+			{
+				name: "bastion-ssh-key"
+				secret: {
+					items: [{
+						key:  "identity_file"
+						path: "id_rsa"
+					}]
+					secretName:  "$(params.bastionSshKeySecretName)"
+					defaultMode: 256
 				}
 			}
 		},
