@@ -93,7 +93,7 @@ import (
 			"manifest",
 			"compile",
 			"-o",
-			"$(workspaces.shared.path)/manifests/Pulumi.yaml",
+			"$(workspaces.shared.path)/manifests/pulumi/Pulumi.yaml",
 			"-c",
 			"$(params.qvsConfigPath)",
 			"-p",
@@ -159,9 +159,9 @@ import (
 			image: "bash:latest"
 			script: """
 				#!/usr/bin/env bash
-				if [ -e $(workspaces.shared.path)/manifests/Pulumi.yaml ]; then
+				if [ -e $(workspaces.shared.path)/manifests/pulumi/Pulumi.yaml ]; then
 					echo '[app]\\n'
-					cat $(workspaces.shared.path)/manifests/Pulumi.yaml
+					cat $(workspaces.shared.path)/manifests/pulumi/Pulumi.yaml
 				fi
 				"""
 		},

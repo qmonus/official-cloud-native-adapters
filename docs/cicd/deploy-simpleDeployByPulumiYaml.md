@@ -33,6 +33,7 @@ General / Platform Free
 | useCred.gcp | bool | no | false | trueを指定するとGCPにリソースをデプロイする際に、Value Streamで設定されたCredentialを参照できるようになります。 | true |
 | useCred.aws | bool | no | false | trueを指定するとAWSにリソースをデプロイする際に、Value Streamで設定されたCredentialを参照できるようになります。 | true |
 | useCred.azure | bool | no | false | trueを指定するとAzureにリソースをデプロイする際に、Value Streamで設定されたCredentialを参照できるようになります。 | true |
+| useBastionSshCred | bool | no | false | trueを指定すると、Value Streamで設定されたCredentialを参照し、外部公開されている踏み台サーバへポートフォワードを行い、踏み台サーバ経由でリソースをデプロイすることができます。 | true |
 
 ### Parameters
 | Parameter Name | Type | Required | Default | Description | Example | Auto Binding |
@@ -54,6 +55,11 @@ General / Platform Free
 | azureTenantId | string | no | - | AzureのTenantID | | no |
 | azureSubscriptionId | string | no | - | AzureのSubscriptionID | | no |
 | azureClientSecretName | string | no | - | QVSにおけるCredentialの作成時に指定したAzureのClientSecretを保管しているSecret名 | | no |
+| bastionSshHost | string | no | - | 踏み台サーバのホスト名またはIPアドレス | | no |
+| bastionSshUserName | string | no | - | 踏み台サーバへ接続するためのユーザ名 | | no |
+| bastionSshKeySecretName | string | no | - |  QVSにおけるCredentialの作成時に指定した踏み台サーバの秘密鍵のシークレット名 | | no |
+| sshPortForwardingDestinationHost | string | no | - | 踏み台サーバ経由でアクセスするリソースのホスト名 | | no |
+| sshPortForwardingDestinationPort | string | no | - | 踏み台サーバ経由でアクセスするリソースへの接続ポート | | no |
 
 ## Resources
 以下の Tekton Pipeline/Task リソースを含むマニフェストが作成されます。
