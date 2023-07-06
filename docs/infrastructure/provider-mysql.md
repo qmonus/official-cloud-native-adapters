@@ -15,7 +15,7 @@ Sample: サンプル実装
 
 ### Constraints
 
-* MySQL接続用のユーザアカウントのパスワードは固定値となっています。
+* MySQL DB接続に必要なパラメータであるユーザ名とパスワードは、別のAdapterを使用して定義する必要があります。
 
 ## Platform
 
@@ -27,7 +27,6 @@ MySQL
 | --- | --- | --- | --- | --- |
 | providerName | string | no | MysqlProvider | 他のリソースから参照する時のプロバイダー名 | 
 | endpoint | string | no | localhost | 接続先のMySQLのエンドポイント | 
-| username | string | no | adminuser | MySQLに接続するためのユーザアカウント名 | 
 
 ## Usage
 
@@ -36,7 +35,6 @@ designPatterns:
   - pattern: qmonus.net/adapter/official/pulumi/provider:mysql
     params:
       endpoint: $(params.endpoint)
-      username: $(params.username)
 ```
 
 ## Code

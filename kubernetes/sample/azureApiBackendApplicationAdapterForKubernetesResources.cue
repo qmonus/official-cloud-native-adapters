@@ -20,9 +20,9 @@ DesignPattern: {
 		dbHostEnvironmentVariableName:        string | *"DB_HOST"
 		dbHost:                               string
 		dbUserEnvironmentVariableName:        string | *"DB_USER"
-		dbUserSecretName:                     string | *"dbuser"
+		azureKeyVaultDbUserSecretName:        string | *"dbuser"
 		dbPasswordEnvironmentVariableName:    string | *"DB_PASS"
-		dbPasswordSecretName:                 string | *"dbpassword"
+		azureKeyVaultDbPasswordSecretName:    string | *"dbpassword"
 		redisHostEnvironmentVariableName:     string | *"REDIS_HOST"
 		redisHost:                            string
 		redisPortEnvironmentVariableName:     string | *"REDIS_PORT"
@@ -71,6 +71,7 @@ DesignPattern: {
 				]
 			}
 		}
+
 		service: types.#Service & {
 			metadata: {
 				name:      parameters.appName
@@ -87,6 +88,7 @@ DesignPattern: {
 				}
 			}
 		}
+
 		deployment: types.#Deployment & {
 			metadata: {
 				name:      parameters.appName
@@ -119,13 +121,13 @@ DesignPattern: {
 									name: parameters.dbUserEnvironmentVariableName
 									valueFrom: secretKeyRef: {
 										name: "\(parameters.appName)-application-secret"
-										key:  parameters.dbUserSecretName
+										key:  parameters.azureKeyVaultDbUserSecretName
 									}
 								}, {
 									name: parameters.dbPasswordEnvironmentVariableName
 									valueFrom: secretKeyRef: {
 										name: "\(parameters.appName)-application-secret"
-										key:  parameters.dbPasswordSecretName
+										key:  parameters.azureKeyVaultDbPasswordSecretName
 									}
 								}, {
 									name:  parameters.redisHostEnvironmentVariableName
@@ -149,6 +151,7 @@ DesignPattern: {
 				}
 			}
 		}
+
 		certificate: types.#Certificate & {
 			metadata: {
 				name:      parameters.appName
@@ -165,7 +168,8 @@ DesignPattern: {
 				privateKey: rotationPolicy: "Always"
 			}
 		}
-		secret: types.#ExternalSecret & {
+
+		externalSecret: types.#ExternalSecret & {
 			metadata: {
 				name:      parameters.appName
 				namespace: parameters.k8sNamespace
@@ -181,14 +185,14 @@ DesignPattern: {
 					creationPolicy: "Owner"
 				}
 				data: [{
-					secretKey: parameters.dbUserSecretName
+					secretKey: parameters.azureKeyVaultDbUserSecretName
 					remoteRef: {
-						key: parameters.dbUserSecretName
+						key: parameters.azureKeyVaultDbUserSecretName
 					}
 				}, {
-					secretKey: parameters.dbPasswordSecretName
+					secretKey: parameters.azureKeyVaultDbPasswordSecretName
 					remoteRef: {
-						key: parameters.dbPasswordSecretName
+						key: parameters.azureKeyVaultDbPasswordSecretName
 					}
 				}, {
 					secretKey: parameters.redisPasswordSecretName

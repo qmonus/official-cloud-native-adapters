@@ -40,7 +40,7 @@ Azure Container Registry, Microsoft Azure
 | cacheImageName | string | yes | - | ビルドする際のキャッシュの出力先 | ${acr_name}.azurecr.io/<br>sample/nginx:buildcache | no |
 | dockerfile | string | yes | Dockerfile | ビルドするdockerfileのファイル名 | | no |
 | imageRegistryPath | string | no | - | ビルドしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | ${acr_name}.azurecr.io/sample | no |
-| imageShortName | string | yes | - | ビルドするコンテナイメージの省略名| nginx | no |
+| imageShortName | string | yes | - | ビルドするコンテナイメージの省略名。ACRのリポジトリ名を指定する。| nginx | no |
 | imageTag | string | yes | - | コンテナイメージのタグ名| v1.0.0 | no |
 | pathToContext | string | yes | . | ソースディレクトリからの相対パス | | no |
 | extraArgs | string | yes | "" | Buildkitでイメージをビルドする際に追加で設定するオプション | | no |

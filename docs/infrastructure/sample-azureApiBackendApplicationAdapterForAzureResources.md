@@ -35,11 +35,13 @@ Sample: サンプル実装
       * デプロイ時に使用するService Principalのアクセスをキーコンテナのアクセスポリシーで許可してください。
 * 以下のProvider AdapterもQVS Configに指定してください。
   * `qmonus.net/adapter/official/pulumi/provider:azure`
+  * `qmonus.net/adapter/official/pulumi/provider:azureclassic`
   * `qmonus.net/adapter/official/pulumi/provider:mysql`
+  * `qmonus.net/adapter/official/pulumi/provider:random`
 
 ### Constraints
 
-* 作成するMySQLのユーザアカウントのパスワードは固定値となっています。
+* 作成するMySQLのユーザアカウントのパスワードは、それぞれ1文字以上の大小英数字を含む、16文字でランダムで生成されます。
 
 ## Platform
 
@@ -52,6 +54,7 @@ Microsoft Azure
 | appName | string | yes | - | デプロイするアプリケーション名 |
 | azureProvider | string | no | AzureProvider | Pulumi yamlで使用するAzure Provider名 |
 | mysqlProvider | string | no | MysqlProvider | Pulumi yamlで使用するMySQL Provider名 |
+| azureSubscriptionId | string | yes | - | 事前に用意したAzureのリソースが含まれるサブスクリプション名 |
 | azureResourceGroupName | string | yes | - | 事前に用意したAzureのリソースが含まれるリソースグループ名 |
 | azureDnsZoneName | string | yes | - | 事前に用意したDNSゾーン名 |
 | azureDnsARecordName | string | yes | - | 新たに作成するAレコード名 |
@@ -60,17 +63,20 @@ Microsoft Azure
 | mysqlCreateUserName | string | no | dbuser | 新たに作成するMySQLのユーザー名 |
 | mysqlCreateDbName | string | yes | - | 新たに作成するMySQLのデータベース名 |
 | mysqlCreateDbCharacterSet | string | no | utf8mb3 | 新たに作成するMySQLのデータベースに設定するキャラクタセット |
-| azureKeyVaultKeyContainerName| string | yes | - | 事前に用意したキーコンテナ名 |
+| azureKeyVaultKeyContainerName | string | yes | - | 事前に用意したキーコンテナ名 |
+| azureKeyVaultDbAdminSecretName | string | no | dbadminuser | 事前に用意した、MySQLのAdminユーザー名が格納されているシークレット名 |
+| azureKeyVaultDbAdminPasswordSecretName | string | no | dbadminpassword | 事前に用意した、MySQLのAdminパスワードが格納されているシークレット名 |
 | azureKeyVaultDbUserSecretName | string | no | dbuser | MySQLのユーザー名を格納するシークレット名 |
 | azureKeyVaultDbPasswordSecretName  | string | no | dbpassword | MySQLのユーザーパスワードを格納するシークレット名 |
 
 ## Resources
-| Resources Name | Provider | PaaS | Description |
+| Resource ID | Provider | PaaS | Description |
 | --- | --- | --- | --- |
 | aRecord | Azure | Azure DNS | レコードセットに新たにAレコードを追加します。 |
-| database | Azure | Azure Database for MySQL | MySQLサーバーに新たにデータベースを作成します。 |
-| user | Azure | Azure Database for MySQL | MySQLサーバーに新たにユーザーを作成します。 |
-| grant | Azure | Azure Database for MySQL | ユーザーに作成したデータベースへの権限を付与します。 |
+| database | MySQL | Azure Database for MySQL | MySQLサーバーに新たにデータベースを作成します。 |
+| dbRandomPassword | Random | | 新規作成するMySQLユーザーパスワードを16文字の英大数字で生成します。 |
+| user | MySQL | Azure Database for MySQL | MySQLサーバーに新たにユーザーを作成します。 |
+| grant | MySQL | Azure Database for MySQL | ユーザーに作成したデータベースへの権限を付与します。 |
 | dbUserSecret | Azure | Azure Key Valut | 新規作成したMySQLユーザー名を格納したシークレットを作成します。 |
 | dbPasswordSecret | Azure | Azure Key Valut | 新規作成したMySQLユーザーパスワードを格納したシークレットを作成します。 |
 
@@ -79,15 +85,18 @@ Microsoft Azure
 ```yaml
 designPatterns:
   - pattern: qmonus.net/adapter/official/pulumi/provider:azure
+  - pattern: qmonus.net/adapter/official/pulumi/provider:azureclassic
   - pattern: qmonus.net/adapter/official/pulumi/provider:mysql
+  - pattern: qmonus.net/adapter/official/pulumi/provider:random
   - pattern: qmonus.net/adapter/official/azure/sample:azureApiBackendApplicationAdapterForAzureResources
     params:
       appName: $(params.appName)
+      azureSubscriptionName: $(params.azureSubscriptionName)
       azureResourceGroupName: $(params.azureResourceGroupName)
       azureDnsZoneName: $(params.azureDnsZoneName)
       azureDnsARecordName: $(params.azureDnsARecordName)
       azureStaticIpName: $(params.azureStaticIpName)
-      azureARecordTtl: $(params.azureARecordTtl)
+      mysqlCreateUserName:  $(params.mysqlCreateUserName)
       mysqlCreateDbName:  $(params.mysqlCreateDbName)
       azureKeyVaultKeyContainerName: $(params.azureKeyVaultKeyContainerName)
 ```

@@ -3,6 +3,7 @@ package azureApiBackendApplicationAdapterForAzureResources
 import (
 	"qmonus.net/adapter/official/pulumi/base/azure"
 	"qmonus.net/adapter/official/pulumi/base/mysql"
+	"qmonus.net/adapter/official/pulumi/base/random"
 
 	"strconv"
 )
@@ -11,23 +12,23 @@ DesignPattern: {
 	name: "azure:azureApiBackendApplicationAdapterForAzureResources"
 
 	parameters: {
-		appName:                           string
-		azureProvider:                     string | *"\(azure.default.provider)"
-		mysqlProvider:                     string | *"\(mysql.default.provider)"
-		azureLocationName:                 string
-		azureTenantId:                     string
-		azureResourceGroupName:            string
-		azureSubscriptionId:               string
-		azureDnsZoneName:                  string
-		azureDnsARecordName:               string
-		azureStaticIpAddress:              string
-		azureARecordTtl:                   string | *"3600"
-		mysqlCreateUserName:               string | *"dbuser"
-		mysqlCreateDbName:                 string
-		mysqlCreateDbCharacterSet:         string | *"utf8mb3"
-		azureKeyVaultKeyContainerName:     string
-		azureKeyVaultDbUserSecretName:     string | *"dbuser"
-		azureKeyVaultDbPasswordSecretName: string | *"dbpassword"
+		appName:                                string
+		azureProvider:                          string | *"\(azure.default.provider)"
+		mysqlProvider:                          string | *"\(mysql.default.provider)"
+		azureSubscriptionId:                    string
+		azureResourceGroupName:                 string
+		azureDnsZoneName:                       string
+		azureDnsARecordName:                    string
+		azureStaticIpAddress:                   string
+		azureARecordTtl:                        string | *"3600"
+		mysqlCreateUserName:                    string | *"dbuser"
+		mysqlCreateDbName:                      string
+		mysqlCreateDbCharacterSet:              string | *"utf8mb3"
+		azureKeyVaultKeyContainerName:          string
+		azureKeyVaultDbAdminSecretName:         string | *"dbadminuser"
+		azureKeyVaultDbAdminPasswordSecretName: string | *"dbadminpassword"
+		azureKeyVaultDbUserSecretName:          string | *"dbuser"
+		azureKeyVaultDbPasswordSecretName:      string | *"dbpassword"
 	}
 
 	group:   string
@@ -43,6 +44,7 @@ DesignPattern: {
 	let _grant = "\(_prefix)grant/\(_suffix)"
 	let _dbUserSecret = "\(_prefix)dbUserSecret/\(_suffix)"
 	let _dbPasswordSecret = "\(_prefix)dbPasswordSecret/\(_suffix)"
+	let _dbRandomPassword = "\(_prefix)dbRandomPassword/\(_suffix)"
 
 	resources: app: {
 		"\(_aRecord)": azure.#Resource & {
@@ -53,11 +55,39 @@ DesignPattern: {
 				resourceGroupName:     parameters.azureResourceGroupName
 				zoneName:              parameters.azureDnsZoneName
 				relativeRecordSetName: parameters.azureDnsARecordName
-				aRecords:
-				[{ipv4Address: parameters.azureStaticIpAddress}]
+				aRecords: [{ipv4Address: parameters.azureStaticIpAddress}]
 				ttl: strconv.Atoi(parameters.azureARecordTtl)
 				metadata:
 					"managed-by": "Qmonus Value Stream"
+			}
+		}
+
+		"\(parameters.mysqlProvider)": mysql.#Resource & {
+			properties: {
+				username: {
+					"fn::secret": {
+						"fn::invoke": {
+							function: "azure:keyvault:getSecret"
+							arguments: {
+								name:       parameters.azureKeyVaultDbAdminSecretName
+								keyVaultId: "/subscriptions/\(parameters.azureSubscriptionId)/resourceGroups/\(parameters.azureResourceGroupName)/providers/Microsoft.KeyVault/vaults/\(parameters.azureKeyVaultKeyContainerName)"
+							}
+							return: "value"
+						}
+					}
+				}
+				password: {
+					"fn::secret": {
+						"fn::invoke": {
+							function: "azure:keyvault:getSecret"
+							arguments: {
+								name:       parameters.azureKeyVaultDbAdminPasswordSecretName
+								keyVaultId: "/subscriptions/\(parameters.azureSubscriptionId)/resourceGroups/\(parameters.azureResourceGroupName)/providers/Microsoft.KeyVault/vaults/\(parameters.azureKeyVaultKeyContainerName)"
+							}
+							return: "value"
+						}
+					}
+				}
 			}
 		}
 
@@ -74,10 +104,9 @@ DesignPattern: {
 			options: provider: "${\(parameters.mysqlProvider)}"
 			type: "mysql:User"
 			properties: {
-				user: parameters.mysqlCreateUserName
-				host: "%"
-				// use hard code password
-				plaintextPassword: "dbuser"
+				user:              parameters.mysqlCreateUserName
+				host:              "%"
+				plaintextPassword: "${\(_dbRandomPassword).result}"
 			}
 		}
 
@@ -119,12 +148,23 @@ DesignPattern: {
 			type: "azure-native:keyvault:Secret"
 			properties: {
 				properties: {
-					value: "dbuser"
+					value: "${\(_dbRandomPassword).result}"
 				}
 				resourceGroupName: parameters.azureResourceGroupName
 				vaultName:         parameters.azureKeyVaultKeyContainerName
 				secretName:        parameters.azureKeyVaultDbPasswordSecretName
 				tags: "managed-by": "Qmonus Value Stream"
+			}
+		}
+
+		"\(_dbRandomPassword)": random.#Resource & {
+			type: "random:RandomPassword"
+			properties: {
+				length:     16
+				minLower:   1
+				minUpper:   1
+				minNumeric: 1
+				special:    false
 			}
 		}
 	}
