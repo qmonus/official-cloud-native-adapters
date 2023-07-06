@@ -67,7 +67,7 @@ Artifact Registry, Google Cloud
 | --- | --- | --- | --- |
 | git-checkout | build | - | 指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはGit Tokenを使用します。AdapterOptionsのuseSshKeyがFalseかつrepositoryKindがbitbucket以外の場合に作成されます。|
 | git-checkout-ssh | build | - | repositoryKindが指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはSSH Keyを使用します。AdapterOptionsのuseSshKeyがTrueまたはrepositoryKindがbitbucketの場合に作成されます。|
-| docker-login-gcp| build | git-checkout or git-checkout-ssh | 指定したコンテナレジストリへの認証を行います。|
+| docker-login-gcp| build | git-checkout or git-checkout-ssh | 指定したArtifact Registryへの認証を行います。|
 | buildkit | build | docker-login-gcp | Dockerfileからイメージをビルドし、コンテナレジストリへプッシュします。|
 
 ## Usage

@@ -13,6 +13,9 @@ Sample: サンプル実装
 
 ### Constraints
 * qvsConfigPathで指定しているQVS Configにデプロイ対象となるInfrastructure Adapterが指定されている必要があります。
+* Pulumi Stack上で機密情報を暗号化するためのパスフレーズをValue StreamのCredentialから設定する必要があります。
+  * シークレット名は任意です。作成したシークレット名を、`pulumiCredentialName`としてPipelineParamsから指定します。[Usage](#usage)を参考にしてください。
+  * キー名は、`passphrase`としてください。
  
 ## Platform
 General / Platform Free
@@ -22,6 +25,7 @@ General / Platform Free
 ### Adapter Options
 | Parameter Name | Type | Required | Default | Description | Example |
 | --- | --- | --- | --- | --- | --- |
+| pulumiCredentialName | string | yes | | 機密情報を暗号化するためのパスフレーズを格納したCredential名を指定してください。| 
 | repositoryKind | string | no | "" | ソースコードの管理に使用しているGitリポジトリの種類を指定してください。サポートしているのは、github, gitlab, bitbucket, backlog で、何も指定されない場合はgithub用の設定になります。 | gitlab |
 | useDebug | bool | no | false | trueを指定すると、AssemblyLine実行時にQmonus Value Streamが適用するApplication Manifestの内容を出力します。 | true |
 | deployPhase | string | no | "" | Qmonus Value Streamにおけるコンパイル・デプロイ単位を示すフェーズを指定します。選択できる値は app, "" のいずれかです。 | app |
@@ -83,6 +87,7 @@ General / Platform Free
 designPatterns:
   - pattern: qmonus.net/adapter/official/pipeline/deploy:simpleDeployByPulumiYaml
     pipelineParams:
+      pulumiCredentialName: "pulumi-credential"
       repositoryKind: gitlab
       resourcePriority: high
       useCred:

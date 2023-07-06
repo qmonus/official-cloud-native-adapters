@@ -19,6 +19,7 @@ DBとRedisに接続してHTTPSで外部公開できるKubernetesアプリケー�
 
 * Module: `qmonus.net/adapter/official`
 * Import path `qmonus.net/adapter/official/kubernetes/sample:azureApiBackendApplicationAdapterForKubernetesResources`
+* Import path(PulumiYaml形式の場合) `qmonus.net/adapter/official/pulumi/azure/sample:azureApiBackendApplicationAdapterForKubernetesResources`
 
 ## Level
 
@@ -64,21 +65,22 @@ Kubernetes, Microsoft Azure
 | port | string | yes | - | 	アプリケーションが利用するポート番号 |
 | replicas | string | no | "1" | 	作成するPodのレプリカ数 |
 | imageName | string | yes | - | デプロイするDocker Image |
-| dbHostEnvironmentVariableName | string | yes | DB_HOST | Azure Database for MySQLのホスト名としてアプリケーションPodに渡される環境変数名 |
+| dbHostEnvironmentVariableName | string | no | DB_HOST | Azure Database for MySQLのホスト名としてアプリケーションPodに渡される環境変数名 |
 | dbHost | string | yes | - | Azure Database for MySQLのホスト名 |
 | dbUserEnvironmentVariableName | string | no | DB_USER | Azure Database for MySQLに接続するユーザ名としてアプリケーションPodに渡される環境変数名 |
-| dbUserSecretName | string | no | dbuser | Azure Database for MySQLに接続するアカウントのユーザ名が格納されているシークレット名 |
+| azureKeyVaultDbUserSecretName | string | no | dbuser | Azure Database for MySQLに接続するアカウントのユーザ名が格納されているシークレット名 |
 | dbPasswordEnvironmentVariableName | string | no | DB_PASSWORD | Azure Database for MySQLに接続するユーザのパスワードとしてアプリケーションPodに渡される環境変数名 |
-| dbPasswordSecretName | string | no | dbpassword | Azure Database for MySQLに接続するユーザのパスワードが格納されているシークレット名 |
-| redisHostEnvironmentVariableName | string | yes | REDIS_HOST | Azure Cache for Redisのホスト名としてアプリケーションPodに渡される環境変数名 |
+| azureKeyVaultDbPasswordSecretName | string | no | dbpassword | Azure Database for MySQLに接続するユーザのパスワードが格納されているシークレット名 |
+| redisHostEnvironmentVariableName | string | no | REDIS_HOST | Azure Cache for Redisのホスト名としてアプリケーションPodに渡される環境変数名 |
 | redisHost | string | yes | - | Azure Cache for Redisのホスト名 |
-| redisPortEnvironmentVariableName | string | yes | REDIS_PORT | Azure Cache for Redisのポート番号としてアプリケーションPodに渡される環境変数名 |
+| redisPortEnvironmentVariableName | string | no | REDIS_PORT | Azure Cache for Redisのポート番号としてアプリケーションPodに渡される環境変数名 |
 | redisPort | string | no | "6379" | Azure Cache for Redisのポート番号 |
 | redisPasswordSecretName | string | yes | - | Azure Cache for Redisの接続に使用するパスワードが格納されているシークレット名 |
-| hostEnvironmentVariableName | string | yes | HOST | 公開するアプリケーションのホスト名としてアプリケーションPodに渡される環境変数名 |
+| hostEnvironmentVariableName | string | no | HOST | 公開するアプリケーションのホスト名としてアプリケーションPodに渡される環境変数名 |
 | host | string | yes | - | 公開するアプリケーションのホスト名 |
 | clusterIssuerName | string | yes | - | 使用するClusterIssuerリソース名 |
 | secretStoreName | string | no | azure-key-vault | 使用するClusterSecretStoreリソース名 |
+| k8sProvider | string | no | k8sProvider | Pulumi yamlで使用するKubernetes Provider名(PulumiYaml形式の場合のみ指定可能) |
 
 ## Resources
 | Resource ID | Provider | API version | Kind | Description |
@@ -100,8 +102,8 @@ designPatterns:
       port: $(params.port)
       imageName: $(params.imageName)
       dbHost: $(params.dbHost)
-      dbUserSecretName: $(params.dbUserSecretName)
-      dbPasswordSecretName: $(params.dbPasswordSecretName)
+      azureKeyVaultDbUserSecretName: $(params.azureKeyVaultDbUserSecretName)
+      azureKeyVaultDbPasswordSecretName: $(params.azureKeyVaultDbPasswordSecretName)
       redisHost: $(params.redisHost)
       redisPort: $(params.redisPort)
       redisPasswordSecretName: $(params.redisPasswordSecretName)
@@ -113,3 +115,5 @@ designPatterns:
 ## Code
 
 [azureApiBackendApplicationAdapterForKubernetesResources](../../kubernetes/sample/azureApiBackendApplicationAdapterForKubernetesResources.cue)
+
+[azureApiBackendApplicationAdapterForKubernetesResources](../../pulumi/azure/sample/azureApiBackendApplicationAdapterForKubernetesResources.cue)(PulumiYaml形式の場合)

@@ -110,7 +110,7 @@ import (
 		workingDir: "/opt"
 	}, {
 		name:    "deploy"
-		image:   "pulumi/pulumi-base"
+		image:   "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/pulumi-patched:\(base.config.pulumiPatchedImageTag)"
 		onError: "continue"
 		script:  """
 		#!/usr/bin/env bash
@@ -287,7 +287,7 @@ import (
 				name: "aws-secret"
 				secret: {
 					items: [{
-						key:  "profile"
+						key:  "credentials"
 						path: "credentials"
 					}]
 					secretName: "$(params.awsCredentialName)"

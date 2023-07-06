@@ -10,7 +10,6 @@ DesignPattern: {
 	parameters: {
 		providerName: string | *"\(mysql.default.provider)"
 		endpoint:     string | *"localhost"
-		username:     string | *"adminuser"
 	}
 
 	resources: app: {
@@ -20,9 +19,7 @@ DesignPattern: {
 			type: "pulumi:providers:mysql"
 			properties: {
 				endpoint: parameters.endpoint
-				username: parameters.username
-				// use hard code password
-				password: "P@ssw0rd"
+				// The `username` and `password` must be defined in another Adapter.
 			}
 		}
 	}
