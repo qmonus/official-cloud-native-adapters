@@ -115,6 +115,9 @@ import (
 			}, {
 				name:  "GIT_SSH_KEY_PATH"
 				value: "/root/.ssh/id_git"
+			}, {
+				name:  "QVSCTL_SKIP_UPDATE_CHECK"
+				value: "true"
 			}]
 
 			volumeMounts: [{
@@ -170,6 +173,9 @@ import (
 			}, {
 				name:  "GIT_SSH_KEY_PATH"
 				value: "/root/.ssh/id_git"
+			}, {
+				name:  "QVSCTL_SKIP_UPDATE_CHECK"
+				value: "true"
 			}]
 
 			volumeMounts: [{

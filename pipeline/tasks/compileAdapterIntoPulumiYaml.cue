@@ -120,6 +120,9 @@ import (
 		}, {
 			name:  "TMPDIR"
 			value: "/tmpdir"
+		}, {
+			name:  "QVSCTL_SKIP_UPDATE_CHECK"
+			value: "true"
 		}]
 
 		volumeMounts: [{
