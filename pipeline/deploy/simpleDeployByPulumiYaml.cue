@@ -17,7 +17,7 @@ DesignPattern: {
 		deployPhase:          "app" | *""
 		resourcePriority:     "high" | *"medium"
 		useSshKey:            bool | *false
-		pulumiCredentialName: string
+		pulumiCredentialName: string | *"qmonus-pulumi-secret"
 		useCred: {
 			kubernetes: bool | *false
 			gcp:        bool | *false

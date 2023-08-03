@@ -8,8 +8,8 @@ HTTPSで外部公開できるアプリケーションをデプロイするため
   * レコードセット (Aレコード)
 * Azure Database for MySQL
   * データベース
-  * 作成したデータベースへのGLANT ALL権限をもつユーザーアカウント
-* Azure Key Valut
+  * 作成したデータベースへのGRANT ALL権限をもつユーザーアカウント
+* Azure Key Vault
   * MySQLのユーザー名、パスワードを格納したシークレット
 
 ## Module
@@ -77,8 +77,8 @@ Microsoft Azure
 | dbRandomPassword | Random | | 新規作成するMySQLユーザーパスワードを16文字の英大数字で生成します。 |
 | user | MySQL | Azure Database for MySQL | MySQLサーバーに新たにユーザーを作成します。 |
 | grant | MySQL | Azure Database for MySQL | ユーザーに作成したデータベースへの権限を付与します。 |
-| dbUserSecret | Azure | Azure Key Valut | 新規作成したMySQLユーザー名を格納したシークレットを作成します。 |
-| dbPasswordSecret | Azure | Azure Key Valut | 新規作成したMySQLユーザーパスワードを格納したシークレットを作成します。 |
+| dbUserSecret | Azure | Azure Key Vault | 新規作成したMySQLユーザー名を格納したシークレットを作成します。 |
+| dbPasswordSecret | Azure | Azure Key Vault | 新規作成したMySQLユーザーパスワードを格納したシークレットを作成します。 |
 
 ## Usage
 

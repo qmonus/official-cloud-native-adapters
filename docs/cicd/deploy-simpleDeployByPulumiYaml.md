@@ -13,10 +13,7 @@ Sample: サンプル実装
 
 ### Constraints
 * qvsConfigPathで指定しているQVS Configにデプロイ対象となるInfrastructure Adapterが指定されている必要があります。
-* Pulumi Stack上で機密情報を暗号化するためのパスフレーズをValue StreamのCredentialから設定する必要があります。
-  * シークレット名は任意です。作成したシークレット名を、`pulumiCredentialName`としてPipelineParamsから指定します。[Usage](#usage)を参考にしてください。
-  * キー名は、`passphrase`としてください。
- 
+
 ## Platform
 General / Platform Free
 
@@ -25,7 +22,6 @@ General / Platform Free
 ### Adapter Options
 | Parameter Name | Type | Required | Default | Description | Example |
 | --- | --- | --- | --- | --- | --- |
-| pulumiCredentialName | string | yes | | 機密情報を暗号化するためのパスフレーズを格納したCredential名を指定してください。| 
 | repositoryKind | string | no | "" | ソースコードの管理に使用しているGitリポジトリの種類を指定してください。サポートしているのは、github, gitlab, bitbucket, backlog で、何も指定されない場合はgithub用の設定になります。 | gitlab |
 | useDebug | bool | no | false | trueを指定すると、AssemblyLine実行時にQmonus Value Streamが適用するApplication Manifestの内容を出力します。 | true |
 | deployPhase | string | no | "" | Qmonus Value Streamにおけるコンパイル・デプロイ単位を示すフェーズを指定します。選択できる値は app, "" のいずれかです。 | app |
@@ -38,7 +34,14 @@ General / Platform Free
 | useCred.aws | bool | no | false | trueを指定するとAWSにリソースをデプロイする際に、Value Streamで設定されたCredentialを参照できるようになります。 | true |
 | useCred.azure | bool | no | false | trueを指定するとAzureにリソースをデプロイする際に、Value Streamで設定されたCredentialを参照できるようになります。 | true |
 | useBastionSshCred | bool | no | false | trueを指定すると、Value Streamで設定されたCredentialを参照し、外部公開されている踏み台サーバへポートフォワードを行い、踏み台サーバ経由でリソースをデプロイすることができます。 | true |
+| pulumiCredentialName | string | no | qmonus-pulumi-secret | Pulumi Stack上の機密情報を暗号化するためのパスフレーズを格納したCredential名を指定してください。| custom-pulumi-credential |
 
+
+**補足事項**
+* `pulumiCredentialName`をデフォルトの値以外で使用する場合には、以下を参考にしてValue StreamのCredentialにて設定してください。
+  * シークレット名は任意です。作成したシークレット名を、`pulumiCredentialName`としてPipelineParamsから指定します。[Usage](#usage)を参考にしてください。
+  * キー名は、`passphrase`としてください。
+ 
 ### Parameters
 | Parameter Name | Type | Required | Default | Description | Example | Auto Binding |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -55,13 +58,13 @@ General / Platform Free
 | kubeconfigSecretName | string | no | - | QVSにおけるDeploymentの作成時に指定したkubeconfigを保管しているSecret名 | | yes |
 | gcpServiceAccountSecretName | string | no | - | QVSにおけるDeploymentの作成時に指定したGCPサービスアカウントのjsonキーを保管しているSecret名 | | yes |
 | awsCredentialName | string | no | - | QVSにおけるCredentialの作成時に指定したAWSのProfileを保管しているSecret名 | | no |
-| azureClientId | string | no | - | AzureのClientID | | no |
-| azureTenantId | string | no | - | AzureのTenantID | | no |
-| azureSubscriptionId | string | no | - | AzureのSubscriptionID | | no |
-| azureClientSecretName | string | no | - | QVSにおけるCredentialの作成時に指定したAzureのClientSecretを保管しているSecret名 | | no |
+| azureApplicationId | string | no | - | AzureのApplicationID | | yes |
+| azureTenantId | string | no | - | AzureのTenantID | | yes |
+| azureSubscriptionId | string | no | - | AzureのSubscriptionID | | yes |
+| azureClientSecretName | string | no | - | AzureのClientSecretを保管しているSecret名 | | yes |
 | bastionSshHost | string | no | - | 踏み台サーバのホスト名またはIPアドレス | | no |
 | bastionSshUserName | string | no | - | 踏み台サーバへ接続するためのユーザ名 | | no |
-| bastionSshKeySecretName | string | no | - |  QVSにおけるCredentialの作成時に指定した踏み台サーバの秘密鍵のシークレット名 | | no |
+| bastionSshKeySecretName | string | no | - |  踏み台サーバの秘密鍵のシークレット名 | | yes |
 | sshPortForwardingDestinationHost | string | no | - | 踏み台サーバ経由でアクセスするリソースのホスト名 | | no |
 | sshPortForwardingDestinationPort | string | no | - | 踏み台サーバ経由でアクセスするリソースへの接続ポート | | no |
 
@@ -87,7 +90,6 @@ General / Platform Free
 designPatterns:
   - pattern: qmonus.net/adapter/official/pipeline/deploy:simpleDeployByPulumiYaml
     pipelineParams:
-      pulumiCredentialName: "pulumi-credential"
       repositoryKind: gitlab
       resourcePriority: high
       useCred:

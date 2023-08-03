@@ -24,8 +24,11 @@ import (
 		gitCheckoutSubDirectory: {
 			desc: "Path in the source directory to clone Git repository"
 		}
-		azServicePrincipalSecretName: {
-			desc: ""
+		azureApplicationId: {
+			desc: "Azure Application ID"
+		}
+		azureClientSecretName: {
+			desc: "Credential Name of Azure Client Secret"
 		}
 	}
 
@@ -41,21 +44,16 @@ import (
 			"-c",
 		]
 		args: [
-			"docker --config=$(workspaces.shared.path)/$(params.gitCheckoutSubDirectory)/dockerconfig login $(params.containerRegistry) --username $(APP_ID) --password '$(PASSWORD)'",
+			"docker --config=$(workspaces.shared.path)/$(params.gitCheckoutSubDirectory)/dockerconfig login $(params.containerRegistry) --username $(ARM_CLIENT_ID) --password '$(ARM_CLIENT_SECRET)'",
 		]
 		env: [{
-			name: "APP_ID"
-			valueFrom: {
-				secretKeyRef: {
-					name: "$(params.azServicePrincipalSecretName)"
-					key:  "appId"
-				}
-			}
+			name:  "ARM_CLIENT_ID"
+			value: "$(params.azureApplicationId)"
 		}, {
-			name: "PASSWORD"
+			name: "ARM_CLIENT_SECRET"
 			valueFrom: {
 				secretKeyRef: {
-					name: "$(params.azServicePrincipalSecretName)"
+					name: "$(params.azureClientSecretName)"
 					key:  "password"
 				}
 			}
