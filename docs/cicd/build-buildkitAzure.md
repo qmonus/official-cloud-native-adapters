@@ -36,7 +36,8 @@ Azure Container Registry, Microsoft Azure
 | gitTokenSecretName | string | yes | - | Gitのアクセストークンを保管しているk8s Secret名 | | yes |
 | gitSshKeySecretName | string | yes | - | GitのSSH Keyを保管しているk8s Secret名 | | yes |
 | containerRegistry | string | yes | "" | コンテナレジストリのエンドポイント | ${acr_name}.azurecr.io | no |
-| azServicePrincipalSecretName | string | yes | "" | Azure Active Directory のサービスプリンシパルを保管しているk8s Secret名 | | no |
+| azureApplicationId | string | yes | - | AzureのApplicationID | | yes |
+| azureClientSecretName | string | yes | - | AzureのClientSecretを保管しているSecret名 | | yes |
 | cacheImageName | string | yes | - | ビルドする際のキャッシュの出力先 | ${acr_name}.azurecr.io/<br>sample/nginx:buildcache | no |
 | dockerfile | string | yes | Dockerfile | ビルドするdockerfileのファイル名 | | no |
 | imageRegistryPath | string | no | - | ビルドしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | ${acr_name}.azurecr.io/sample | no |

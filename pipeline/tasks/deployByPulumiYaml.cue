@@ -8,7 +8,7 @@ import (
 
 #BuildInput: {
 	phase:                "app" | *""
-	pulumiCredentialName: string
+	pulumiCredentialName: string | *"qmonus-pulumi-secret"
 	useCred: {
 		kubernetes: bool | *false
 		gcp:        bool | *false
@@ -56,7 +56,7 @@ import (
 			awsCredentialName: desc: "The secret name of AWS credential"
 		}
 		if _input.useCred.azure {
-			azureClientId: desc:         "Azure Client ID"
+			azureApplicationId: desc:    "Azure Application ID"
 			azureTenantId: desc:         "Azure Tenant ID"
 			azureSubscriptionId: desc:   "Azure Subscription ID"
 			azureClientSecretName: desc: "Credential Name of Azure Client Secret"
@@ -148,7 +148,7 @@ import (
 				[
 					{
 						name:  "ARM_CLIENT_ID"
-						value: "$(params.azureClientId)"
+						value: "$(params.azureApplicationId)"
 					},
 					{
 						name:  "ARM_TENANT_ID"
@@ -162,7 +162,7 @@ import (
 						name: "ARM_CLIENT_SECRET"
 						valueFrom: secretKeyRef: {
 							name: "$(params.azureClientSecretName)"
-							key:  "secret"
+							key:  "password"
 						}
 					},
 				]

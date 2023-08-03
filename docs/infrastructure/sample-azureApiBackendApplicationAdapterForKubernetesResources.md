@@ -60,10 +60,10 @@ Kubernetes, Microsoft Azure
 
 | Parameter Name | Type | Required | Default | Description |
 | --- | --- | --- | --- | --- |
-| appName | string | yes | - | デプロイするアプリケーション名 
+| appName | string | yes | - | デプロイするアプリケーション名 |
 | k8sNamespace | string | yes | - | アプリケーションをデプロイする対象のNamespace |
-| port | string | yes | - | 	アプリケーションが利用するポート番号 |
-| replicas | string | no | "1" | 	作成するPodのレプリカ数 |
+| port | string | yes | - | アプリケーションが利用するポート番号 |
+| replicas | string | no | "1" | 作成するPodのレプリカ数 |
 | imageName | string | yes | - | デプロイするDocker Image |
 | dbHostEnvironmentVariableName | string | no | DB_HOST | Azure Database for MySQLのホスト名としてアプリケーションPodに渡される環境変数名 |
 | dbHost | string | yes | - | Azure Database for MySQLのホスト名 |
