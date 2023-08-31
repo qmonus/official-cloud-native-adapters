@@ -4,12 +4,17 @@
 
 package v1
 
-import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+)
 
 // Order is a type to represent an Order with an ACME server
 // +k8s:openapi-gen=true
 #Order: {
-	spec: #OrderSpec @go(Spec)
+	metav1.#TypeMeta
+	metadata: metav1.#ObjectMeta @go(ObjectMeta)
+	spec:     #OrderSpec         @go(Spec)
 
 	// +optional
 	status: #OrderStatus @go(Status)
@@ -17,6 +22,8 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 
 // OrderList is a list of Orders
 #OrderList: {
+	metav1.#TypeMeta
+	metadata: metav1.#ListMeta @go(ListMeta)
 	items: [...#Order] @go(Items,[]Order)
 }
 
@@ -50,6 +57,11 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	// This field must match the corresponding field on the DER encoded CSR.
 	// +optional
 	ipAddresses?: [...string] @go(IPAddresses,[]string)
+
+	// Duration is the duration for the not after date for the requested certificate.
+	// this is set on order creation as pe the ACME spec.
+	// +optional
+	duration?: null | metav1.#Duration @go(Duration,*metav1.Duration)
 }
 
 #OrderStatus: {
@@ -87,6 +99,11 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	// the current state.
 	// +optional
 	reason?: string @go(Reason)
+
+	// FailureTime stores the time that this order failed.
+	// This is used to influence garbage collection and back-off.
+	// +optional
+	failureTime?: null | metav1.#Time @go(FailureTime,*metav1.Time)
 }
 
 // ACMEAuthorization contains data returned from the ACME server on an

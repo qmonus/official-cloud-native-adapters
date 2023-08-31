@@ -4,7 +4,10 @@
 
 package v1
 
-import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+import (
+	cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
+)
 
 // ACMEIssuer contains the specification for an ACME issuer.
 // This uses the RFC8555 specification to obtain certificates by completing
@@ -213,6 +216,11 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 }
 
 #ACMEChallengeSolverHTTP01Ingress: {
+	// Optional service type for Kubernetes solver service. Supported values
+	// are NodePort or ClusterIP. If unset, defaults to NodePort.
+	// +optional
+	serviceType?: corev1.#ServiceType @go(ServiceType)
+
 	// This field configures the field `ingressClassName` on the created Ingress
 	// resources used to solve ACME challenges that use this challenge solver.
 	// This is the recommended way of configuring the ingress class. Only one of
@@ -250,6 +258,11 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 // The ACMEChallengeSolverHTTP01GatewayHTTPRoute solver will create HTTPRoute objects for a Gateway class
 // routing to an ACME challenge solver pod.
 #ACMEChallengeSolverHTTP01GatewayHTTPRoute: {
+	// Optional service type for Kubernetes solver service. Supported values
+	// are NodePort or ClusterIP. If unset, defaults to NodePort.
+	// +optional
+	serviceType?: corev1.#ServiceType @go(ServiceType)
+
 	// Custom labels that will be applied to HTTPRoutes created by cert-manager
 	// while solving HTTP-01 challenges.
 	// +optional
@@ -288,6 +301,14 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	// +optional
 	nodeSelector?: {[string]: string} @go(NodeSelector,map[string]string)
 
+	// If specified, the pod's scheduling constraints
+	// +optional
+	affinity?: null | corev1.#Affinity @go(Affinity,*corev1.Affinity)
+
+	// If specified, the pod's tolerations.
+	// +optional
+	tolerations?: [...corev1.#Toleration] @go(Tolerations,[]corev1.Toleration)
+
 	// If specified, the pod's priorityClassName.
 	// +optional
 	priorityClassName?: string @go(PriorityClassName)
@@ -295,6 +316,10 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	// If specified, the pod's service account
 	// +optional
 	serviceAccountName?: string @go(ServiceAccountName)
+
+	// If specified, the pod's imagePullSecrets
+	// +optional
+	imagePullSecrets?: [...corev1.#LocalObjectReference] @go(ImagePullSecrets,[]corev1.LocalObjectReference)
 }
 
 #ACMEChallengeSolverHTTP01IngressTemplate: {

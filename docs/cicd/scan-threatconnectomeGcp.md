@@ -18,6 +18,15 @@ Qmonus Value Streamへ認証情報を登録するサービスアカウントの�
 * Container Registry: `roles/storage.objectViewer`
 * Artifact Registry: `roles/artifactregistry.reader`
 
+以下の手順でQmonus Value StreamのCredentialの作成が必要です。
+
+1. ThreatconnectomeのRefreshTokenを取得
+2. Qmonus Value Stream上で以下のCredentialを作成
+    * Name: (任意の名前)
+    * Description: (任意の文章または空白)
+    * Key: refresh_token
+    * Value: 1. で取得したRefreshTokenを設定
+
 ## Platform
 Container Registry/Artifact Registry, Google Cloud, Threatconnectome
 ## Parameters
@@ -25,7 +34,7 @@ Container Registry/Artifact Registry, Google Cloud, Threatconnectome
 ### Adapter Options
 | Parameter Name  | Type | Required | Default | Description | Example |
 | --- | --- | --- | --- | --- | --- |
-| group | string | no | "$(params.imageShortName)" | ThreatconnectomeにアップロードしたSBOM情報に紐づける名前(リポジトリ名やプロダクト名)となります。[Threatconnectome API](https://api.threatconnectome.metemcyber.ntt.com/api/docs#/pteams/append_pteam_tags_pteams__pteam_id__append_tags_post) | myProduct |
+| groupName | string | no | "$(params.imageShortName)" | ThreatconnectomeにアップロードしたSBOM情報に紐づける名前(リポジトリ名やプロダクト名)となります。[Threatconnectome API](https://api.threatconnectome.metemcyber.ntt.com/api/docs#/pteams/append_pteam_tags_pteams__pteam_id__append_tags_post) | myProduct |
 
 
 ### Parameters

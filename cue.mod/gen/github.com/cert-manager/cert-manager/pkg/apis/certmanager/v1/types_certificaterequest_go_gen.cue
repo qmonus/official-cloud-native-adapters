@@ -4,7 +4,10 @@
 
 package v1
 
-import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+)
 
 // Pending indicates that a CertificateRequest is still in progress.
 #CertificateRequestReasonPending: "Pending"
@@ -33,6 +36,9 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 // point in time request for a certificate and cannot be re-used.
 // +k8s:openapi-gen=true
 #CertificateRequest: {
+	metav1.#TypeMeta
+	metadata?: metav1.#ObjectMeta @go(ObjectMeta)
+
 	// Desired state of the CertificateRequest resource.
 	spec: #CertificateRequestSpec @go(Spec)
 
@@ -43,11 +49,18 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 
 // CertificateRequestList is a list of Certificates
 #CertificateRequestList: {
+	metav1.#TypeMeta
+	metadata: metav1.#ListMeta @go(ListMeta)
 	items: [...#CertificateRequest] @go(Items,[]CertificateRequest)
 }
 
 // CertificateRequestSpec defines the desired state of CertificateRequest
 #CertificateRequestSpec: {
+	// The requested 'duration' (i.e. lifetime) of the Certificate.
+	// This option may be ignored/overridden by some issuer types.
+	// +optional
+	duration?: null | metav1.#Duration @go(Duration,*metav1.Duration)
+
 	// IssuerRef is a reference to the issuer for this CertificateRequest.  If
 	// the `kind` field is not set, or set to `Issuer`, an Issuer resource with
 	// the given name in the same namespace as the CertificateRequest will be
@@ -119,6 +132,11 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	// If not set, the CA is assumed to be unknown/not available.
 	// +optional
 	ca?: bytes @go(CA,[]byte)
+
+	// FailureTime stores the time that this CertificateRequest failed. This is
+	// used to influence garbage collection and back-off.
+	// +optional
+	failureTime?: null | metav1.#Time @go(FailureTime,*metav1.Time)
 }
 
 // CertificateRequestCondition contains condition information for a CertificateRequest.
@@ -129,6 +147,11 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 
 	// Status of the condition, one of (`True`, `False`, `Unknown`).
 	status: cmmeta.#ConditionStatus @go(Status)
+
+	// LastTransitionTime is the timestamp corresponding to the last status
+	// change of this condition.
+	// +optional
+	lastTransitionTime?: null | metav1.#Time @go(LastTransitionTime,*metav1.Time)
 
 	// Reason is a brief machine readable explanation for the condition's last
 	// transition.

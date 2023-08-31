@@ -49,25 +49,26 @@ Microsoft Azure
 
 ## Parameters
 
-| Parameter Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| appName | string | yes | - | デプロイするアプリケーション名 |
-| azureProvider | string | no | AzureProvider | Pulumi yamlで使用するAzure Provider名 |
-| mysqlProvider | string | no | MysqlProvider | Pulumi yamlで使用するMySQL Provider名 |
-| azureSubscriptionId | string | yes | - | 事前に用意したAzureのリソースが含まれるサブスクリプション名 |
-| azureResourceGroupName | string | yes | - | 事前に用意したAzureのリソースが含まれるリソースグループ名 |
-| azureDnsZoneName | string | yes | - | 事前に用意したDNSゾーン名 |
-| azureDnsARecordName | string | yes | - | 新たに作成するAレコード名 |
-| azureStaticIpAddress | string | yes | - | 新たに作成するAレコードで指定するIPアドレス |
-| azureARecordTtl | string | no | "3600" |  新たに作成するAレコードに設定するTTLの値 |
-| mysqlCreateUserName | string | no | dbuser | 新たに作成するMySQLのユーザー名 |
-| mysqlCreateDbName | string | yes | - | 新たに作成するMySQLのデータベース名 |
-| mysqlCreateDbCharacterSet | string | no | utf8mb3 | 新たに作成するMySQLのデータベースに設定するキャラクタセット |
-| azureKeyVaultKeyContainerName | string | yes | - | 事前に用意したキーコンテナ名 |
-| azureKeyVaultDbAdminSecretName | string | no | dbadminuser | 事前に用意した、MySQLのAdminユーザー名が格納されているシークレット名 |
-| azureKeyVaultDbAdminPasswordSecretName | string | no | dbadminpassword | 事前に用意した、MySQLのAdminパスワードが格納されているシークレット名 |
-| azureKeyVaultDbUserSecretName | string | no | dbuser | MySQLのユーザー名を格納するシークレット名 |
-| azureKeyVaultDbPasswordSecretName  | string | no | dbpassword | MySQLのユーザーパスワードを格納するシークレット名 |
+| Parameter Name | Type | Required | Default | Description | Example | Auto Binding |
+| --- | --- | --- | --- | --- | --- | --- |
+| appName | string | yes | - | デプロイするアプリケーション名 | myapp | yes |
+| azureProvider | string | no | AzureProvider | Pulumi yamlで使用するAzure Provider名 | AzureProvider | no |
+| mysqlProvider | string | no | MysqlProvider | Pulumi yamlで使用するMySQL Provider名 | MysqlProvider | no |
+| azureSubscriptionId | string | yes | - | 事前に用意したAzureのリソースが含まれるサブスクリプション名 | xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx | yes |
+| azureResourceGroupName | string | yes | - | 事前に用意したAzureのリソースが含まれるリソースグループ名 | myapp-resourcegroup | yes |
+| azureDnsZoneName | string | yes | - | 事前に用意したDNSゾーン名 | example.com | no |
+| azureDnsARecordName | string | yes | - | 新たに作成するAレコード名 | www.myapp | no |
+| azureStaticIpAddress | string | yes | - | 新たに作成するAレコードで指定するIPアドレス | "192.0.2.1" | no |
+| azureARecordTtl | string | no | "3600" | 新たに作成するAレコードに設定するTTLの値 | ”3600” | no |
+| mysqlCreateUserName | string | no | dbuser | 新たに作成するMySQLのユーザー名 | dbuser | no |
+| mysqlCreateDbName | string | yes | - | 新たに作成するMySQLのデータベース名 | myapp-db | no |
+| mysqlCreateDbCharacterSet | string | no | utf8mb3 | 新たに作成するMySQLのデータベースに設定するキャラクタセット | utf8mb3 | no |
+| mysqlEndpoint | string | no | - | 接続するMySQLのエンドポイント(hostname / Unix domain socket) | myapp.mysql.database.azure.com | no |
+| azureKeyVaultKeyContainerName | string | yes | - | 事前に用意したキーコンテナ名 | myapp-key-container | no |
+| azureKeyVaultDbAdminSecretName | string | no | dbadminuser | 事前に用意した、MySQLのAdminユーザー名が格納されているシークレット名 | dbadminuser | no |
+| azureKeyVaultDbAdminPasswordSecretName | string | no | dbadminpassword | 事前に用意した、MySQLのAdminパスワードが格納されているシークレット名 | dbadminpassword | no |
+| azureKeyVaultDbUserSecretName | string | no | dbuser | MySQLのユーザー名を格納するシークレット名 | dbuser | no |
+| azureKeyVaultDbPasswordSecretName | string | no | dbpassword | MySQLのユーザーパスワードを格納するシークレット名 | dbpassword | no |
 
 ## Resources
 | Resource ID | Provider | PaaS | Description |
@@ -95,9 +96,10 @@ designPatterns:
       azureResourceGroupName: $(params.azureResourceGroupName)
       azureDnsZoneName: $(params.azureDnsZoneName)
       azureDnsARecordName: $(params.azureDnsARecordName)
-      azureStaticIpName: $(params.azureStaticIpName)
+      azureStaticIpAddress: $(params.azureStaticIpAddress)
       mysqlCreateUserName:  $(params.mysqlCreateUserName)
       mysqlCreateDbName:  $(params.mysqlCreateDbName)
+      mysqlEndpoint: $(params.mysqlEndpoint)
       azureKeyVaultKeyContainerName: $(params.azureKeyVaultKeyContainerName)
 ```
 

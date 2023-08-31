@@ -26,7 +26,7 @@ DesignPattern: {
 		redisHostEnvironmentVariableName:     string | *"REDIS_HOST"
 		redisHost:                            string
 		redisPortEnvironmentVariableName:     string | *"REDIS_PORT"
-		redisPort:                            string | *"6379"
+		redisPort:                            *"6380" | "6379"
 		redisPasswordEnvironmentVariableName: string | *"REDIS_PASS"
 		redisPasswordSecretName:              string
 		host:                                 string

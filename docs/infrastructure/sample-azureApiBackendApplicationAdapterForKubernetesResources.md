@@ -58,29 +58,31 @@ Kubernetes, Microsoft Azure
 
 ## Parameters
 
-| Parameter Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| appName | string | yes | - | デプロイするアプリケーション名 |
-| k8sNamespace | string | yes | - | アプリケーションをデプロイする対象のNamespace |
-| port | string | yes | - | アプリケーションが利用するポート番号 |
-| replicas | string | no | "1" | 作成するPodのレプリカ数 |
-| imageName | string | yes | - | デプロイするDocker Image |
-| dbHostEnvironmentVariableName | string | no | DB_HOST | Azure Database for MySQLのホスト名としてアプリケーションPodに渡される環境変数名 |
-| dbHost | string | yes | - | Azure Database for MySQLのホスト名 |
-| dbUserEnvironmentVariableName | string | no | DB_USER | Azure Database for MySQLに接続するユーザ名としてアプリケーションPodに渡される環境変数名 |
-| azureKeyVaultDbUserSecretName | string | no | dbuser | Azure Database for MySQLに接続するアカウントのユーザ名が格納されているシークレット名 |
-| dbPasswordEnvironmentVariableName | string | no | DB_PASSWORD | Azure Database for MySQLに接続するユーザのパスワードとしてアプリケーションPodに渡される環境変数名 |
-| azureKeyVaultDbPasswordSecretName | string | no | dbpassword | Azure Database for MySQLに接続するユーザのパスワードが格納されているシークレット名 |
-| redisHostEnvironmentVariableName | string | no | REDIS_HOST | Azure Cache for Redisのホスト名としてアプリケーションPodに渡される環境変数名 |
-| redisHost | string | yes | - | Azure Cache for Redisのホスト名 |
-| redisPortEnvironmentVariableName | string | no | REDIS_PORT | Azure Cache for Redisのポート番号としてアプリケーションPodに渡される環境変数名 |
-| redisPort | string | no | "6379" | Azure Cache for Redisのポート番号 |
-| redisPasswordSecretName | string | yes | - | Azure Cache for Redisの接続に使用するパスワードが格納されているシークレット名 |
-| hostEnvironmentVariableName | string | no | HOST | 公開するアプリケーションのホスト名としてアプリケーションPodに渡される環境変数名 |
-| host | string | yes | - | 公開するアプリケーションのホスト名 |
-| clusterIssuerName | string | yes | - | 使用するClusterIssuerリソース名 |
-| secretStoreName | string | no | azure-key-vault | 使用するClusterSecretStoreリソース名 |
-| k8sProvider | string | no | k8sProvider | Pulumi yamlで使用するKubernetes Provider名(PulumiYaml形式の場合のみ指定可能) |
+| Parameter Name | Type | Required | Default | Description | Example | Auto Binding |
+| --- | --- | --- | --- | --- | --- | --- |
+| appName | string | yes | - | デプロイするアプリケーション名 | myapp | yes |
+| k8sNamespace | string | yes | - | アプリケーションをデプロイする対象のNamespace | myapp-namespace | yes |
+| portEnvironmentVariableName | string | no | PORT | アプリケーションが利用するポート番号としてアプリケーションPodに渡される環境変数名 | PORT | no |
+| port | string | yes | - | アプリケーションが利用するポート番号 | “8080” | no |
+| replicas | string | no | "1" | 作成するPodのレプリカ数 | "1" | no |
+| imageName | string | yes | - | デプロイするDocker Image | nginx | no |
+| dbHostEnvironmentVariableName | string | no | DB_HOST | Azure Database for MySQLのホスト名としてアプリケーションPodに渡される環境変数名 | DB_HOST | no |
+| dbHost | string | yes | - | Azure Database for MySQLのホスト名 | myapp.mysql.database.azure.com | no |
+| dbUserEnvironmentVariableName | string | no | DB_USER | Azure Database for MySQLに接続するユーザ名としてアプリケーションPodに渡される環境変数名 | DB_USER | no |
+| azureKeyVaultDbUserSecretName | string | no | dbuser | Azure Database for MySQLに接続するアカウントのユーザ名が格納されているシークレット名 | dbuser | no |
+| dbPasswordEnvironmentVariableName | string | no | DB_PASS | Azure Database for MySQLに接続するユーザのパスワードとしてアプリケーションPodに渡される環境変数名 | DB_PASS | no |
+| azureKeyVaultDbPasswordSecretName | string | no | dbpassword | Azure Database for MySQLに接続するユーザのパスワードが格納されているシークレット名 | dbpassword | no |
+| redisHostEnvironmentVariableName | string | no | REDIS_HOST | Azure Cache for Redisのホスト名としてアプリケーションPodに渡される環境変数名 | REDIS_HOST | no |
+| redisHost | string | yes | - | Azure Cache for Redisのホスト名 | myapp.redis.cache.windows.net | no |
+| redisPortEnvironmentVariableName | string | no | REDIS_PORT | Azure Cache for Redisのポート番号としてアプリケーションPodに渡される環境変数名 | REDIS_PORT | no |
+| redisPort | string | no | "6380" | Azure Cache for Redisのポート番号（6380 または 6379 のみ指定可能） | "6380" | no |
+| redisPasswordEnvironmentVariableName | string | no | REDIS_PASS | Azure Cache for Redisの接続に使用するパスワードとしてアプリケーションPodに渡される環境変数名 | REDIS_PASS | no |
+| redisPasswordSecretName | string | yes | - | Azure Cache for Redisの接続に使用するパスワードが格納されているシークレット名 | myapp-redis-pass-secret | no |
+| hostEnvironmentVariableName | string | no | HOST | 公開するアプリケーションのホスト名としてアプリケーションPodに渡される環境変数名 | HOST | no |
+| host | string | yes | - | 公開するアプリケーションのホスト名 | www.myapp.example.com | no |
+| clusterIssuerName | string | yes | - | 使用するClusterIssuerリソース名 | myapp-cluster-issuer | no |
+| secretStoreName | string | no | azure-key-vault | 使用するClusterSecretStoreリソース名 | azure-key-vault | no |
+| k8sProvider | string | no | k8sProvider | Pulumi yamlで使用するKubernetes Provider名(PulumiYaml形式の場合のみ指定可能) | k8sProvider | no |
 
 ## Resources
 | Resource ID | Provider | API version | Kind | Description |

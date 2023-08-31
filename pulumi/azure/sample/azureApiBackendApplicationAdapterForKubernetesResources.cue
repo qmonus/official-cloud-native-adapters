@@ -52,6 +52,7 @@ DesignPattern: {
 	resources: app: "\(_deployment)": kubernetes.#Resource & {
 		type: "kubernetes:apps/v1:Deployment"
 		options: provider: "${\(parameters.k8sProvider)}"
+		options: dependsOn: ["${\(_secret)}"]
 		properties: {
 			metadata: _resources.app.deployment.metadata
 			spec:     _resources.app.deployment.spec

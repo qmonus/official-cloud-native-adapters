@@ -5,6 +5,7 @@
 package v1
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	cmacme "github.com/cert-manager/cert-manager/pkg/apis/acme/v1"
 	cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 )
@@ -15,6 +16,9 @@ import (
 // be referenced by resources that exist in *any* namespace, not just the same
 // namespace as the referent.
 #ClusterIssuer: {
+	metav1.#TypeMeta
+	metadata?: metav1.#ObjectMeta @go(ObjectMeta)
+
 	// Desired state of the ClusterIssuer resource.
 	spec: #IssuerSpec @go(Spec)
 
@@ -25,6 +29,8 @@ import (
 
 // ClusterIssuerList is a list of Issuers
 #ClusterIssuerList: {
+	metav1.#TypeMeta
+	metadata: metav1.#ListMeta @go(ListMeta)
 	items: [...#ClusterIssuer] @go(Items,[]ClusterIssuer)
 }
 
@@ -33,6 +39,9 @@ import (
 // It is scoped to a single namespace and can therefore only be referenced by
 // resources within the same namespace.
 #Issuer: {
+	metav1.#TypeMeta
+	metadata?: metav1.#ObjectMeta @go(ObjectMeta)
+
 	// Desired state of the Issuer resource.
 	spec: #IssuerSpec @go(Spec)
 
@@ -43,6 +52,8 @@ import (
 
 // IssuerList is a list of Issuers
 #IssuerList: {
+	metav1.#TypeMeta
+	metadata: metav1.#ListMeta @go(ListMeta)
 	items: [...#Issuer] @go(Items,[]Issuer)
 }
 
@@ -297,6 +308,11 @@ import (
 
 	// Status of the condition, one of (`True`, `False`, `Unknown`).
 	status: cmmeta.#ConditionStatus @go(Status)
+
+	// LastTransitionTime is the timestamp corresponding to the last status
+	// change of this condition.
+	// +optional
+	lastTransitionTime?: null | metav1.#Time @go(LastTransitionTime,*metav1.Time)
 
 	// Reason is a brief machine readable explanation for the condition's last
 	// transition.
