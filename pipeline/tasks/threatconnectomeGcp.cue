@@ -8,7 +8,7 @@ let _vars = {
 	outputDir:  "$(workspaces.shared.path)/scan"
 	workingDir: "$(workspaces.shared.path)"
 	threatconnectome: {
-		endpoint: "https://api.threatconnectome.metemcyber.ntt.com/api"
+		endpoint: "https://api.threatconnectome.metemcyber.ntt.com"
 		script:   "https://storage.googleapis.com/metemcyber/trivy_tags.py"
 	}
 }
@@ -109,7 +109,7 @@ let _vars = {
 	args: [
 		"-O",
 		"\(_vars.workingDir)/trivy_tags.py",
-		"\(_vars.threatconnectome.script)",
+		_vars.threatconnectome.script,
 	]
 }
 
@@ -150,6 +150,7 @@ let _vars = {
 			"\(#input.groupName)"
 		},
 		"--input", "\(_vars.outputDir)/artifact_tags.jsonl",
+		"--endpoint", _vars.threatconnectome.endpoint,
 	]
 	env: [{
 		name: "THREATCONNECTOME_REFRESH_TOKEN"
@@ -215,7 +216,7 @@ let _script = ###"""
 	def upload_artifact_tags(team, group, input, endpoint, access_token):
 		url = urllib.parse.urljoin(
 			endpoint,
-			"pteams/{}/append_tags?group={}".format(
+			"pteams/{}/upload_tags_file?group={}&force_mode=True".format(
 				urllib.parse.quote(team), urllib.parse.quote(group)
 			),
 		)
@@ -247,7 +248,6 @@ let _script = ###"""
 		parser.add_argument('-i', "--input", metavar="PATH", type=str, required=True,
 							help='Path to artifact tags file')
 		parser.add_argument('--endpoint', metavar="URL", type=str,
-							default="https://api.threatconnectome.metemcyber.ntt.com",
 							help='Threatconnectome api endpoint url')
 		args = parser.parse_args()
 

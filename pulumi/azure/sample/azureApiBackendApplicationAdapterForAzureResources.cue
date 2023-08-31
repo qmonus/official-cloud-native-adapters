@@ -24,6 +24,7 @@ DesignPattern: {
 		mysqlCreateUserName:                    string | *"dbuser"
 		mysqlCreateDbName:                      string
 		mysqlCreateDbCharacterSet:              string | *"utf8mb3"
+		mysqlEndpoint:                          string
 		azureKeyVaultKeyContainerName:          string
 		azureKeyVaultDbAdminSecretName:         string | *"dbadminuser"
 		azureKeyVaultDbAdminPasswordSecretName: string | *"dbadminpassword"
@@ -64,6 +65,7 @@ DesignPattern: {
 
 		"\(parameters.mysqlProvider)": mysql.#Resource & {
 			properties: {
+				endpoint: parameters.mysqlEndpoint
 				username: {
 					"fn::secret": {
 						"fn::invoke": {

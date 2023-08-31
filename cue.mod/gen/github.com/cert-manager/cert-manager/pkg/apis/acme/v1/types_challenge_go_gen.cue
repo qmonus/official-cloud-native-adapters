@@ -4,7 +4,10 @@
 
 package v1
 
-import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+)
 
 // Challenge is a type to represent a Challenge request with an ACME server
 // +k8s:openapi-gen=true
@@ -15,7 +18,9 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:path=challenges
 #Challenge: {
-	spec: #ChallengeSpec @go(Spec)
+	metav1.#TypeMeta
+	metadata: metav1.#ObjectMeta @go(ObjectMeta)
+	spec:     #ChallengeSpec     @go(Spec)
 
 	// +optional
 	status: #ChallengeStatus @go(Status)
@@ -23,6 +28,8 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 
 // ChallengeList is a list of Challenges
 #ChallengeList: {
+	metav1.#TypeMeta
+	metadata: metav1.#ListMeta @go(ListMeta)
 	items: [...#Challenge] @go(Items,[]Challenge)
 }
 

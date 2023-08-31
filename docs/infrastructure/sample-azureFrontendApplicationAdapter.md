@@ -42,16 +42,16 @@ Azure Static Web Apps, Microsoft Azure
 
 ## Infrastructure Parameters
 
-| Parameter Name | Type | Required | Default | Description |
-| --- | --- | --- | --- | --- |
-| appName | string | yes | - | デプロイするアプリケーション名 |
-| azureProvider | string | no | AzureProvider | Pulumi yamlで使用するAzure Provider名 |
-| azureSubscriptionId | string | yes | - | 事前に用意したAzureのリソースが含まれるサブスクリプション名 |
-| azureResourceGroupName | string | yes | - | 事前に用意したAzureのリソースが含まれるリソースグループ名 |
-| azureStaticSiteLocation | string | yes | - | Static Web Appsをデプロイするロケーション |
-| azureStaticSiteName | string | yes | - | デプロイするStatic Web Appsのリソース名 |
-| azureDnsZoneName | string | yes | - | 事前に用意したDNSゾーン名 |
-| azureCnameRecordTtl | string | no | "3600" | 新たに作成するCレコードに設定するTTLの値 |
+| Parameter Name | Type | Required | Default | Description | Example | Auto Binding |
+| --- | --- | --- | --- | --- | --- | --- |
+| appName | string | yes | - | デプロイするアプリケーション名 | myapp | yes |
+| azureProvider | string | no | AzureProvider | Pulumi yamlで使用するAzure Provider名 | AzureProvider | no |
+| azureSubscriptionId | string | yes | - | 事前に用意したAzureのリソースが含まれるサブスクリプション名 | xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx | yes |
+| azureResourceGroupName | string | yes | - | 事前に用意したAzureのリソースが含まれるリソースグループ名 | myapp-resourcegroup | yes |
+| azureStaticSiteLocation | string | yes | - | Static Web Appsをデプロイするロケーション | East Asia | no |
+| azureStaticSiteName | string | yes | - | デプロイするStatic Web Appsのリソース名 | myapp-website | no |
+| azureDnsZoneName | string | yes | - | 事前に用意したDNSゾーン名 | example.com | no |
+| azureCnameRecordTtl | string | no | "3600" | 新たに作成するCレコードに設定するTTLの値 | "3600" | no |
 
 ## CI/CD Parameters
 ### Adapter Options

@@ -26,15 +26,12 @@ MySQL
 | Parameter Name | Type | Required | Default | Description |
 | --- | --- | --- | --- | --- |
 | providerName | string | no | MysqlProvider | 他のリソースから参照する時のプロバイダー名 | 
-| endpoint | string | no | localhost | 接続先のMySQLのエンドポイント | 
 
 ## Usage
 
 ```yaml
 designPatterns:
   - pattern: qmonus.net/adapter/official/pulumi/provider:mysql
-    params:
-      endpoint: $(params.endpoint)
 ```
 
 ## Code

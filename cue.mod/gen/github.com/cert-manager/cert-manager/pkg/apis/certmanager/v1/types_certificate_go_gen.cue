@@ -4,7 +4,10 @@
 
 package v1
 
-import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+)
 
 // A Certificate resource should be created to ensure an up to date and signed
 // x509 certificate is stored in the Kubernetes Secret resource named in `spec.secretName`.
@@ -12,6 +15,9 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 // The stored certificate will be renewed before it expires (as configured by `spec.renewBefore`).
 // +k8s:openapi-gen=true
 #Certificate: {
+	metav1.#TypeMeta
+	metadata?: metav1.#ObjectMeta @go(ObjectMeta)
+
 	// Desired state of the Certificate resource.
 	spec: #CertificateSpec @go(Spec)
 
@@ -22,6 +28,8 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 
 // CertificateList is a list of Certificates
 #CertificateList: {
+	metav1.#TypeMeta
+	metadata: metav1.#ListMeta @go(ListMeta)
 	items: [...#Certificate] @go(Items,[]Certificate)
 }
 
@@ -81,6 +89,23 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	// This is x509 behaviour: https://tools.ietf.org/html/rfc6125#section-6.4.4
 	// +optional
 	commonName?: string @go(CommonName)
+
+	// The requested 'duration' (i.e. lifetime) of the Certificate. This option
+	// may be ignored/overridden by some issuer types. If unset this defaults to
+	// 90 days. Certificate will be renewed either 2/3 through its duration or
+	// `renewBefore` period before its expiry, whichever is later. Minimum
+	// accepted duration is 1 hour. Value must be in units accepted by Go
+	// time.ParseDuration https://golang.org/pkg/time/#ParseDuration
+	// +optional
+	duration?: null | metav1.#Duration @go(Duration,*metav1.Duration)
+
+	// How long before the currently issued certificate's expiry
+	// cert-manager should renew the certificate. The default is 2/3 of the
+	// issued certificate's duration. Minimum accepted value is 5 minutes.
+	// Value must be in units accepted by Go time.ParseDuration
+	// https://golang.org/pkg/time/#ParseDuration
+	// +optional
+	renewBefore?: null | metav1.#Duration @go(RenewBefore,*metav1.Duration)
 
 	// DNSNames is a list of DNS subjectAltNames to be set on the Certificate.
 	// +optional
@@ -353,6 +378,30 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 	// +optional
 	conditions?: [...#CertificateCondition] @go(Conditions,[]CertificateCondition)
 
+	// LastFailureTime is set only if the lastest issuance for this
+	// Certificate failed and contains the time of the failure. If an
+	// issuance has failed, the delay till the next issuance will be
+	// calculated using formula time.Hour * 2 ^ (failedIssuanceAttempts -
+	// 1). If the latest issuance has succeeded this field will be unset.
+	// +optional
+	lastFailureTime?: null | metav1.#Time @go(LastFailureTime,*metav1.Time)
+
+	// The time after which the certificate stored in the secret named
+	// by this resource in spec.secretName is valid.
+	// +optional
+	notBefore?: null | metav1.#Time @go(NotBefore,*metav1.Time)
+
+	// The expiration time of the certificate stored in the secret named
+	// by this resource in `spec.secretName`.
+	// +optional
+	notAfter?: null | metav1.#Time @go(NotAfter,*metav1.Time)
+
+	// RenewalTime is the time at which the certificate will be next
+	// renewed.
+	// If not set, no upcoming renewal is scheduled.
+	// +optional
+	renewalTime?: null | metav1.#Time @go(RenewalTime,*metav1.Time)
+
 	// The current 'revision' of the certificate as issued.
 	//
 	// When a CertificateRequest resource is created, it will have the
@@ -395,6 +444,11 @@ import cmmeta "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
 
 	// Status of the condition, one of (`True`, `False`, `Unknown`).
 	status: cmmeta.#ConditionStatus @go(Status)
+
+	// LastTransitionTime is the timestamp corresponding to the last status
+	// change of this condition.
+	// +optional
+	lastTransitionTime?: null | metav1.#Time @go(LastTransitionTime,*metav1.Time)
 
 	// Reason is a brief machine readable explanation for the condition's last
 	// transition.
