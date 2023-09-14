@@ -4,13 +4,17 @@
 
 * [Deploy Static Site to Azure Static Web Apps Adapter](../cicd/deploy-staticSiteToAzureStaticWebApps.md)
 * [Azure Frontend Application Adapter for Azure Resources](sample-azureFrontendApplicationAdapterForAzureResources.md)
+* [Simple Deploy by Pulumi Yaml Adapter](../cicd/deploy-simpleDeployByPulumiYaml.md)
 
-以下のリソースと静的ファイルをデプロイするPipeline Manifestを作成します。
+以下のリソースと静的WebアプリケーションをデプロイするPipeline Manifestを作成します。
 
 * Azure Static Web Apps
   * Webアプリケーションを外部公開するサービス
 * Azure DNS
   * レコードセット (CNAMEレコード)
+
+また、アプリケーションのビルドには `Node.js v16` までをサポートしています。
+`package.json` の `scripts` フィールドに記載している `build` に、具体的なビルド時のオプションを指定することができます。
 
 ![Architecture](images/azureFrontendApplication.png)
 
@@ -30,9 +34,6 @@ Sample: サンプル実装
     * Azure DNS
         * ゾーン
 
-* 以下のProvider AdapterをQVS Configに指定してください。
-    * `qmonus.net/adapter/official/pulumi/provider:azure`
-
 ### Constraints
 * デプロイするファイルはnpmでパッケージ管理されリポジトリのrootディレクトリでビルドできる必要があります。
 
@@ -49,7 +50,6 @@ Azure Static Web Apps, Microsoft Azure
 | azureSubscriptionId | string | yes | - | 事前に用意したAzureのリソースが含まれるサブスクリプション名 | xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx | yes |
 | azureResourceGroupName | string | yes | - | 事前に用意したAzureのリソースが含まれるリソースグループ名 | myapp-resourcegroup | yes |
 | azureStaticSiteLocation | string | yes | - | Static Web Appsをデプロイするロケーション | East Asia | no |
-| azureStaticSiteName | string | yes | - | デプロイするStatic Web Appsのリソース名 | myapp-website | no |
 | azureDnsZoneName | string | yes | - | 事前に用意したDNSゾーン名 | example.com | no |
 | azureCnameRecordTtl | string | no | "3600" | 新たに作成するCレコードに設定するTTLの値 | "3600" | no |
 
@@ -68,11 +68,15 @@ Azure Static Web Apps, Microsoft Azure
 | gitRepositoryDeleteExisting | bool | no | true | trueの場合、Git Checkoutする時に指定先のディレクトリが存在している場合に削除する | | no |
 | gitCheckoutSubDirectory | string | no | "" | GitのCheckout作業をするパス名 | | no |
 | gitTokenSecretName | string | yes | - | Gitのアクセストークンを保管しているSecret名 | | yes |
+| pathToSource | string | no | "" | ソースディレクトリからの相対パス | | no |
+| qvsConfigPath | string | yes | - | QVS Config(旧称：Application Config)のパス | .valuestream/qvs.yaml | yes |
+| appName | string | yes | - | QVSにおけるApplication名 | nginx | yes |
+| qvsDeploymentName | string | yes | - | QVSにおけるDeployment名 | staging | yes |
+| deployStateName | string | no | app | pulumi-stack名のSuffixとして使用される | | no |
 | azureApplicationId | string | yes | - | AzureのApplicationID | | yes |
 | azureTenantId | string | yes | - | AzureのTenantID | | yes |
 | azureSubscriptionId | string | yes | - | AzureのSubscriptionID | | yes |
 | azureClientSecretName | string | yes | - | AzureのClientSecretを保管しているSecret名 | | yes |
-| azureStaticSiteName | string | yes | - | デプロイするStatic Web Appsのリソース名 | myStaticSite | no |
 
 ## Application Resources
 | Resource ID | Provider | PaaS | Description |
@@ -87,26 +91,28 @@ Azure Static Web Apps, Microsoft Azure
 ### Pipeline
 | Resource ID | Description |
 | --- | --- |
-| deploy-static-site | git-checkout(-ssh), build-azure-static-web-apps, deploy-azure-static-web-apps のTaskを順番に実行し、静的ファイルをデプロイします。 |
+| deploy | git-checkout(-ssh), compile-adapter-into-pulumi-yaml(-ssh), deploy-by-pulumi-yaml のTaskを順番に実行し、アプリケーションを指定の環境にデプロイします。 |
+| publish-site | git-checkout(-ssh), build-azure-static-web-apps, deploy-azure-static-web-apps のTaskを順番に実行し、静的ファイルをデプロイします。 |
 
 ### Task
 | Resource ID | Pipeline | runAfter | Description |
 | --- | --- | --- | --- |
-| git-checkout | deploy-static-site | - | 指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはGit Tokenを使用します。AdapterOptionsのuseSshKeyがFalseかつrepositoryKindがgithub, gitlabの場合に作成されます。 |
-| git-checkout-ssh | deploy-static-site | - | 指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはSSH Keyを使用します。AdapterOptionsのuseSshKeyがTrueまたはrepositoryKindがbitbucket, backlogの場合に作成されます。 |
-| build-azure-static-web-apps | deploy-static-site | git-checkout or git-checkout-ssh | リポジトリ内のnpmプロジェクトをビルドし、静的ファイルを生成します。 |
-| deploy-azure-static-web-apps | deploy-static-site | build-azure-static-web-apps | ビルドされた静的ファイルをデプロイします。 |
+| git-checkout | deploy, publish-site | - | 指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはGit Tokenを使用します。AdapterOptionsのuseSshKeyがFalseかつrepositoryKindがgithub, gitlabの場合に作成されます。 |
+| git-checkout-ssh | deploy, publish-site | - | 指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはSSH Keyを使用します。AdapterOptionsのuseSshKeyがTrueまたはrepositoryKindがbitbucket, backlogの場合に作成されます。 |
+| compile-adapter-into-pulumi-yaml | deploy | git-checkout | リポジトリ内の QVS Config に記載されている Cloud Native Adapter をコンパイルし、PulumiYamlのプロジェクトファイルを生成します。AdapterOptionsのuseSshKeyがFalseかつrepositoryKindがgithub, gitlabの場合に作成されます。 |
+| compile-adapter-into-pulumi-yaml-ssh | deploy | git-checkout-ssh | リポジトリ内の QVS Config に記載されている Cloud Native Adapter をコンパイルし、PulumiYamlのプロジェクトファイルを生成します。AdapterOptionsのuseSshKeyがTrueまたはrepositoryKindがbitbucket, backlogの場合に作成されます。 |
+| deploy-by-pulumi-yaml | deploy | compile-adapter-into-pulumi-yaml or compile-adapter-into-pulumi-yaml-ssh | コンパイルされたPulumiYamlのプロジェクトファイルを指定の環境にデプロイします。 |
+| build-azure-static-web-apps | publish-site | git-checkout or git-checkout-ssh | リポジトリ内のnpmプロジェクトをビルドし、静的ファイルを生成します。 |
+| deploy-azure-static-web-apps | publish-site | build-azure-static-web-apps | ビルドされた静的ファイルをデプロイします。 |
 
 ## Usage
 
 ```yaml
 designPatterns:
-  - pattern: qmonus.net/adapter/official/pulumi/provider:azure
   - pattern: qmonus.net/adapter/official/pulumi/azure/sample:azureFrontendApplicationAdapter
     params:
       appName: $(params.appName)
       azureStaticSiteLocation: $(params.azureStaticSiteLocation)
-      azureStaticSiteName: $(params.azureStaticSiteName)
       azureSubscriptionId: $(params.azureSubscriptionId)
       azureResourceGroupName: $(params.azureResourceGroupName)
       azureDnsZoneName: $(params.azureDnsZoneName)

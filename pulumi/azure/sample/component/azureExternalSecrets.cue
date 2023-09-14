@@ -106,7 +106,7 @@ DesignPattern: {
 				resourceGroupName: "${resourceGroup.name}"
 				resourceName:      "qvs-\(parameters.appName)-eso-user-assigned-identity"
 				tags: {
-					"managed-by": "Qmonus Values Stream"
+					"managed-by": "Qmonus Value Stream"
 				}
 			}
 		}

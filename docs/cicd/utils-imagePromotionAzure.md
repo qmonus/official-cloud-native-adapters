@@ -35,17 +35,17 @@ Azure Container Registry, Microsoft Azure
 | --- | --- | --- | --- | --- | --- | --- |
 | azServicePrincipalSecretName | string | yes | - | Azure サービスプリンシパルのjsonキーを保管しているk8s Secret名 | | no |
 | azureTenantId   | string | yes | - | コピー先のコンテナレジストリが属するテナントのID| xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx | no |
-| containerRegistry  | string | yes | - | コピー元のコンテナレジストリの完全修飾名 | ${acr_name}.azurecr.io　| no |
-| imageNameFrom | string | yes | - | コピー元のイメージのフルパス | ${acr_name}.azurecr.io/<br>sample/nginx:buildcache | no |
-| imageRegistryPath | string | no | - | コピーしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | ${acr_name}.azurecr.io/sample | no |
-| imageShortName | string | yes | - | コピーしたコンテナイメージの省略名 | nginx | no |
-| imageTag | string | yes | - | コンテナイメージのタグ名 | v1.0.0 | no |
+| containerRegistry  | string | yes | - | コピー元のコンテナレジストリの完全修飾名。コンテナレジストリのログインサーバを指定してください。 | ${acr_name}.azurecr.io　| no |
+| imageNameFrom | string | yes | - | コピー元のコンテナイメージ名。コピー元のレジストリのリポジトリにあるコンテナイメージに、タグを加えた一意な値を指定します。 | ${acr_name}.azurecr.io/<br>service1/nginx:buildcache | no |
+| imageRegistryPath | string | yes | - | コピー元のコンテナレジストリの完全修飾名。コンテナレジストリのログインサーバを指定してください。[名前空間](https://learn.microsoft.com/ja-jp/azure/container-registry/container-registry-best-practices#repository-namespaces) を利用する場合、${acr_name}.azurecr.io/\<repositry name\> の形式で入力することで、\<repositry name\> を名前空間としたパスでイメージをPushします。 | ${acr_name}.azurecr.io <br><br>名前空間を使用する場合は<br> ${acr_name}.azurecr.io/service1 | no |
+| imageShortName | string | yes | - | コピー先のコンテナイメージの名前。 | nginx | no |
+| imageTag | string | yes | - | コピー先のコンテナイメージに付与するタグ名。| v1.0.0 | no |
 
 ### Results Parameters
 | Parameter Name | Type | Description | Example |
 | --- | --- | --- | --- |
-| imageFullNameTag  | string | コピー後のイメージ名のフルパスにタグ名を加えたもの | ${acr_name}.azurecr.io/<br>sample/nginx:latest |
-| imageFullNameDigest  | string | コピー後のイメージ名のフルパスにダイジェスト値を加えたもの | ${acr_name}.azurecr.io/<br>sample/nginx@sha256:xxxxxxxxxxxx |
+| imageFullNameTag  | string | コピー後のイメージ名のフルネームにタグ名を加えたもの | ${acr_name}.azurecr.io/<br>service1/nginx:latest |
+| imageFullNameDigest  | string | コピー後のイメージ名のフルネームにダイジェスト値を加えたもの | ${acr_name}.azurecr.io/<br>service1/nginx@sha256:xxxxxxxxxxxx |
 | imageDigest  | string | コピー後のイメージのダイジェスト値 | sha256:xxxxxxxxxxxx |
 
 ## Resources

@@ -18,14 +18,23 @@ DesignPattern: {
 		applicationGateway: azure.#Resource & {
 			type:    "azure-native:network:ApplicationGateway"
 			options: _azureProvider
+			options: ignoreChanges: [
+				"backendAddressPools",
+				"backendHttpSettingsCollection",
+				"frontendPorts",
+				"httpListeners",
+				"probes",
+				"requestRoutingRules",
+				"sslCertificates",
+			]
 			properties: {
 				resourceGroupName:      "${resourceGroup.name}"
 				applicationGatewayName: "qvs-\(parameters.appName)-application-gateway"
 				backendAddressPools: [{
-					name: "default-backend-address-pool"
+					name: "defaultaddresspool"
 				}]
 				backendHttpSettingsCollection: [{
-					name:           "default-http-setting"
+					name:           "defaulthttpsetting"
 					port:           80
 					protocol:       "Http"
 					requestTimeout: 30
@@ -50,8 +59,8 @@ DesignPattern: {
 				}]
 				location: "japaneast"
 				requestRoutingRules: [{
-					backendAddressPool: id:  "/subscriptions/\(parameters.azureSubscriptionId)/resourceGroups/${resourceGroup.name}/providers/Microsoft.Network/applicationGateways/qvs-\(parameters.appName)-application-gateway/backendAddressPools/default-backend-address-pool"
-					backendHttpSettings: id: "/subscriptions/\(parameters.azureSubscriptionId)/resourceGroups/${resourceGroup.name}/providers/Microsoft.Network/applicationGateways/qvs-\(parameters.appName)-application-gateway/backendHttpSettingsCollection/default-http-setting"
+					backendAddressPool: id:  "/subscriptions/\(parameters.azureSubscriptionId)/resourceGroups/${resourceGroup.name}/providers/Microsoft.Network/applicationGateways/qvs-\(parameters.appName)-application-gateway/backendAddressPools/defaultaddresspool"
+					backendHttpSettings: id: "/subscriptions/\(parameters.azureSubscriptionId)/resourceGroups/${resourceGroup.name}/providers/Microsoft.Network/applicationGateways/qvs-\(parameters.appName)-application-gateway/backendHttpSettingsCollection/defaulthttpsetting"
 					httpListener: id:        "/subscriptions/\(parameters.azureSubscriptionId)/resourceGroups/${resourceGroup.name}/providers/Microsoft.Network/applicationGateways/qvs-\(parameters.appName)-application-gateway/httpListeners/default-http-listener"
 					name:     "default-request-routing-rules"
 					priority: 20000

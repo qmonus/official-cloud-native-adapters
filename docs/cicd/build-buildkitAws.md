@@ -61,7 +61,7 @@ Elastic Container Registry, Amazon Web Services
 | awsRegion | string | yes | - | ECRが所属するリージョン名 | | no |
 | containerRegistry | string | yes | "" | コンテナレジストリのエンドポイント | xxxxxxxxxxxx.dkr.ecr.ap-northeast-1.amazonaws.com | no |
 | dockerfile | string | yes | Dockerfile | ビルドするdockerfileのファイル名 | | no |
-| imageRegistryPath | string | no | - | ビルドしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | xxxxxxxxxxxx.dkr.ecr.ap-northeast-1.amazonaws.com | no |
+| imageRegistryPath | string | yes | - | ビルドしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | xxxxxxxxxxxx.dkr.ecr.ap-northeast-1.amazonaws.com | no |
 | imageShortName | string | yes | - | ビルドするコンテナイメージの省略名。ECRのリポジトリ名を指定する。 | nginx | no |
 | imageTag | string | yes | - | コンテナイメージのタグ名 | v1.0.0 | no |
 | pathToContext | string | yes | . | ソースディレクトリからの相対パス | | no |

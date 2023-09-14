@@ -47,10 +47,11 @@ import (
 			#!/bin/bash
 			set -o nounset
 			set -e
-			set +x 
+			set +x
 			az login --service-principal --username ${APP_ID} --password ${PASSWORD} --tenant $(params.azureTenantId)
-			imageDirectoryPath=`echo $(params.imageRegistryPath) | sed "s/$(params.containerRegistry)\\///g"`
-			az acr import --name $(params.containerRegistry) --image ${imageDirectoryPath}/$(params.imageShortName):$(params.imageTag) --source $(params.imageNameFrom) --username ${APP_ID} --password ${PASSWORD} --force
+			# Remove duplicates between `imageRegistryPath` and `containerRegistry`
+			imageDirectoryPath=$(echo $(params.imageRegistryPath)/ | sed "s|$(params.containerRegistry)/||g");
+			az acr import --name $(params.containerRegistry) --image ${imageDirectoryPath}$(params.imageShortName):$(params.imageTag) --source $(params.imageNameFrom) --username ${APP_ID} --password ${PASSWORD} --force
 			"""
 		env: [{
 			name: "APP_ID"
@@ -77,8 +78,9 @@ import (
 			set -o nounset
 			set -e
 			set +x
-			imageDirectoryPath=`echo $(params.imageRegistryPath) | sed "s/$(params.containerRegistry)\\///g"`
-			az acr repository show -n $(params.containerRegistry) --image ${imageDirectoryPath}/$(params.imageShortName):$(params.imageTag) --username ${APP_ID} --password ${PASSWORD} \\
+			# Remove duplicates between `imageRegistryPath` and `containerRegistry`
+			imageDirectoryPath=$(echo $(params.imageRegistryPath)/ | sed "s|$(params.containerRegistry)/||g");
+			az acr repository show -n $(params.containerRegistry) --image ${imageDirectoryPath}$(params.imageShortName):$(params.imageTag) --username ${APP_ID} --password ${PASSWORD} \\
 			| jq -r '.digest' \\
 			| tee /tekton/results/imageDigest
 			"""

@@ -30,7 +30,7 @@ DesignPattern: {
 		redisPasswordEnvironmentVariableName: string | *"REDIS_PASS"
 		redisPasswordSecretName:              string
 		host:                                 string
-		secretStoreName:                      string | *"azure-key-vault"
+		clusterSecretStoreName:               string | *"qvs-global-azure-store"
 	}
 
 	resources: app: {
@@ -177,7 +177,7 @@ DesignPattern: {
 			spec: {
 				refreshInterval: "0"
 				secretStoreRef: {
-					name: parameters.secretStoreName
+					name: parameters.clusterSecretStoreName
 					kind: "ClusterSecretStore"
 				}
 				target: {

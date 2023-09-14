@@ -14,11 +14,11 @@ import (
 	input: #BuildInput
 
 	params: {
+		appName: desc:               "Application Name of QmonusVS"
 		azureTenantId: desc:         "Azure Tenant ID"
 		azureSubscriptionId: desc:   "Azure Subscription ID"
 		azureApplicationId: desc:    "Azure Application ID"
 		azureClientSecretName: desc: "Credential Name of Azure Client Secret"
-		azureStaticSiteName: desc:   "Azure Static Web App application name"
 	}
 	workspaces: [{
 		name: "shared"
@@ -38,7 +38,7 @@ import (
 			value: "$(params.azureSubscriptionId)"
 		}, {
 			name:  "SWA_CLI_APP_NAME"
-			value: "$(params.azureStaticSiteName)"
+			value: "$(params.appName)"
 		}, {
 			name:  "SWA_CLI_DEPLOY_ENV"
 			value: "production"
