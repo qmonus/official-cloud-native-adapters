@@ -94,7 +94,7 @@ DesignPattern: {
 				redisPasswordEnvironmentVariableName: "REDIS_PASS"
 				redisPasswordSecretName:              parameters.redisPasswordSecretName
 				host:                                 parameters.host
-				secretStoreName:                      "azure-key-vault"
+				clusterSecretStoreName:               "qvs-global-azure-store"
 			}
 		},
 		{

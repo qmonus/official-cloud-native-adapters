@@ -13,7 +13,6 @@ DesignPattern: {
 		appName:                 string
 		azureProvider:           string | *"\(azure.default.provider)"
 		azureStaticSiteLocation: string
-		azureStaticSiteName:     string
 		azureSubscriptionId:     string
 		azureResourceGroupName:  string
 		azureDnsZoneName:        string
@@ -38,7 +37,7 @@ DesignPattern: {
 			properties: {
 				resourceGroupName: parameters.azureResourceGroupName
 				location:          parameters.azureStaticSiteLocation
-				name:              parameters.azureStaticSiteName
+				name:              parameters.appName
 				repositoryUrl:     ""
 				sku: {
 					name: "Free"

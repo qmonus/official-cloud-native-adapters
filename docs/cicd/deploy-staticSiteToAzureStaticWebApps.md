@@ -42,7 +42,6 @@ Azure Static Web Apps, Microsoft Azure
 | azureTenantId | string | yes | - | AzureのTenantID | | yes |
 | azureSubscriptionId | string | yes | - | AzureのSubscriptionID | | yes |
 | azureClientSecretName | string | yes | - | AzureのClientSecretを保管しているSecret名 | | yes |
-| azureStaticSiteName | string | yes | - | デプロイするStatic Web Appsのリソース名 | myStaticSite | no |
 
 ## Resources
 以下の Tekton Pipeline/Task リソースを含むマニフェストが作成されます。
@@ -50,15 +49,15 @@ Azure Static Web Apps, Microsoft Azure
 ### Pipeline
 | Resource ID | Description |
 | --- | --- |
-| deploy-static-site | git-checkout(-ssh), build-azure-static-web-apps, deploy-azure-static-web-apps のTaskを順番に実行し、静的ファイルをデプロイします。 |
+| publish-site | git-checkout(-ssh), build-azure-static-web-apps, deploy-azure-static-web-apps のTaskを順番に実行し、静的ファイルをデプロイします。 |
 
 ### Task
 | Resource ID | Pipeline | runAfter | Description |
 | --- | --- | --- | --- |
-| git-checkout | deploy-static-site | - | 指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはGit Tokenを使用します。AdapterOptionsのuseSshKeyがFalseかつrepositoryKindがgithub, gitlabの場合に作成されます。 |
-| git-checkout-ssh | deploy-static-site | - | 指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはSSH Keyを使用します。AdapterOptionsのuseSshKeyがTrueまたはrepositoryKindがbitbucket, backlogの場合に作成されます。 |
-| build-azure-static-web-apps | deploy-static-site | git-checkout or git-checkout-ssh | リポジトリ内のnpmプロジェクトをビルドし、静的ファイルを生成します。 |
-| deploy-azure-static-web-apps | deploy-static-site | build-azure-static-web-apps | ビルドされた静的ファイルをデプロイします。 |
+| git-checkout | publish-site | - | 指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはGit Tokenを使用します。AdapterOptionsのuseSshKeyがFalseかつrepositoryKindがgithub, gitlabの場合に作成されます。 |
+| git-checkout-ssh | publish-site | - | 指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはSSH Keyを使用します。AdapterOptionsのuseSshKeyがTrueまたはrepositoryKindがbitbucket, backlogの場合に作成されます。 |
+| build-azure-static-web-apps | publish-site | git-checkout or git-checkout-ssh | リポジトリ内のnpmプロジェクトをビルドし、静的ファイルを生成します。 |
+| deploy-azure-static-web-apps | publish-site | build-azure-static-web-apps | ビルドされた静的ファイルをデプロイします。 |
 
 ## Usage
 ``` yaml

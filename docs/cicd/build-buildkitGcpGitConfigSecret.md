@@ -48,7 +48,7 @@ Artifact Registry, Google Cloud
 | containerRegistry | string | yes | "" | コンテナレジストリのエンドポイント | asia-northeast1-docker.pkg.dev | no |
 | cacheImageName | string | yes | - | ビルドする際のキャッシュの出力先 |  asia-northeast1-docker.pkg.dev/<br>${project_id}/sample/nginx:buildcache | no |
 | dockerfile | string | yes | Dockerfile | ビルドするDockerfileのファイル名 |  | no |
-| imageRegistryPath | string | no | - | ビルドしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | asia-northeast1-docker.pkg.dev/<br>${project_id}/sample | no |
+| imageRegistryPath | string | yes | - | ビルドしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | asia-northeast1-docker.pkg.dev/<br>${project_id}/sample | no |
 | imageShortName | string | yes | - | ビルドするコンテナイメージの省略名 | nginx | no |
 | imageTag | string | yes | - | コンテナイメージのタグ名 | v1.0.0 | no |
 | pathToContext | string | yes | . | ソースディレクトリからの相対パス |  | no |

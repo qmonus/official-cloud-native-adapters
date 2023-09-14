@@ -45,7 +45,6 @@ Azure Static Web Apps, Microsoft Azure
 | azureSubscriptionId | string | yes | - | 事前に用意したAzureのリソースが含まれるサブスクリプション名 |
 | azureResourceGroupName | string | yes | - | 事前に用意したAzureのリソースが含まれるリソースグループ名 |
 | azureStaticSiteLocation | string | yes | - | Static Web Appsをデプロイするロケーション |
-| azureStaticSiteName | string | yes | - | デプロイするStatic Web Appsのリソース名 |
 | azureDnsZoneName | string | yes | - | 事前に用意したDNSゾーン名 |
 | azureCnameRecordTtl | string | no | "3600" | 新たに作成するCレコードに設定するTTLの値 |
 
@@ -65,7 +64,6 @@ designPatterns:
     params:
       appName: $(params.appName)
       azureStaticSiteLocation: $(params.azureStaticSiteLocation)
-      azureStaticSiteName: $(params.azureStaticSiteName)
       azureSubscriptionId: $(params.azureSubscriptionId)
       azureResourceGroupName: $(params.azureResourceGroupName)
       azureDnsZoneName: $(params.azureDnsZoneName)

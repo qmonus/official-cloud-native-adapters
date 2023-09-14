@@ -18,7 +18,7 @@ DesignPattern: {
 	let _useSshKey = pipelineParameters.useSshKey
 
 	pipelines: {
-		"deploy-static-site": {
+		"publish-site": {
 			tasks: {
 				"checkout": {
 					if _repositoryKind == "bitbucket" || _repositoryKind == "backlog" {

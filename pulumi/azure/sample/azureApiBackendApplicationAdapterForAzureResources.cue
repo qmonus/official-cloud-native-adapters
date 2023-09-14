@@ -90,6 +90,7 @@ DesignPattern: {
 						}
 					}
 				}
+				tls: "skip-verify"
 			}
 		}
 

@@ -94,7 +94,7 @@ Sample: サンプル実装
 | Azure API Backend Application Adapter for Kubernetes Resources | redisPortEnvironmentVariableName | REDIS_PORT | Azure Cache for Redisのポート番号としてアプリケーションPodに渡される環境変数名 |
 | Azure API Backend Application Adapter for Kubernetes Resources | redisPort | "6380" | Azure Cache for Redisのポート番号 |
 | Azure API Backend Application Adapter for Kubernetes Resources | redisPasswordEnvironmentVariableName | REDIS_PASS | Azure Cache for Redisの接続に使用するパスワードとしてアプリケーションPodに渡される環境変数名 |
-| Azure API Backend Application Adapter for Kubernetes Resources | secretStoreName | azure-key-vault | 使用するClusterSecretStoreリソース名 |
+| Azure API Backend Application Adapter for Kubernetes Resources | clusterSecretStoreName | qvs-global-azure-store | 使用するClusterSecretStoreリソース名 |
 | Azure API Backend Application Adapter for Kubernetes Resources | k8sProvider | K8sProvider | Pulumi yamlで使用するKubernetes Provider名 |
 | Azure Buildkit Adapter | image | "" | 生成される2つのTaskのdocker-login-azure, buildkitに付与される接頭語 |
 | Simple Deploy by Pulumi Yaml Adapter | useDebug | false | trueを指定すると、AssemblyLine実行時にQmonus Value Streamが適用するApplication Manifestの内容を出力します。 |
@@ -160,7 +160,7 @@ Kubernetes, Microsoft Azure
 | azureClientSecretName | string | yes | - | AzureのClientSecretを保管しているSecret名 | | yes |
 | cacheImageName | string | yes | - | ビルドする際のキャッシュの出力先 | ${acr_name}.azurecr.io/<br>sample/nginx:buildcache | no |
 | dockerfile | string | yes | Dockerfile | ビルドするdockerfileのファイル名 | | no |
-| imageRegistryPath | string | no | - | ビルドしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | ${acr_name}.azurecr.io/sample | no |
+| imageRegistryPath | string | yes | - | ビルドしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | ${acr_name}.azurecr.io/sample | no |
 | imageShortName | string | yes | - | ビルドするコンテナイメージの省略名。ACRのリポジトリ名を指定する。| nginx | no |
 | imageTag | string | yes | - | コンテナイメージのタグ名| v1.0.0 | no |
 | pathToContext | string | yes | . | ソースディレクトリからの相対パス | | no |

@@ -39,7 +39,7 @@ Container Registry/Artifact Registry, Google Cloud
 | --- | --- | --- | --- | --- | --- | --- |
 | gcpServiceAccountSecretName | string | yes | - | GCP サービスアカウントのjsonキーを保管しているk8s Secret名 | | yes |
 | imageNameFrom | string | yes | - | コピー元のイメージのフルパス | asia-northeast1-docker.pkg.dev/<br>${project_id}/sample/nginx:latest | no |
-| imageRegistryPath | string | no | - | コピーしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | asia-northeast1-docker.pkg.dev/<br>${project_id}/sample | no |
+| imageRegistryPath | string | yes | - | コピーしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | asia-northeast1-docker.pkg.dev/<br>${project_id}/sample | no |
 | imageShortName | string | yes | - | コピーしたコンテナイメージの省略名 | nginx | no |
 | imageTag | string | yes | - | コンテナイメージのタグ名 | v1.0.0 | no |
 

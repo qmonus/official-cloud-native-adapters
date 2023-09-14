@@ -103,7 +103,7 @@ DesignPattern: {
 				resourceGroupName: "${resourceGroup.name}"
 				resourceName:      "qvs-\(parameters.appName)-certmanager-user-assigned-identity"
 				tags: {
-					"managed-by": "Qmonus Values Stream"
+					"managed-by": "Qmonus Value Stream"
 				}
 			}
 		}

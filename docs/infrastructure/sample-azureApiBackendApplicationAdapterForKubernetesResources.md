@@ -81,7 +81,7 @@ Kubernetes, Microsoft Azure
 | hostEnvironmentVariableName | string | no | HOST | 公開するアプリケーションのホスト名としてアプリケーションPodに渡される環境変数名 | HOST | no |
 | host | string | yes | - | 公開するアプリケーションのホスト名 | www.myapp.example.com | no |
 | clusterIssuerName | string | yes | - | 使用するClusterIssuerリソース名 | myapp-cluster-issuer | no |
-| secretStoreName | string | no | azure-key-vault | 使用するClusterSecretStoreリソース名 | azure-key-vault | no |
+| clusterSecretStoreName | string | no | qvs-global-azure-store | 使用するClusterSecretStoreリソース名 | qvs-global-azure-store | no |
 | k8sProvider | string | no | k8sProvider | Pulumi yamlで使用するKubernetes Provider名(PulumiYaml形式の場合のみ指定可能) | k8sProvider | no |
 
 ## Resources
@@ -111,7 +111,7 @@ designPatterns:
       redisPasswordSecretName: $(params.redisPasswordSecretName)
       host: $(params.host)
       clusterIssuerName: $(params.clusterIssuerName)
-      secretStoreName: $(params.secretStoreName)
+      clusterSecretStoreName: $(params.clusterSecretStoreName)
 ```
 
 ## Code
