@@ -45,12 +45,10 @@ Artifact Registry, Google Cloud
 | gitTokenSecretName | string | yes | - | Gitのアクセストークンを保管しているk8s Secret名 |  | yes |
 | gcpServiceAccountSecretName | string | yes | - | GCP サービスアカウントのjsonキーを保管しているk8s Secret名 |  | yes |
 | gcpProjectId | string | yes | - | GCPのプロジェクト名 |  | yes |
-| containerRegistry | string | yes | "" | コンテナレジストリのエンドポイント | asia-northeast1-docker.pkg.dev | no |
-| cacheImageName | string | yes | - | ビルドする際のキャッシュの出力先 |  asia-northeast1-docker.pkg.dev/<br>${project_id}/sample/nginx:buildcache | no |
 | dockerfile | string | yes | Dockerfile | ビルドするDockerfileのファイル名 |  | no |
 | imageRegistryPath | string | yes | - | ビルドしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | asia-northeast1-docker.pkg.dev/<br>${project_id}/sample | no |
 | imageShortName | string | yes | - | ビルドするコンテナイメージの省略名 | nginx | no |
-| imageTag | string | yes | - | コンテナイメージのタグ名 | v1.0.0 | no |
+| imageTag | string | yes | - | コンテナイメージのタグ名。buildcacheというタグ名は予約されているため指定できません。 | v1.0.0 | no |
 | pathToContext | string | yes | . | ソースディレクトリからの相対パス |  | no |
 | extraArgs | string | yes | "" | Buildkitでイメージをビルドする際に追加で設定するオプション | --opt build-arg:foo=var | no |
 

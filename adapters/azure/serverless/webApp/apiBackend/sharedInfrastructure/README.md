@@ -1,10 +1,7 @@
-# Azure Web Platform Adapter
+# Shared Infrastructure Adapter
 
-CI/CD AdapterとInfrastructure Adapterを組み合わせて、HTTPSで外部公開できるアプリケーションをAzure上にデプロイするために、必要なAzureリソース群をデプロイするCloud Native Adapterです。
 
-CI/CD Adapterの詳細については、以下をご覧ください。
-
-* [Simple Deploy by Pulumi Yaml Adapter](../cicd/deploy-simpleDeployByPulumiYaml.md)
+HTTPSで外部公開できるアプリケーションをAzure上にデプロイするために、必要なAzureリソース群をデプロイするCloud Native Adapterです。
 
 以下のリソースを作成します。
 
@@ -34,12 +31,16 @@ CI/CD Adapterの詳細については、以下をご覧ください。
     * 以下のサブネットを/22のネットワークセグメントで作成します。
         * Azure App Serviceが所属するサブネット
 
-![Architecture](images/azureServerlessPlatformAdapter-architecture.png)
+![Architecture](images/image.png)
+
+## Platform
+
+Microsoft Azure
 
 ## Module
 
 * Module: `qmonus.net/adapter/official`
-* Import path `qmonus.net/adapter/official/pulumi/azure/sample:azureServerlessPlatform`
+* Import path `qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend/sharedInfrastructure`
 
 ## Level
 
@@ -57,10 +58,6 @@ Sample: サンプル実装
 
 * 作成するMySQLのAdminユーザアカウントのパスワードは、1文字以上の大小英数字記号を含む、16文字でランダムで生成されます。
 * ゾーン分散などの冗長化は行いません。
-
-## Platform
-
-Microsoft Azure
 
 ## Infrastructure Parameters
 
@@ -88,7 +85,7 @@ Microsoft Azure
 
 | Parameter Name              | Type   | Required | Default | Description                                      | Example                                              | Auto Binding |
 |-----------------------------|--------|----------|---------|--------------------------------------------------|------------------------------------------------------|--------------|
-| gitCloneUrl                 | string | yes      | -       | GitリポジトリサービスのURL                                 | https://github.com/${organization}/<br>${repository} | yes          |
+| gitCloneUrl                 | string | yes      | -       | GitリポジトリサービスのURL                                 | https://github.com/${organization}/${repository} | yes          |
 | gitRevision                 | string | yes      | -       | Gitのリビジョン                                        |                                                      | no           |
 | gitRepositoryDeleteExisting | bool   | no       | true    | trueの場合、Git Checkoutする時に指定先のディレクトリが存在している場合に削除する |                                                      | no           |
 | gitCheckoutSubDirectory     | string | no       | ""      | GitのCheckout作業をするパス名                             |                                                      | no           |
@@ -155,7 +152,7 @@ Microsoft Azure
 
 ```yaml
 designPatterns:
-  - pattern: qmonus.net/adapter/official/pulumi/azure/sample:azureServerlessPlatform
+  - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend/sharedInfrastructure
     params:
       appName: $(params.appName)
       azureResourceGroupName: $(params.azureResourceGroupName)
@@ -167,4 +164,4 @@ designPatterns:
 
 ## Code
 
-[azureServerlessPlatform](../../pulumi/azure/sample/azureServerlessPlatform.cue)
+[sharedInfrastructure](./main.cue)

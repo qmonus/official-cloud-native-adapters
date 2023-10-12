@@ -17,8 +17,9 @@ import (
 	prefix:          input.image
 	prefixAllParams: true
 
+	let _cacheImageName = "$(params.imageRegistryPath)/$(params.imageShortName)"
+
 	params: {
-		cacheImageName: desc: "Name of the cache image"
 		dockerfile: {
 			desc:    "The path to the dockerfile to build (relative to the context)"
 			default: "Dockerfile"
@@ -58,9 +59,14 @@ import (
 			name:  "BUILDCTL_CONNECT_RETRIES_MAX"
 			value: "20"
 		}]
-		image: "moby/buildkit:v0.9.2"
-		name:  "build-and-push"
+		image:  "moby/buildkit:v0.9.2"
+		name:   "build-and-push"
 		script: """
+			if [ "$(params.imageTag)" = "buildcache" ]; then
+			  echo "Error: unsupported imageTag is specified."
+			  exit 1
+			fi
+
 			buildctl-daemonless.sh --debug \\
 			build \\
 			--progress=plain \\
@@ -70,8 +76,8 @@ import (
 			--local context=$(params.pathToContext) \\
 			--local dockerfile=$(params.pathToContext) \\
 			--output type=image,name=$(params.imageRegistryPath)/$(params.imageShortName):$(params.imageTag),push=true \\
-			--import-cache type=registry,ref=$(params.cacheImageName):buildcache \\
-			--export-cache type=registry,ref=$(params.cacheImageName):buildcache \\
+			--import-cache type=registry,ref=\(_cacheImageName):buildcache \\
+			--export-cache type=registry,ref=\(_cacheImageName):buildcache \\
 			--metadata-file $(workspaces.shared.path)/meta.json \\
 			$(params.extraArgs)
 			"""

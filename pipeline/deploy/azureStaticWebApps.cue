@@ -5,6 +5,7 @@ import (
 	"qmonus.net/adapter/official/pipeline/tasks:gitCheckoutSsh"
 	"qmonus.net/adapter/official/pipeline/tasks:buildAzureStaticWebApps"
 	"qmonus.net/adapter/official/pipeline/tasks:deployAzureStaticWebApps"
+	"qmonus.net/adapter/official/pipeline/tasks:getUrlOfAzureStaticWebApps"
 )
 
 DesignPattern: {
@@ -52,6 +53,12 @@ DesignPattern: {
 				"deploy": deployAzureStaticWebApps.#Builder & {
 					runAfter: ["build"]
 				}
+				"get-url": getUrlOfAzureStaticWebApps.#Builder & {
+					runAfter: ["deploy"]
+				}
+			}
+			results: {
+				"publicUrl": tasks["get-url"].results.publicUrl
 			}
 		}
 	}

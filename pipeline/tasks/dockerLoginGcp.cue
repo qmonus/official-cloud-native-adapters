@@ -23,8 +23,8 @@ import (
 		gcpProjectId: {
 			desc: ""
 		}
-		containerRegistry: {
-			desc: ""
+		imageRegistryPath: {
+			desc: "Path of the container registry without image name"
 		}
 		// FIXME: Remove this param
 		gitCheckoutSubDirectory: {
@@ -63,7 +63,7 @@ import (
 			"-c",
 		]
 		args: [
-			"docker --config=$(workspaces.shared.path)/$(params.gitCheckoutSubDirectory)/dockerconfig login -u oauth2accesstoken -p \"$(cat /workspace/.gar-cred.txt)\" $(params.containerRegistry)",
+			"docker --config=$(workspaces.shared.path)/$(params.gitCheckoutSubDirectory)/dockerconfig login -u oauth2accesstoken -p \"$(cat /workspace/.gar-cred.txt)\" $(params.imageRegistryPath)",
 		]
 	}]
 	volumes: [{

@@ -23,7 +23,7 @@ CI/CD Adapterの詳細については、以下をご覧ください。
     * 作成時に併せて、Adminユーザ:`admin_user`とパスワードがそれぞれ`dbadminuser`と`dbadminpassword`というシークレット名でKey
       Vaultに格納されます。
 * Azure DNS
-    * DNSのゾーンを発行します。
+    * DNSのゾーンを作成します。
     * 機能させるには、デプロイ後にユーザが用意したドメインに移譲の設定を行う必要があります。
 * Azure Key Vault
     * MySQLのパスワードやRedisのアクセスキー、踏み台サーバーの秘密鍵を格納します。

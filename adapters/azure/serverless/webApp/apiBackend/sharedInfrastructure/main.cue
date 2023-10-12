@@ -1,4 +1,4 @@
-package webAppInfrastructure
+package sharedInfrastructure
 
 import (
 	"qmonus.net/adapter/official/pulumi/provider:azure"

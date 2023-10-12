@@ -37,14 +37,12 @@ Azure Container Registry, Microsoft Azure
 | gitCheckoutSubDirectory | string | no | "" | GitのCheckout作業をするパス名 | | no |
 | gitTokenSecretName | string | yes | - | Gitのアクセストークンを保管しているk8s Secret名 | | yes |
 | gitSshKeySecretName | string | yes | - | GitのSSH Keyを保管しているk8s Secret名 | | yes |
-| containerRegistry | string | yes | "" | コンテナレジストリのエンドポイント | ${acr_name}.azurecr.io | no |
 | azureApplicationId | string | yes | - | AzureのApplicationID | | yes |
 | azureClientSecretName | string | yes | - | AzureのClientSecretを保管しているSecret名 | | yes |
-| cacheImageName | string | yes | - | ビルドする際のキャッシュの出力先 | ${acr_name}.azurecr.io/<br>sample/nginx:buildcache | no |
 | dockerfile | string | yes | Dockerfile | ビルドするdockerfileのファイル名 | | no |
 | imageRegistryPath | string | yes | - | コピー元のコンテナレジストリの完全修飾名。コンテナレジストリのログインサーバを指定してください。[名前空間](https://learn.microsoft.com/ja-jp/azure/container-registry/container-registry-best-practices#repository-namespaces) を利用する場合、${acr_name}.azurecr.io/\<repositry name\> の形式で入力することで、\<repositry name\> を名前空間としたパスでイメージをPushします。 | ${acr_name}.azurecr.io <br><br>名前空間を使用する場合は<br> ${acr_name}.azurecr.io/service1 | no |
 | imageShortName | string | yes | - | ビルドするコンテナイメージの省略名。ACRのリポジトリ名を指定する。| nginx | no |
-| imageTag | string | yes | - | コンテナイメージのタグ名| v1.0.0 | no |
+| imageTag | string | yes | - | コンテナイメージのタグ名。buildcacheというタグ名は予約されているため指定できません。 | v1.0.0 | no |
 | pathToContext | string | yes | . | ソースディレクトリからの相対パス | | no |
 | extraArgs | string | yes | "" | Buildkitでイメージをビルドする際に追加で設定するオプション | | no |
 
