@@ -9,14 +9,15 @@ import (
 DesignPattern: {
 	parameters: {
 		appName:                 string
-		azureStaticSiteLocation: string
+		azureStaticSiteLocation: string | *"East Asia"
 		azureSubscriptionId:     string
 		azureResourceGroupName:  string
 		azureDnsZoneName:        string
+		relativeRecordSetName:   string | *"www"
 		azureCnameRecordTtl:     string | *"3600"
 	}
 
-	_azureProvider: provider: "\(azure.default.provider)"
+	_azureProvider: "${\(azure.default.provider)}"
 
 	let _staticSite = "staticSite"
 	let _cnameRecord = "cnameRecord"
@@ -35,6 +36,7 @@ DesignPattern: {
 					name: "Free"
 					tier: "Free"
 				}
+				provider: "SwaCli"
 			}
 		}
 		"\(_cnameRecord)": azure.#Resource & {
@@ -45,7 +47,7 @@ DesignPattern: {
 				recordType:        "CNAME"
 				cnameRecord: cname: "${\(_staticSite).defaultHostname}"
 				zoneName:              parameters.azureDnsZoneName
-				relativeRecordSetName: "www"
+				relativeRecordSetName: parameters.relativeRecordSetName
 				ttl:                   strconv.Atoi(parameters.azureCnameRecordTtl)
 				metadata: "managed-by": "Qmonus Value Stream"
 			}

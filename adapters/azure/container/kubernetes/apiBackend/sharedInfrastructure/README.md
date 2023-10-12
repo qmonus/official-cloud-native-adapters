@@ -1,4 +1,4 @@
-# Web App Infrastructure Adapter
+# Shared Infrastructure Adapter
 
 CI/CD AdapterとInfrastructure Adapterを組み合わせて、HTTPSで外部公開できるアプリケーションをAzure上にデプロイするために、必要なAzureリソース群をデプロイするCloud
 Native Adapterです。
@@ -19,7 +19,7 @@ Native Adapterです。
     * 作成時に併せて、Adminユーザ:`admin_user`とパスワードがそれぞれ`dbadminuser`と`dbadminpassword`というシークレット名でKey
       Vaultに格納されます。
 * Azure DNS
-    * DNSのゾーンを発行します。
+    * DNSのゾーンを作成します。
     * 機能させるには、デプロイ後にユーザが用意したドメインに移譲の設定を行う必要があります。
 * Azure Key Vault
     * MySQLのパスワードやRedisのアクセスキー、踏み台サーバーの秘密鍵を格納します。
@@ -58,7 +58,7 @@ Microsoft Azure
 ## Module
 
 * Module: `qmonus.net/adapter/official`
-* Import path `qmonus.net/adapter/official/adapters/azure/container/kubernetes/webAppInfrastructure`
+* Import path `qmonus.net/adapter/official/adapters/azure/container/kubernetes/apiBackend/sharedInfrastructure`
 
 ## Level
 
@@ -204,7 +204,7 @@ Sample: サンプル実装
 
 ```yaml
 designPatterns:
-  - pattern: qmonus.net/adapter/official/adapters/azure/container/kubernetes/webAppInfrastructure
+  - pattern: qmonus.net/adapter/official/adapters/azure/container/kubernetes/apiBackend/sharedInfrastructure
     params:
       appName: $(params.appName)
       azureResourceGroupName: $(params.azureResourceGroupName)
@@ -216,4 +216,4 @@ designPatterns:
 
 ## Code
 
-[webAppInfrastructure](main.cue)
+[sharedInfrastructure](main.cue)

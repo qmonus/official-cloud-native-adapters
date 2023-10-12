@@ -17,8 +17,8 @@ import (
 	prefixAllParams: true
 
 	params: {
-		containerRegistry: {
-			desc: ""
+		imageRegistryPath: {
+			desc: "Path of the container registry without image name"
 		}
 		// FIXME: Remove this param
 		gitCheckoutSubDirectory: {
@@ -44,7 +44,7 @@ import (
 			"-c",
 		]
 		args: [
-			"docker --config=$(workspaces.shared.path)/$(params.gitCheckoutSubDirectory)/dockerconfig login $(params.containerRegistry) --username $(ARM_CLIENT_ID) --password '$(ARM_CLIENT_SECRET)'",
+			"docker --config=$(workspaces.shared.path)/$(params.gitCheckoutSubDirectory)/dockerconfig login $(params.imageRegistryPath) --username $(ARM_CLIENT_ID) --password '$(ARM_CLIENT_SECRET)'",
 		]
 		env: [{
 			name:  "ARM_CLIENT_ID"

@@ -23,7 +23,7 @@ HTTPSで外部公開できるコンテナアプリケーションをビルドし
     * パラメータから、DBとRedisのホスト名とポート番号を環境変数としてアプリケーションに渡します。
     * External Secretで生成されたSecretをマウントして、DBユーザ名とそのパスワード、およびRedisのパスワードを環境変数としてアプリケーションに渡します。
 
-<img src="images/architecture.png" class="img_zoom">
+<img src="images/image.png" class="img_zoom">
 
 ## Platform
 
@@ -42,7 +42,7 @@ Sample: サンプル実装
 
 ### Prerequisites
 
-* 事前に [Web App Infrastructure Adapter](../webAppInfrastructure/README.md) を用いて各種クラウドリソースを作成してください。
+* 事前に [Shared Infrastructure Adapter](./sharedInfrastructure/README.md) を用いて各種クラウドリソースを作成してください。
 * 上記で作成したDNSゾーンに対して、予めドメインの委譲を行ってください。
   * 以下digコマンドでドメインが委譲されていることを確認してください。
     ```bash
@@ -140,14 +140,12 @@ Sample: サンプル実装
 | gitCheckoutSubDirectory | string | no | "" | GitのCheckout作業をするパス名 | "" | no |
 | gitTokenSecretName | string | yes | - | Gitのアクセストークンを保管しているk8s Secret名 | gitsecret-xxxxxxxxxxxxxxxxxxxx | yes |
 | gitSshKeySecretName | string | yes | - | GitのSSH Keyを保管しているk8s Secret名 | gitsecret-xxxxxxxxxxxxxxxxxxxx | yes |
-| containerRegistry | string | yes | "" | コンテナレジストリのエンドポイント | ${acr_name}.azurecr.io | no |
 | azureApplicationId | string | yes | - | AzureのApplicationID | xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx | yes |
 | azureClientSecretName | string | yes | - | AzureのClientSecretを保管しているSecret名 | azure-default-xxxxxxxxxxxxxxxxxxxx | yes |
-| cacheImageName | string | yes | - | ビルドする際のキャッシュの出力先 | ${acr_name}.azurecr.io/<br>sample/nginx:buildcache | no |
 | dockerfile | string | no | Dockerfile | ビルドするdockerfileのファイル名 | Dockerfile | no |
 | imageRegistryPath | string | yes | - | ビルドしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | ${acr_name}.azurecr.io/sample | no |
 | imageShortName | string | yes | - | ビルドするコンテナイメージの省略名。ACRのリポジトリ名を指定する。| nginx | no |
-| imageTag | string | yes | - | コンテナイメージのタグ名| v1.0.0 | no |
+| imageTag | string | yes | - | コンテナイメージのタグ名。buildcacheというタグ名は予約されているため指定できません。 | v1.0.0 | no |
 | pathToContext | string | no | . | ソースディレクトリからの相対パス | . | no |
 | extraArgs | string | no | "" | Buildkitでイメージをビルドする際に追加で設定するオプション | "" | no |
 | pathToSource | string | no | "" | ソースディレクトリからの相対パス | "" | no |

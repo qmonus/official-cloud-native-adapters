@@ -147,7 +147,7 @@ DesignPattern: {
 				_azureProvider
 			}
 			properties: {
-				scope:            "${virtualNetworkAksSubnet.id}"
+				scope:            "${virtualNetworkApplicationGatewaySubnet.id}"
 				roleDefinitionId: "/subscriptions/\(parameters.azureSubscriptionId)\(_builtInRolesId._networkContributor)"
 				principalId:      "${kubernetesCluster.ingressApplicationGateway.ingressApplicationGatewayIdentities[0].objectId}"
 				principalType:    "ServicePrincipal"
