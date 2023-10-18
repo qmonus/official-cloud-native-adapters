@@ -8,9 +8,11 @@ DesignPattern: {
 	name: "sample:azureCertManager"
 
 	parameters: {
-		appName:             string | *"sample"
-		azureSubscriptionId: string
-		certmanagerVersion:  string | *"1.11.4"
+		appName:                       string | *"sample"
+		dnsZoneName:                   string
+		azureDnsZoneResourceGroupName: string
+		azureSubscriptionId:           string
+		certmanagerVersion:            string | *"1.11.4"
 	}
 
 	_azureProvider: provider: "${AzureProvider}"
@@ -61,7 +63,7 @@ DesignPattern: {
 		clusterIssuer: azure.#Resource & {
 			type: "kubernetes:apiextensions.k8s.io:CustomResource"
 			options: {
-				dependsOn: ["${certmanager}", "${dnsZone}"]
+				dependsOn: ["${certmanager}"]
 				_k8sProvider
 			}
 			properties: {
@@ -81,11 +83,11 @@ DesignPattern: {
 							dns01: {
 								azureDNS: {
 									environment:    "AzurePublicCloud"
-									hostedZoneName: "${dnsZone.name}"
+									hostedZoneName: parameters.dnsZoneName
 									managedIdentity: {
 										clientID: "${certmanagerUserAssignedIdentity.clientId}"
 									}
-									resourceGroupName: "${resourceGroup.name}"
+									resourceGroupName: parameters.azureDnsZoneResourceGroupName
 									subscriptionID:    "\(parameters.azureSubscriptionId)"
 								}
 							}

@@ -67,7 +67,7 @@ import (
 			  exit 1
 			fi
 
-			buildctl-daemonless.sh --debug \\
+			buildctl-daemonless.sh \\
 			build \\
 			--progress=plain \\
 			--frontend=dockerfile.v0 \\

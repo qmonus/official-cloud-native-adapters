@@ -19,6 +19,10 @@ import (
 		azureSubscriptionId: desc:   "Azure Subscription ID"
 		azureApplicationId: desc:    "Azure Application ID"
 		azureClientSecretName: desc: "Credential Name of Azure Client Secret"
+		deployTargetDir: {
+			desc:    "The path to the frontend build working directory"
+			default: "dist"
+		}
 	}
 	workspaces: [{
 		name: "shared"
@@ -28,7 +32,7 @@ import (
 		image: "swacli/static-web-apps-cli:1.1.4"
 		name:  "deploy"
 		command: ["swa"]
-		args: ["deploy", "./dist/", "--no-use-keychain"]
+		args: ["deploy", "$(params.deployTargetDir)", "--no-use-keychain"]
 		workingDir: "$(workspaces.shared.path)/source"
 		env: [{
 			name:  "AZURE_TENANT_ID"

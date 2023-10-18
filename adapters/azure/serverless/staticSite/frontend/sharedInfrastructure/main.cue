@@ -2,7 +2,6 @@ package sharedInfrastructure
 
 import (
 	"qmonus.net/adapter/official/pulumi/provider:azure"
-	"qmonus.net/adapter/official/adapters/azure/component:azureDnsZone"
 	"qmonus.net/adapter/official/adapters/azure/component:azureResourceGroup"
 	"qmonus.net/adapter/official/pipeline/deploy:simpleDeployByPulumiYaml"
 )
@@ -13,7 +12,6 @@ DesignPattern: {
 		azureTenantId:          string
 		azureSubscriptionId:    string
 		azureResourceGroupName: string
-		dnsZoneName:            string
 	}
 
 	pipelineParameters: {
@@ -27,13 +25,6 @@ DesignPattern: {
 			pattern: azure.DesignPattern
 			params: {
 				providerName: "AzureProvider"
-			}
-		},
-		{
-			pattern: azureDnsZone.DesignPattern
-			params: {
-				appName:     parameters.appName
-				dnsZoneName: parameters.dnsZoneName
 			}
 		},
 		{

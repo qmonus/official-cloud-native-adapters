@@ -118,7 +118,7 @@ import (
 		set -o xtrace
 		pulumi login ${PULUMI_BACKEND_URL}
 		pulumi stack select --create \(_stack)
-		pulumi up -y -r -v=9 --diff --stack \(_stack)
+		pulumi up -y -r --stack \(_stack)
 		"""
 		env:     list.FlattenN([
 				{

@@ -8,13 +8,14 @@ import (
 
 DesignPattern: {
 	parameters: {
-		appName:                 string
-		azureStaticSiteLocation: string | *"East Asia"
-		azureSubscriptionId:     string
-		azureResourceGroupName:  string
-		azureDnsZoneName:        string
-		relativeRecordSetName:   string | *"www"
-		azureCnameRecordTtl:     string | *"3600"
+		appName:                       string
+		azureStaticSiteLocation:       string | *"East Asia"
+		azureSubscriptionId:           string
+		azureResourceGroupName:        string
+		azureDnsZoneResourceGroupName: string
+		azureDnsZoneName:              string
+		relativeRecordSetName:         string | *"www"
+		azureCnameRecordTtl:           string | *"3600"
 	}
 
 	_azureProvider: "${\(azure.default.provider)}"
@@ -43,7 +44,7 @@ DesignPattern: {
 			type: "azure-native:network:RecordSet"
 			options: provider: _azureProvider
 			properties: {
-				resourceGroupName: parameters.azureResourceGroupName
+				resourceGroupName: parameters.azureDnsZoneResourceGroupName
 				recordType:        "CNAME"
 				cnameRecord: cname: "${\(_staticSite).defaultHostname}"
 				zoneName:              parameters.azureDnsZoneName

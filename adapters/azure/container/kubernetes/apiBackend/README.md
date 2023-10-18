@@ -43,32 +43,6 @@ Sample: サンプル実装
 ### Prerequisites
 
 * 事前に [Shared Infrastructure Adapter](./sharedInfrastructure/README.md) を用いて各種クラウドリソースを作成してください。
-* 上記で作成したDNSゾーンに対して、予めドメインの委譲を行ってください。
-  * 以下digコマンドでドメインが委譲されていることを確認してください。
-    ```bash
-    # e.g. example.com から委譲された foo.example.com のNSレコードを確認する
-    $ dig foo.example.com ns +trace
-    
-    ; <<>> DiG 9.16.1-Ubuntu <<>> foo.example.com ns +trace
-    …
-    example.com 3600    IN      NS      ns2-36.azure-dns.net.
-    example.com 3600    IN      NS      ns4-36.azure-dns.info.
-    example.com 3600    IN      NS      ns3-36.azure-dns.org.
-    example.com 3600    IN      NS      ns1-36.azure-dns.com.
-    ;; Received 197 bytes from 216.239.32.110#53(ns-x.xxx.com) in 0 ms
-
-    foo.example.com 1 IN   NS      ns1-38.azure-dns.com.
-    foo.example.com 1 IN   NS      ns2-38.azure-dns.net.
-    foo.example.com 1 IN   NS      ns3-38.azure-dns.org.
-    foo.example.com 1 IN   NS      ns4-38.azure-dns.info.
-    ;; Received 197 bytes from 13.107.206.36#53(ns4-36.azure-dns.info) in 32 ms
-
-    foo.example.com 172800 IN NS   ns1-38.azure-dns.com.
-    foo.example.com 172800 IN NS   ns2-38.azure-dns.net.
-    foo.example.com 172800 IN NS   ns3-38.azure-dns.org.
-    foo.example.com 172800 IN NS   ns4-38.azure-dns.info.
-    ;; Received 197 bytes from 13.107.206.38#53(ns4-38.azure-dns.info) in 28 ms
-    ```
 
 ### Constraints
 
@@ -90,6 +64,7 @@ Sample: サンプル実装
 | azureSubscriptionId | string | yes | - | 事前に用意したAzureのリソースが含まれるサブスクリプション名 | xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx | yes |
 | azureResourceGroupName | string | yes | - | 事前に用意したAzureのリソースが含まれるリソースグループ名 | sample-resourcegroup | yes |
 | azureDnsZoneName | string | yes | - | 事前に用意したDNSゾーン名 | foo.example.com | no |
+| azureDnsZoneResourceGroupName | string | yes | - | 事前に用意したDNSゾーンが所属するリソースグループ名 | sample-dnszone-resourcegroup | no |
 | azureDnsARecordName | string | yes | - | 新たに作成するAレコード名 | www | no |
 | azureStaticIpAddress | string | yes | - | 新たに作成するAレコードで指定するIPアドレス | 192.168.x.x | no |
 | azureARecordTtl | string | no | "3600" | 新たに作成するAレコードに設定するTTLの値 | "3600" | no |
@@ -205,6 +180,7 @@ designPatterns:
       azureSubscriptionId: $(params.azureSubscriptionId)
       azureResourceGroupName: $(params.azureResourceGroupName)
       azureDnsZoneName: $(params.azureDnsZoneName)
+      azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
       azureDnsARecordName: $(params.azureDnsARecordName)
       azureStaticIpAddress: $(params.azureStaticIpAddress)
       mysqlCreateDbName: $(params.mysqlCreateDbName)

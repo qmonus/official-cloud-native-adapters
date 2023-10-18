@@ -60,7 +60,7 @@ import (
 		image: "moby/buildkit:v0.9.2"
 		name:  "build-and-push"
 		script: """
-			buildctl-daemonless.sh --debug \\
+			buildctl-daemonless.sh \\
 			build \\
 			--progress=plain \\
 			--frontend=dockerfile.v0 \\

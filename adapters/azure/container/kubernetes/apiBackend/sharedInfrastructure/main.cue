@@ -10,7 +10,6 @@ import (
 	"qmonus.net/adapter/official/adapters/azure/component:azureCertManager"
 	"qmonus.net/adapter/official/adapters/azure/component:azureContainerRegistry"
 	"qmonus.net/adapter/official/adapters/azure/component:azureDatabaseForMysql"
-	"qmonus.net/adapter/official/adapters/azure/component:azureDnsZone"
 	"qmonus.net/adapter/official/adapters/azure/component:azureExternalSecrets"
 	"qmonus.net/adapter/official/adapters/azure/component:azureKeyVault"
 	"qmonus.net/adapter/official/adapters/azure/component:azureKubernetesService"
@@ -22,20 +21,21 @@ import (
 
 DesignPattern: {
 	parameters: {
-		appName:                string
-		azureTenantId:          string
-		azureSubscriptionId:    string
-		azureResourceGroupName: string
-		mysqlSkuName:           string | *"B_Standard_B2s"
-		mysqlVersion:           string | *"8.0.21"
-		dnsZoneName:            string
-		kubernetesVersion:      string | *null
-		kubernetesSkuTier:      "Standard" | *"Free"
-		kubernetesNodeVmSize:   string | *"Standard_B2s"
-		kubernetesNodeCount:    string | *"1"
-		kubernetesOsDiskGb:     string | *"32"
-		certmanagerVersion:     string | *"1.11.4"
-		esoVersion:             string | *"0.9.0"
+		appName:                       string
+		azureTenantId:                 string
+		azureSubscriptionId:           string
+		azureResourceGroupName:        string
+		azureDnsZoneResourceGroupName: string
+		mysqlSkuName:                  string | *"B_Standard_B2s"
+		mysqlVersion:                  string | *"8.0.21"
+		dnsZoneName:                   string
+		kubernetesVersion:             string | *null
+		kubernetesSkuTier:             "Standard" | *"Free"
+		kubernetesNodeVmSize:          string | *"Standard_B2s"
+		kubernetesNodeCount:           string | *"1"
+		kubernetesOsDiskGb:            string | *"32"
+		certmanagerVersion:            string | *"1.11.4"
+		esoVersion:                    string | *"0.9.0"
 		keyVaultAccessAllowedObjectIds: [...string]
 	}
 
@@ -86,9 +86,11 @@ DesignPattern: {
 		{
 			pattern: azureCertManager.DesignPattern
 			params: {
-				appName:             parameters.appName
-				azureSubscriptionId: parameters.azureSubscriptionId
-				certmanagerVersion:  parameters.certmanagerVersion
+				appName:                       parameters.appName
+				dnsZoneName:                   parameters.dnsZoneName
+				azureDnsZoneResourceGroupName: parameters.azureDnsZoneResourceGroupName
+				azureSubscriptionId:           parameters.azureSubscriptionId
+				certmanagerVersion:            parameters.certmanagerVersion
 			}
 		},
 		{
@@ -103,13 +105,6 @@ DesignPattern: {
 				appName:      parameters.appName
 				mysqlSkuName: parameters.mysqlSkuName
 				mysqlVersion: parameters.mysqlVersion
-			}
-		},
-		{
-			pattern: azureDnsZone.DesignPattern
-			params: {
-				appName:     parameters.appName
-				dnsZoneName: parameters.dnsZoneName
 			}
 		},
 		{
