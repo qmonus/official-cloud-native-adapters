@@ -9,13 +9,14 @@ import (
 
 DesignPattern: {
 	parameters: {
-		appName:                 string
-		azureStaticSiteLocation: string | *"East Asia"
-		azureSubscriptionId:     string
-		azureResourceGroupName:  string
-		azureDnsZoneName:        string
-		relativeRecordSetName:   string | *"www"
-		azureCnameRecordTtl:     string | *"3600"
+		appName:                       string
+		azureStaticSiteLocation:       string | *"East Asia"
+		azureSubscriptionId:           string
+		azureResourceGroupName:        string
+		azureDnsZoneResourceGroupName: string
+		azureDnsZoneName:              string
+		relativeRecordSetName:         string | *"www"
+		azureCnameRecordTtl:           string | *"3600"
 	}
 	pipelineParameters: {
 		// common parameters derived from multiple adapters
@@ -32,13 +33,14 @@ DesignPattern: {
 		}, {
 			pattern: azureStaticWebApps.DesignPattern
 			params: {
-				appName:                 parameters.appName
-				azureStaticSiteLocation: parameters.azureStaticSiteLocation
-				azureSubscriptionId:     parameters.azureSubscriptionId
-				azureResourceGroupName:  parameters.azureResourceGroupName
-				azureDnsZoneName:        parameters.azureDnsZoneName
-				relativeRecordSetName:   parameters.relativeRecordSetName
-				azureCnameRecordTtl:     parameters.azureCnameRecordTtl
+				appName:                       parameters.appName
+				azureStaticSiteLocation:       parameters.azureStaticSiteLocation
+				azureSubscriptionId:           parameters.azureSubscriptionId
+				azureResourceGroupName:        parameters.azureResourceGroupName
+				azureDnsZoneResourceGroupName: parameters.azureDnsZoneResourceGroupName
+				azureDnsZoneName:              parameters.azureDnsZoneName
+				relativeRecordSetName:         parameters.relativeRecordSetName
+				azureCnameRecordTtl:           parameters.azureCnameRecordTtl
 			}
 		}, {
 			pattern: simpleDeployByPulumiYaml.DesignPattern

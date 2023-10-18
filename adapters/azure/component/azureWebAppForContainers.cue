@@ -8,17 +8,18 @@ DesignPattern: {
 	name: "sample:azureWebAppForContainers"
 
 	parameters: {
-		appName:                string
-		azureSubscriptionId:    string
-		azureResourceGroupName: string
-		containerRegistryName:  string
-		dnsZoneName:            string
-		subDomainName:          string | *"api"
-		subnetId:               string | *""
-		dbHost:                 string
-		redisHost:              string
-		azureKeyVaultName:      string
-		imageFullNameTag:       string
+		appName:                       string
+		azureSubscriptionId:           string
+		azureResourceGroupName:        string
+		azureDnsZoneResourceGroupName: string
+		containerRegistryName:         string
+		dnsZoneName:                   string
+		subDomainName:                 string | *"api"
+		subnetId:                      string | *""
+		dbHost:                        string
+		redisHost:                     string
+		azureKeyVaultName:             string
+		imageFullNameTag:              string
 	}
 
 	_azureProvider: provider:        "${AzureProvider}"
@@ -145,7 +146,7 @@ DesignPattern: {
 			type:    "azure-native:network:RecordSet"
 			options: _azureProvider
 			properties: {
-				resourceGroupName: parameters.azureResourceGroupName
+				resourceGroupName: parameters.azureDnsZoneResourceGroupName
 				recordType:        "CNAME"
 				cnameRecord: cname: "${webAppForContainer.defaultHostName}"
 				relativeRecordSetName: parameters.subDomainName
@@ -159,7 +160,7 @@ DesignPattern: {
 			type:    "azure-native:network:RecordSet"
 			options: _azureProvider
 			properties: {
-				resourceGroupName: parameters.azureResourceGroupName
+				resourceGroupName: parameters.azureDnsZoneResourceGroupName
 				recordType:        "TXT"
 				txtRecords: [{
 					value: [

@@ -7,7 +7,6 @@ import (
 	"qmonus.net/adapter/official/adapters/azure/component:azureCacheForRedis"
 	"qmonus.net/adapter/official/adapters/azure/component:azureContainerRegistry"
 	"qmonus.net/adapter/official/adapters/azure/component:azureDatabaseForMysql"
-	"qmonus.net/adapter/official/adapters/azure/component:azureDnsZone"
 	"qmonus.net/adapter/official/adapters/azure/component:azureKeyVault"
 	"qmonus.net/adapter/official/adapters/azure/component:azureResourceGroup"
 	"qmonus.net/adapter/official/adapters/azure/component:azureVirtualNetwork"
@@ -22,7 +21,6 @@ DesignPattern: {
 		azureResourceGroupName: string
 		mysqlSkuName:           string | *"B_Standard_B2s"
 		mysqlVersion:           string | *"8.0.21"
-		dnsZoneName:            string
 		keyVaultAccessAllowedObjectIds: [...string]
 	}
 
@@ -69,13 +67,6 @@ DesignPattern: {
 				appName:      parameters.appName
 				mysqlSkuName: parameters.mysqlSkuName
 				mysqlVersion: parameters.mysqlVersion
-			}
-		},
-		{
-			pattern: azureDnsZone.DesignPattern
-			params: {
-				appName:     parameters.appName
-				dnsZoneName: parameters.dnsZoneName
 			}
 		},
 		{

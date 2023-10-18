@@ -64,6 +64,7 @@ Sample: サンプル実装
 | appName                | string | yes      | -       | デプロイするアプリケーション名                                     | sample                                                                                                                                                      | yes          |
 | azureSubscriptionId    | string | yes      | -       | 事前に用意したAzureのリソースが含まれるサブスクリプション名                    | xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx                                                                                                                        | yes          |
 | azureResourceGroupName | string | yes      | -       | 事前に用意したAzureのリソースが含まれるリソースグループ名                     | sample-rg                                                                                                                                                   | yes          |
+| azureDnsZoneResourceGroupName | string | yes | - | 事前に用意したDNSゾーンが所属するリソースグループ名 | sample-dnszone-resourcegroup | no |
 | azureKeyVaultName      | string | yes      | -       | 事前に用意したAzure Key Vault名                             | SampleKeyVault                                                                                                                                              | no           |
 | containerRegistryName  | string | yes      | -       | 事前に用意したContainer Registry名                          | SampleRegistry                                                                                                                                              | no           |
 | subnetId               | string | no       | ""      | Web Appsのデプロイ先のSubnet ID (指定しない場合はSubnet外にデプロイされます) | /subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx /resourceGroups/sample-rg/providers/Microsoft.Network/virtualNetworks/sample-vnet/sample-web-app-subnet | no           |
@@ -153,6 +154,7 @@ designPatterns:
       appName: $(params.appName)
       azureSubscriptionId: $(params.azureSubscriptionId)
       azureResourceGroupName: $(params.azureResourceGroupName)
+      azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
       containerRegistryName: $(params.containerRegistryName)
       dnsZoneName: $(params.dnsZoneName)
       subnetId: $(params.subnetId)

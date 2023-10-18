@@ -11,17 +11,18 @@ import (
 
 DesignPattern: {
 	parameters: {
-		appName:                string
-		azureSubscriptionId:    string
-		azureResourceGroupName: string
-		containerRegistryName:  string
-		dnsZoneName:            string
-		subDomainName:          string | *"api"
-		subnetId:               string | *""
-		dbHost:                 string
-		redisHost:              string
-		azureKeyVaultName:      string
-		imageFullNameTag:       string
+		appName:                       string
+		azureSubscriptionId:           string
+		azureResourceGroupName:        string
+		azureDnsZoneResourceGroupName: string
+		containerRegistryName:         string
+		dnsZoneName:                   string
+		subDomainName:                 string | *"api"
+		subnetId:                      string | *""
+		dbHost:                        string
+		redisHost:                     string
+		azureKeyVaultName:             string
+		imageFullNameTag:              string
 	}
 
 	pipelineParameters: {
@@ -53,16 +54,17 @@ DesignPattern: {
 		{
 			pattern: azureWebAppForContainers.DesignPattern
 			params: {
-				appName:                parameters.appName
-				azureSubscriptionId:    parameters.azureSubscriptionId
-				azureResourceGroupName: parameters.azureResourceGroupName
-				containerRegistryName:  parameters.containerRegistryName
-				dnsZoneName:            parameters.dnsZoneName
-				subDomainName:          parameters.subDomainName
-				dbHost:                 parameters.dbHost
-				redisHost:              parameters.redisHost
-				azureKeyVaultName:      parameters.azureKeyVaultName
-				imageFullNameTag:       parameters.imageFullNameTag
+				appName:                       parameters.appName
+				azureSubscriptionId:           parameters.azureSubscriptionId
+				azureResourceGroupName:        parameters.azureResourceGroupName
+				azureDnsZoneResourceGroupName: parameters.azureDnsZoneResourceGroupName
+				containerRegistryName:         parameters.containerRegistryName
+				dnsZoneName:                   parameters.dnsZoneName
+				subDomainName:                 parameters.subDomainName
+				dbHost:                        parameters.dbHost
+				redisHost:                     parameters.redisHost
+				azureKeyVaultName:             parameters.azureKeyVaultName
+				imageFullNameTag:              parameters.imageFullNameTag
 				if parameters.subnetId != "" {
 					subnetId: parameters.subnetId
 				}

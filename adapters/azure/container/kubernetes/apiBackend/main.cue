@@ -16,6 +16,7 @@ DesignPattern: {
 		appName:                                string
 		azureSubscriptionId:                    string
 		azureResourceGroupName:                 string
+		azureDnsZoneResourceGroupName:          string
 		azureDnsZoneName:                       string
 		azureDnsARecordName:                    string
 		azureStaticIpAddress:                   string
@@ -156,7 +157,7 @@ DesignPattern: {
 			options: provider: "${\(_azureProvider)}"
 			properties: {
 				recordType:            "A"
-				resourceGroupName:     parameters.azureResourceGroupName
+				resourceGroupName:     parameters.azureDnsZoneResourceGroupName
 				zoneName:              parameters.azureDnsZoneName
 				relativeRecordSetName: parameters.azureDnsARecordName
 				aRecords: [{ipv4Address: parameters.azureStaticIpAddress}]
