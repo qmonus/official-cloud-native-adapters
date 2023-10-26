@@ -1,12 +1,10 @@
 package azureApplicationGateway
 
 import (
-	"qmonus.net/adapter/official/pulumi/base/azure"
+	"qmonus.net/adapter/official/types:azure"
 )
 
 DesignPattern: {
-	name: "sample:azureApplicationGateway"
-
 	parameters: {
 		appName:             string
 		azureSubscriptionId: string
@@ -15,8 +13,7 @@ DesignPattern: {
 	_azureProvider: provider: "${AzureProvider}"
 
 	resources: app: {
-		applicationGateway: azure.#Resource & {
-			type:    "azure-native:network:ApplicationGateway"
+		applicationGateway: azure.#AzureApplicationGateway & {
 			options: _azureProvider
 			options: ignoreChanges: [
 				"backendAddressPools",
@@ -70,7 +67,6 @@ DesignPattern: {
 					name:     "Standard_v2"
 					tier:     "Standard_v2"
 				}
-				tags: "managed-by": "Qmonus Value Stream"
 				zones: ["1"]
 			}
 		}

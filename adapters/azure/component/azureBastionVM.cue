@@ -1,13 +1,11 @@
 package azureBastionVM
 
 import (
-	"qmonus.net/adapter/official/pulumi/base/azure"
-	"qmonus.net/adapter/official/pulumi/base/tls"
+	"qmonus.net/adapter/official/types:azure"
+	"qmonus.net/adapter/official/types:tls"
 )
 
 DesignPattern: {
-	name: "sample:azureBastionVM"
-
 	parameters: {
 		appName:       string
 		bastionVmSize: string | *"Standard_DS1_v2"
@@ -17,16 +15,14 @@ DesignPattern: {
 	_tlsProvider: provider:   "${TlsProvider}"
 
 	resources: app: {
-		bastionSshKey: tls.#Resource & {
-			type:    "tls:PrivateKey"
+		bastionSshKey: tls.#TlsPrivateKey & {
 			options: _tlsProvider
 			properties: {
 				algorithm: "RSA"
 			}
 		}
 
-		bastionSshKeySecret: azure.#Resource & {
-			type: "azure-native:keyvault:Secret"
+		bastionSshKeySecret: azure.#AzureKeyVaultSecret & {
 			options: {
 				dependsOn: ["${keyVaultAccessPolicyForQvs}"]
 				_azureProvider
@@ -38,12 +34,10 @@ DesignPattern: {
 				resourceGroupName: "${resourceGroup.name}"
 				secretName:        "bastionsshkey"
 				vaultName:         "${keyVault.name}"
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 
-		bastionNIC: azure.#Resource & {
-			type:    "azure-native:network:NetworkInterface"
+		bastionNIC: azure.#AzureNetworkInterface & {
 			options: _azureProvider
 			properties: {
 				networkInterfaceName: "qvs-\(parameters.appName)-bastion-nic"
@@ -59,12 +53,10 @@ DesignPattern: {
 						publicIPAddress: id: "${bastionPublicIpAddress.id}"
 					},
 				]
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 
-		bastionVM: azure.#Resource & {
-			type: "azure-native:compute:VirtualMachine"
+		bastionVM: azure.#AzureVirtualMachine & {
 			options: {
 				dependsOn: ["${bastionNIC}", "${bastionSshKey}"]
 				_azureProvider
@@ -108,7 +100,6 @@ DesignPattern: {
 					}
 				}
 				zones: ["1"]
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 	}

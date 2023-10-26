@@ -1,10 +1,9 @@
 package sharedInfrastructure
 
 import (
-	"qmonus.net/adapter/official/pulumi/provider:kubernetes"
-	"qmonus.net/adapter/official/pulumi/provider:azure"
-	"qmonus.net/adapter/official/pulumi/provider:azureclassic"
-	"qmonus.net/adapter/official/pulumi/provider:random"
+	"qmonus.net/adapter/official/types:azure"
+	"qmonus.net/adapter/official/types:kubernetes"
+	"qmonus.net/adapter/official/types:random"
 	"qmonus.net/adapter/official/adapters/azure/component:azureApplicationGateway"
 	"qmonus.net/adapter/official/adapters/azure/component:azureCacheForRedis"
 	"qmonus.net/adapter/official/adapters/azure/component:azureCertManager"
@@ -46,30 +45,6 @@ DesignPattern: {
 	}
 
 	composites: [
-		{
-			pattern: kubernetes.DesignPattern
-			params: {
-				providerName: "K8sProvider"
-			}
-		},
-		{
-			pattern: azure.DesignPattern
-			params: {
-				providerName: "AzureProvider"
-			}
-		},
-		{
-			pattern: azureclassic.DesignPattern
-			params: {
-				providerName: "AzureClassicProvider"
-			}
-		},
-		{
-			pattern: random.DesignPattern
-			params: {
-				providerName: "RandomProvider"
-			}
-		},
 		{
 			pattern: azureApplicationGateway.DesignPattern
 			params: {
@@ -173,13 +148,33 @@ DesignPattern: {
 		},
 	]
 
+	let _azureProvider = "AzureProvider"
+	let _azureClassicProvider = "AzureClassicProvider"
+	let _k8sProvider = "K8sProvider"
+	let _randomProvider = "RandomProvider"
+	let _kubernetesCluster = "kubernetesCluster"
+
+	parameters: #resourceId: {
+		azureProvider:        _azureProvider
+		azureClassicProvider: _azureClassicProvider
+		k8sProvider:          _k8sProvider
+		randomProvider:       _randomProvider
+		kubernetesCluster:    _kubernetesCluster
+	}
+
 	resources: app: {
-		"K8sProvider": {
+		"\(_azureProvider)": azure.#AzureProvider
+
+		"\(_azureClassicProvider)": azure.#AzureClassicProvider
+
+		"\(_k8sProvider)": kubernetes.#K8sProvider & {
 			properties: {
-				kubeconfig:        "${kubernetesCluster.kubeConfigRaw}"
+				kubeconfig:        "${\(_kubernetesCluster).kubeConfigRaw}"
 				deleteUnreachable: true
 			}
 		}
+
+		"\(_randomProvider)": random.#RandomProvider
 	}
 
 	pipelines: _

@@ -1,12 +1,10 @@
 package azureWebAppForContainers
 
 import (
-	"qmonus.net/adapter/official/pulumi/base/azure"
+	"qmonus.net/adapter/official/types:azure"
 )
 
 DesignPattern: {
-	name: "sample:azureWebAppForContainers"
-
 	parameters: {
 		appName:                       string
 		azureSubscriptionId:           string
@@ -26,8 +24,7 @@ DesignPattern: {
 	_azureClassicProvider: provider: "${AzureClassicProvider}"
 
 	resources: app: {
-		webAppForContainer: azure.#Resource & {
-			type:    "azure-native:web:WebApp"
+		webAppForContainer: azure.#AzureWebApp & {
 			options: _azureProvider
 			options: ignoreChanges: [
 				"hostNameSslStates",
@@ -138,12 +135,10 @@ DesignPattern: {
 					linuxFxVersion:  "DOCKER|\(parameters.imageFullNameTag)"
 					numberOfWorkers: 1
 				}
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 
-		cnameRecord: azure.#Resource & {
-			type:    "azure-native:network:RecordSet"
+		cnameRecord: azure.#AzureDnsRecordSet & {
 			options: _azureProvider
 			properties: {
 				resourceGroupName: parameters.azureDnsZoneResourceGroupName
@@ -152,12 +147,10 @@ DesignPattern: {
 				relativeRecordSetName: parameters.subDomainName
 				ttl:                   3600
 				zoneName:              parameters.dnsZoneName
-				metadata: "managed-by": "Qmonus Value Stream"
 			}
 		}
 
-		txtRecord: azure.#Resource & {
-			type:    "azure-native:network:RecordSet"
+		txtRecord: azure.#AzureDnsRecordSet & {
 			options: _azureProvider
 			properties: {
 				resourceGroupName: parameters.azureDnsZoneResourceGroupName
@@ -170,12 +163,10 @@ DesignPattern: {
 				relativeRecordSetName: "asuid.\(parameters.subDomainName)"
 				ttl:                   3600
 				zoneName:              parameters.dnsZoneName
-				metadata: "managed-by": "Qmonus Value Stream"
 			}
 		}
 
-		webAppHostNameBinding: azure.#Resource & {
-			type:    "azure-native:web:WebAppHostNameBinding"
+		webAppHostNameBinding: azure.#AzureWebAppHostNameBinding & {
 			options: _azureProvider
 			options: ignoreChanges: [
 				"sslState",
@@ -198,17 +189,14 @@ DesignPattern: {
 			}
 		}
 
-		managedCertificate: azure.#Resource & {
-			type:    "azure:appservice:ManagedCertificate"
+		managedCertificate: azure.#AzureManagedCertificate & {
 			options: _azureClassicProvider
 			properties: {
 				customHostnameBindingId: "${webAppHostNameBinding.id}"
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 
-		certBinding: azure.#Resource & {
-			type:    "azure:appservice:CertificateBinding"
+		certBinding: azure.#AzureCertificateBinding & {
 			options: _azureClassicProvider
 			properties: {
 				certificateId:     "${managedCertificate.id}"

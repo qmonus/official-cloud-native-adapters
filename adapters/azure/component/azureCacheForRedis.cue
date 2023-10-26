@@ -1,13 +1,11 @@
 package azureCacheForRedis
 
 import (
-	"qmonus.net/adapter/official/pulumi/base/azure"
-	"qmonus.net/adapter/official/pulumi/base/random"
+	"qmonus.net/adapter/official/types:azure"
+	"qmonus.net/adapter/official/types:random"
 )
 
 DesignPattern: {
-	name: "sample:azureCacheForRedis"
-
 	parameters: {
 		appName: string
 	}
@@ -17,8 +15,7 @@ DesignPattern: {
 	_randomProvider: provider:       "${RandomProvider}"
 
 	resources: app: {
-		redisNameSuffix: random.#Resource & {
-			type:    "random:RandomString"
+		redisNameSuffix: random.#RandomString & {
 			options: _randomProvider
 			properties: {
 				length:  8
@@ -26,8 +23,7 @@ DesignPattern: {
 			}
 		}
 		// Public redis
-		redis: azure.#Resource & {
-			type:    "azure:redis:Cache"
+		redis: azure.#AzureCacheForRedis & {
 			options: _azureClassicProvider
 			properties: {
 				name:              "qvs-\(parameters.appName)-redis-${redisNameSuffix.result}"
@@ -40,12 +36,10 @@ DesignPattern: {
 				capacity: 1
 				family:   "P"
 				skuName:  "Premium"
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 		// Firewall rule accessible from anywhere
-		redisFirewallRule: azure.#Resource & {
-			type: "azure:redis:FirewallRule"
+		redisFirewallRule: azure.#AzureRedisFirewallRule & {
 			options: {
 				_azureClassicProvider
 			}
@@ -57,8 +51,7 @@ DesignPattern: {
 				endIp:             "255.255.255.255"
 			}
 		}
-		redisPrimaryKeySecret: azure.#Resource & {
-			type: "azure-native:keyvault:Secret"
+		redisPrimaryKeySecret: azure.#AzureKeyVaultSecret & {
 			options: {
 				dependsOn: ["${redis}", "${keyVaultAccessPolicyForQvs}"]
 				_azureProvider

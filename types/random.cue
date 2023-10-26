@@ -11,3 +11,8 @@ import "qmonus.net/adapter/official/types:base"
 	base.#Resource
 	type: "random:RandomPassword"
 }
+
+#RandomString: {
+	base.#Resource
+	type: "random:RandomString"
+}

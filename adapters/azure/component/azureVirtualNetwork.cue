@@ -1,12 +1,10 @@
 package azureVirtualNetwork
 
 import (
-	"qmonus.net/adapter/official/pulumi/base/azure"
+	"qmonus.net/adapter/official/types:azure"
 )
 
 DesignPattern: {
-	name: "sample:azureVirtualNetwork"
-
 	parameters: {
 		appName:               string
 		useAKS:                bool | *true
@@ -17,8 +15,7 @@ DesignPattern: {
 	_azureProvider: provider: "${AzureProvider}"
 
 	resources: app: {
-		virtualNetwork: azure.#Resource & {
-			type: "azure-native:network:VirtualNetwork"
+		virtualNetwork: azure.#AzureVirtualNetwork & {
 			options: {
 				// Ignore VNET rewriting due to subnet resource creation
 				ignoreChanges: ["subnets"]
@@ -29,13 +26,11 @@ DesignPattern: {
 				location:           "japaneast"
 				virtualNetworkName: "qvs-\(parameters.appName)-vnet"
 				addressSpace: addressPrefixes: ["10.0.0.0/16"]
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 
 		if parameters.useAKS {
-			virtualNetworkAksSubnet: azure.#Resource & {
-				type:    "azure-native:network:Subnet"
+			virtualNetworkAksSubnet: azure.#AzureSubnet & {
 				options: _azureProvider
 				properties: {
 					resourceGroupName:  "${resourceGroup.name}"
@@ -46,14 +41,12 @@ DesignPattern: {
 				}
 			}
 
-			networkSecurityGroupAKS: azure.#Resource & {
-				type:    "azure-native:network:NetworkSecurityGroup"
+			networkSecurityGroupAKS: azure.#AzureNetworkSecurityGroup & {
 				options: _azureProvider
 				properties: {
 					resourceGroupName:        "${resourceGroup.name}"
 					networkSecurityGroupName: "qvs-\(parameters.appName)-aks-nsg"
 					location:                 "japaneast"
-					tags: "managed-by": "Qmonus Value Stream"
 					securityRules: [{
 						access:                   "Allow"
 						destinationAddressPrefix: '*'
@@ -70,8 +63,7 @@ DesignPattern: {
 		}
 
 		if parameters.useApplicationGateway {
-			virtualNetworkApplicationGatewaySubnet: azure.#Resource & {
-				type: "azure-native:network:Subnet"
+			virtualNetworkApplicationGatewaySubnet: azure.#AzureSubnet & {
 				options: {
 					dependsOn: ["${virtualNetworkAksSubnet}"]
 					_azureProvider
@@ -85,14 +77,12 @@ DesignPattern: {
 				}
 			}
 
-			networkSecurityGroupApplicationGateway: azure.#Resource & {
-				type:    "azure-native:network:NetworkSecurityGroup"
+			networkSecurityGroupApplicationGateway: azure.#AzureNetworkSecurityGroup & {
 				options: _azureProvider
 				properties: {
 					resourceGroupName:        "${resourceGroup.name}"
 					networkSecurityGroupName: "qvs-\(parameters.appName)-application-gateway-nsg"
 					location:                 "japaneast"
-					tags: "managed-by": "Qmonus Value Stream"
 					securityRules: [{
 						// Specific security rules required for application gateways
 						access:                   "Allow"
@@ -120,8 +110,7 @@ DesignPattern: {
 		}
 
 		if parameters.useAppService {
-			virtualNetworkWebAppSubnet: azure.#Resource & {
-				type:    "azure-native:network:Subnet"
+			virtualNetworkWebAppSubnet: azure.#AzureSubnet & {
 				options: _azureProvider
 				properties: {
 					resourceGroupName:  "${resourceGroup.name}"
@@ -136,14 +125,12 @@ DesignPattern: {
 				}
 			}
 
-			networkSecurityGroupWebApp: azure.#Resource & {
-				type:    "azure-native:network:NetworkSecurityGroup"
+			networkSecurityGroupWebApp: azure.#AzureNetworkSecurityGroup & {
 				options: _azureProvider
 				properties: {
 					resourceGroupName:        "${resourceGroup.name}"
 					networkSecurityGroupName: "qvs-\(parameters.appName)-web-app-nsg"
 					location:                 "japaneast"
-					tags: "managed-by": "Qmonus Value Stream"
 					securityRules: [{
 						access:                   "Allow"
 						destinationAddressPrefix: '*'

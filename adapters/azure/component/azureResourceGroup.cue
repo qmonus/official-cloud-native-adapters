@@ -1,12 +1,10 @@
 package azureResourceGroup
 
 import (
-	"qmonus.net/adapter/official/pulumi/base/azure"
+	"qmonus.net/adapter/official/types:azure"
 )
 
 DesignPattern: {
-	name: "sample:azureResourceGroup"
-
 	parameters: {
 		appName:                string
 		azureResourceGroupName: string
@@ -15,13 +13,11 @@ DesignPattern: {
 	_azureProvider: provider: "${AzureProvider}"
 
 	resources: app: {
-		resourceGroup: azure.#Resource & {
-			type:    "azure-native:resources:ResourceGroup"
+		resourceGroup: azure.#AzureResourceGroup & {
 			options: _azureProvider
 			properties: {
 				location:          "japaneast"
 				resourceGroupName: parameters.azureResourceGroupName
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 	}

@@ -3,7 +3,7 @@ package azureStaticWebApps
 import (
 	"strconv"
 
-	"qmonus.net/adapter/official/pulumi/base/azure"
+	"qmonus.net/adapter/official/types:azure"
 )
 
 DesignPattern: {
@@ -18,16 +18,15 @@ DesignPattern: {
 		azureCnameRecordTtl:           string | *"3600"
 	}
 
-	_azureProvider: "${\(azure.default.provider)}"
+	_azureProvider: provider: "${AzureProvider}"
 
 	let _staticSite = "staticSite"
 	let _cnameRecord = "cnameRecord"
 	let _staticSiteCustomDomain = "staticSiteCustomDomain"
 
 	resources: app: {
-		"\(_staticSite)": azure.#Resource & {
-			type: "azure-native:web:StaticSite"
-			options: provider: _azureProvider
+		"\(_staticSite)": azure.#AzureStaticSite & {
+			options: _azureProvider
 			properties: {
 				resourceGroupName: parameters.azureResourceGroupName
 				location:          parameters.azureStaticSiteLocation
@@ -40,9 +39,8 @@ DesignPattern: {
 				provider: "SwaCli"
 			}
 		}
-		"\(_cnameRecord)": azure.#Resource & {
-			type: "azure-native:network:RecordSet"
-			options: provider: _azureProvider
+		"\(_cnameRecord)": azure.#AzureDnsRecordSet & {
+			options: _azureProvider
 			properties: {
 				resourceGroupName: parameters.azureDnsZoneResourceGroupName
 				recordType:        "CNAME"
@@ -50,12 +48,10 @@ DesignPattern: {
 				zoneName:              parameters.azureDnsZoneName
 				relativeRecordSetName: parameters.relativeRecordSetName
 				ttl:                   strconv.Atoi(parameters.azureCnameRecordTtl)
-				metadata: "managed-by": "Qmonus Value Stream"
 			}
 		}
-		"\(_staticSiteCustomDomain)": azure.#Resource & {
-			type: "azure-native:web:StaticSiteCustomDomain"
-			options: provider: _azureProvider
+		"\(_staticSiteCustomDomain)": azure.#AzureStaticSiteCustomDomain & {
+			options: _azureProvider
 			properties: {
 				resourceGroupName: parameters.azureResourceGroupName
 				domainName: {

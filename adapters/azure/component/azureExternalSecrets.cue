@@ -1,11 +1,11 @@
 package azureExternalSecrets
 
 import (
-	"qmonus.net/adapter/official/pulumi/base/azure"
+	"qmonus.net/adapter/official/types:azure"
+	"qmonus.net/adapter/official/types:kubernetes"
 )
 
 DesignPattern: {
-	name: "sample:azureExternalSecrets"
 	parameters: {
 		appName:       string | *"sample"
 		azureTenantId: string
@@ -17,8 +17,7 @@ DesignPattern: {
 	_k8sProvider: provider:          "${K8sProvider}"
 
 	resources: app: {
-		esoNamespace: azure.#Resource & {
-			type: "kubernetes:core/v1:Namespace"
+		esoNamespace: kubernetes.#K8sNamespace & {
 			options: {
 				dependsOn: ["${kubernetesCluster}"]
 				_k8sProvider
@@ -30,8 +29,7 @@ DesignPattern: {
 			}
 		}
 
-		eso: azure.#Resource & {
-			type: "kubernetes:helm.sh/v3:Release"
+		eso: kubernetes.#K8sHelmRelease & {
 			options: {
 				dependsOn: ["${esoNamespace}"]
 				_k8sProvider
@@ -62,15 +60,12 @@ DesignPattern: {
 			}
 		}
 
-		clusterSecretStore: azure.#Resource & {
-			type: "kubernetes:apiextensions.k8s.io:CustomResource"
+		clusterSecretStore: kubernetes.#K8sClusterSecretStore & {
 			options: {
 				dependsOn: ["${eso}"]
 				_k8sProvider
 			}
 			properties: {
-				apiVersion: "external-secrets.io/v1beta1"
-				kind:       "ClusterSecretStore"
 				metadata: {
 					name:      "qvs-global-azure-store"
 					namespace: "${esoNamespace.metadata.name}"
@@ -98,21 +93,16 @@ DesignPattern: {
 			}
 		}
 
-		esoUserAssignedIdentity: azure.#Resource & {
-			type:    "azure-native:managedidentity:UserAssignedIdentity"
+		esoUserAssignedIdentity: azure.#AzureUserAssignedIdentity & {
 			options: _azureProvider
 			properties: {
 				location:          "japaneast"
 				resourceGroupName: "${resourceGroup.name}"
 				resourceName:      "qvs-\(parameters.appName)-eso-user-assigned-identity"
-				tags: {
-					"managed-by": "Qmonus Value Stream"
-				}
 			}
 		}
 
-		esFederatedIdentityCredentials: azure.#Resource & {
-			type:    "azure-native:managedidentity:FederatedIdentityCredential"
+		esFederatedIdentityCredentials: azure.#AzureFederatedIdentityCredential & {
 			options: _azureProvider
 			properties: {
 				audiences: ["api://AzureADTokenExchange"]
@@ -124,8 +114,7 @@ DesignPattern: {
 			}
 		}
 
-		keyVaultAccessPolicyForEso: azure.#Resource & {
-			type:    "azure:keyvault:AccessPolicy"
+		keyVaultAccessPolicyForEso: azure.#AzureKeyVaultAccessPolicy & {
 			options: _azureClaasicProvider
 			properties: {
 				keyVaultId: "${keyVault.id}"

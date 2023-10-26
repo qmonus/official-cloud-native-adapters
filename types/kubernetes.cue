@@ -3,9 +3,9 @@ package kubernetes
 import "qmonus.net/adapter/official/types:base"
 
 #K8sResource: {
-	properties: metadata: {
-		name:      string
-		namespace: string
+	properties: metadata?: {
+		name:       string
+		namespace?: string
 		{[string]: _}
 	}
 }
@@ -27,10 +27,22 @@ import "qmonus.net/adapter/official/types:base"
 	type: "kubernetes:core/v1:Service"
 }
 
+#K8sHelmRelease: {
+	base.#Resource
+	#K8sResource
+	type: "kubernetes:helm.sh/v3:Release"
+}
+
 #K8sIngress: {
 	base.#Resource
 	#K8sResource
 	type: "kubernetes:networking.k8s.io/v1:Ingress"
+}
+
+#K8sNamespace: {
+	base.#Resource
+	#K8sResource
+	type: "kubernetes:core/v1:Namespace"
 }
 
 #K8sCustomResource: {
@@ -44,6 +56,22 @@ import "qmonus.net/adapter/official/types:base"
 	properties: {
 		apiVersion: "cert-manager.io/v1"
 		kind:       "Certificate"
+	}
+}
+
+#K8sClusterIssuer: {
+	#K8sCustomResource
+	properties: {
+		apiVersion: "cert-manager.io/v1"
+		kind:       "ClusterIssuer"
+	}
+}
+
+#K8sClusterSecretStore: {
+	#K8sCustomResource
+	properties: {
+		apiVersion: "external-secrets.io/v1beta1"
+		kind:       "ClusterSecretStore"
 	}
 }
 
