@@ -70,28 +70,16 @@ Sample: サンプル実装
 
 ## Infrastructure Parameters
 
-<<<<<<< HEAD
-| Parameter Name          | Type   | Required | Default   | Description                                                                                                     | Example                              | Auto Binding |
-|-------------------------|--------|----------|-----------|-----------------------------------------------------------------------------------------------------------------|--------------------------------------|--------------|
-| appName                 | string | yes      | -         | デプロイするアプリケーション名                                                                                                 | myapp                                | yes          |
-| azureSubscriptionId     | string | yes      | -         | 事前に用意したAzureのリソースが含まれるサブスクリプション名                                                                                | xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx | yes          |
-| azureResourceGroupName  | string | yes      | -         | 事前に用意したAzureのリソースが含まれるリソースグループ名                                                                                 | myapp-resourcegroup                  | yes          |
-| azureStaticSiteLocation | string | no       | East Asia | Static Web Appsをデプロイするロケーション<br>以下のいずれかを指定してください。 <br> Central US, East US 2, East Asia, West Europe, West US 2 | East Asia                            | no           |
-| azureDnsZoneName        | string | yes      | -         | 事前に用意したDNSゾーン名                                                                                                  | foo.example.com                      | no           |
-| relativeRecordSetName   | string | no       | www       | 公開するURLのドメイン名となるDNSレコード。`azureDnsZoneName` と 合わせて `<relativeRecordSetName>.<azureDnsZoneName>` の形式でパブリック公開されます  | www                                  | no           |
-| azureCnameRecordTtl     | string | no       | "3600"    | 新たに作成するCレコードに設定するTTLの値                                                                                          | "3600"                               | no           |
-=======
 | Parameter Name | Type | Required | Default | Description | Example | Auto Binding |
 | --- | --- | --- | --- | --- | --- | --- |
 | appName | string | yes | - | デプロイするアプリケーション名 | myapp | yes |
 | azureSubscriptionId | string | yes | - | 事前に用意したAzureのリソースが含まれるサブスクリプション名 | xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx | yes |
 | azureResourceGroupName | string | yes | - | 事前に用意したAzureのリソースが含まれるリソースグループ名 | myapp-resourcegroup | yes |
-| azureDnsZoneResourceGroupName | string | yes | - | 事前に用意したAzure DNS Zoneのリソースが含まれるリソースグループ名 | myapp-resourcegroup | yes |
+| azureDnsZoneResourceGroupName | string | yes | - | 事前に用意したAzure DNS Zoneのリソースが含まれるリソースグループ名 | mydns-resourcegroup | yes |
 | azureStaticSiteLocation | string | no | East Asia | Static Web Appsをデプロイするロケーション<br>以下のいずれかを指定してください。 <br> Central US, East US 2, East Asia, West Europe, West US 2| East Asia | no |
 | azureDnsZoneName | string | yes | - | 事前に用意したDNSゾーン名 | foo.example.com | no |
 | relativeRecordSetName | string | no | www | 公開するURLのドメイン名となるDNSレコード。`azureDnsZoneName` と 合わせて `<relativeRecordSetName>.<azureDnsZoneName>` の形式でパブリック公開されます | www | no |
 | azureCnameRecordTtl | string | no | "3600" | 新たに作成するCレコードに設定するTTLの値 | "3600" | no |
->>>>>>> IACS-420 docs: add azureDnsZoneResourceGropuName parameter
 
 ## CI/CD Parameters
 

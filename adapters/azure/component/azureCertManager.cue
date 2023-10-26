@@ -1,12 +1,11 @@
 package azureCertManager
 
 import (
-	"qmonus.net/adapter/official/pulumi/base/azure"
+	"qmonus.net/adapter/official/types:azure"
+	"qmonus.net/adapter/official/types:kubernetes"
 )
 
 DesignPattern: {
-	name: "sample:azureCertManager"
-
 	parameters: {
 		appName:                       string | *"sample"
 		dnsZoneName:                   string
@@ -19,8 +18,7 @@ DesignPattern: {
 	_k8sProvider: provider:   "${K8sProvider}"
 
 	resources: app: {
-		certmanagerNamespace: azure.#Resource & {
-			type: "kubernetes:core/v1:Namespace"
+		certmanagerNamespace: kubernetes.#K8sNamespace & {
 			options: {
 				dependsOn: ["${kubernetesCluster}"]
 				_k8sProvider
@@ -32,8 +30,7 @@ DesignPattern: {
 			}
 		}
 
-		certmanager: azure.#Resource & {
-			type: "kubernetes:helm.sh/v3:Release"
+		certmanager: kubernetes.#K8sHelmRelease & {
 			options: {
 				dependsOn: ["${certmanagerNamespace}"]
 				_k8sProvider
@@ -60,15 +57,12 @@ DesignPattern: {
 			}
 		}
 
-		clusterIssuer: azure.#Resource & {
-			type: "kubernetes:apiextensions.k8s.io:CustomResource"
+		clusterIssuer: kubernetes.#K8sClusterIssuer & {
 			options: {
 				dependsOn: ["${certmanager}"]
 				_k8sProvider
 			}
 			properties: {
-				apiVersion: "cert-manager.io/v1"
-				kind:       "ClusterIssuer"
 				metadata: {
 					namespace: "${certmanagerNamespace.metadata.name}"
 					name:      "qvs-cluster-issuer"
@@ -97,21 +91,16 @@ DesignPattern: {
 			}
 		}
 
-		certmanagerUserAssignedIdentity: azure.#Resource & {
-			type:    "azure-native:managedidentity:UserAssignedIdentity"
+		certmanagerUserAssignedIdentity: azure.#AzureUserAssignedIdentity & {
 			options: _azureProvider
 			properties: {
 				location:          "japaneast"
 				resourceGroupName: "${resourceGroup.name}"
 				resourceName:      "qvs-\(parameters.appName)-certmanager-user-assigned-identity"
-				tags: {
-					"managed-by": "Qmonus Value Stream"
-				}
 			}
 		}
 
-		certmanagerRoleAssignment: azure.#Resource & {
-			type: "azure-native:authorization:RoleAssignment"
+		certmanagerRoleAssignment: azure.#AzureRoleAssignment & {
 			options: {
 				dependsOn: ["${certmanagerUserAssignedIdentity}"]
 				_azureProvider
@@ -124,8 +113,7 @@ DesignPattern: {
 			}
 		}
 
-		certmanagerFederatedIdentityCredentials: azure.#Resource & {
-			type:    "azure-native:managedidentity:FederatedIdentityCredential"
+		certmanagerFederatedIdentityCredentials: azure.#AzureFederatedIdentityCredential & {
 			options: _azureProvider
 			properties: {
 				audiences: ["api://AzureADTokenExchange"]
@@ -136,6 +124,5 @@ DesignPattern: {
 				subject:                                 "system:serviceaccount:${certmanagerNamespace.metadata.name}:qvs-certmanager-sa"
 			}
 		}
-
 	}
 }

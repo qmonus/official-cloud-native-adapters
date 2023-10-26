@@ -1,9 +1,8 @@
 package sharedInfrastructure
 
 import (
-	"qmonus.net/adapter/official/pulumi/provider:azure"
-	"qmonus.net/adapter/official/pulumi/provider:azureclassic"
-	"qmonus.net/adapter/official/pulumi/provider:random"
+	"qmonus.net/adapter/official/types:azure"
+	"qmonus.net/adapter/official/types:random"
 	"qmonus.net/adapter/official/adapters/azure/component:azureCacheForRedis"
 	"qmonus.net/adapter/official/adapters/azure/component:azureContainerRegistry"
 	"qmonus.net/adapter/official/adapters/azure/component:azureDatabaseForMysql"
@@ -31,24 +30,6 @@ DesignPattern: {
 	}
 
 	composites: [
-		{
-			pattern: azure.DesignPattern
-			params: {
-				providerName: "AzureProvider"
-			}
-		},
-		{
-			pattern: azureclassic.DesignPattern
-			params: {
-				providerName: "AzureClassicProvider"
-			}
-		},
-		{
-			pattern: random.DesignPattern
-			params: {
-				providerName: "RandomProvider"
-			}
-		},
 		{
 			pattern: azureCacheForRedis.DesignPattern
 			params: {
@@ -110,5 +91,24 @@ DesignPattern: {
 			}
 		},
 	]
+
+	let _azureProvider = "AzureProvider"
+	let _azureClassicProvider = "AzureClassicProvider"
+	let _randomProvider = "RandomProvider"
+
+	parameters: #resourceId: {
+		azureProvider:        _azureProvider
+		azureClassicProvider: _azureClassicProvider
+		randomProvider:       _randomProvider
+	}
+
+	resources: app: {
+		"\(_azureProvider)": azure.#AzureProvider
+
+		"\(_azureClassicProvider)": azure.#AzureClassicProvider
+
+		"\(_randomProvider)": random.#RandomProvider
+	}
+
 	pipelines: _
 }

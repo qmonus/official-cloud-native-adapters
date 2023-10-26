@@ -1,12 +1,10 @@
 package azurePrivateEndpoint
 
 import (
-	"qmonus.net/adapter/official/pulumi/base/azure"
+	"qmonus.net/adapter/official/types:azure"
 )
 
 DesignPattern: {
-	name: "sample:azurePrivateEndpoint"
-
 	parameters: {
 		appName: string
 	}
@@ -14,8 +12,7 @@ DesignPattern: {
 	_azureProvider: provider: "${AzureProvider}"
 
 	resources: app: {
-		privateEndpoint: azure.#Resource & {
-			type:    "azure-native:network:PrivateEndpoint"
+		privateEndpoint: azure.#PrivateEndpoint & {
 			options: _azureProvider
 			properties: {
 				privateEndpointName: "qvs-\(parameters.appName)-private-endpoint"
@@ -27,7 +24,6 @@ DesignPattern: {
 				}]
 				resourceGroupName: "${resourceGroup.name}"
 				location:          "japaneast"
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 	}

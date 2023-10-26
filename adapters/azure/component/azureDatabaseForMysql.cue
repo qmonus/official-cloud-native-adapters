@@ -1,13 +1,11 @@
 package azureDatabaseForMysql
 
 import (
-	"qmonus.net/adapter/official/pulumi/base/azure"
-	"qmonus.net/adapter/official/pulumi/base/random"
+	"qmonus.net/adapter/official/types:azure"
+	"qmonus.net/adapter/official/types:random"
 )
 
 DesignPattern: {
-	name: "sample:azureDatabaseForMysql"
-
 	parameters: {
 		appName:      string
 		mysqlSkuName: string | *"B_Standard_B2s"
@@ -19,8 +17,7 @@ DesignPattern: {
 	_randomProvider: provider:       "${RandomProvider}"
 
 	resources: app: {
-		mysqlNameSuffix: random.#Resource & {
-			type:    "random:RandomString"
+		mysqlNameSuffix: random.#RandomString & {
 			options: _randomProvider
 			properties: {
 				length:  8
@@ -30,8 +27,7 @@ DesignPattern: {
 		}
 
 		// Public mysql database
-		mysql: azure.#Resource & {
-			type: "azure:mysql:FlexibleServer"
+		mysql: azure.#AzureMysqlFlexibleServer & {
 			options: {
 				_azureClassicProvider
 			}
@@ -45,13 +41,11 @@ DesignPattern: {
 				version:               parameters.mysqlVersion
 				createMode:            "Default"
 				zone:                  "2"
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 
 		// Firewall rule accessible from anywhere
-		mysqlFirewallRule: azure.#Resource & {
-			type: "azure:mysql:FlexibleServerFirewallRule"
+		mysqlFirewallRule: azure.#AzureMysqlFlexibleServerFirewallRule & {
 			options: {
 				_azureClassicProvider
 			}
@@ -64,8 +58,7 @@ DesignPattern: {
 			}
 		}
 
-		mysqlAdminPassword: random.#Resource & {
-			type:    "random:RandomPassword"
+		mysqlAdminPassword: random.#RandomPassword & {
 			options: _randomProvider
 			properties: {
 				length:     16
@@ -76,8 +69,7 @@ DesignPattern: {
 			}
 		}
 
-		mysqlAdminUserSecret: azure.#Resource & {
-			type: "azure-native:keyvault:Secret"
+		mysqlAdminUserSecret: azure.#AzureKeyVaultSecret & {
 			options: {
 				dependsOn: ["${keyVaultAccessPolicyForQvs}"]
 				_azureProvider
@@ -89,12 +81,10 @@ DesignPattern: {
 				resourceGroupName: "${resourceGroup.name}"
 				secretName:        "dbadminuser"
 				vaultName:         "${keyVault.name}"
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 
-		mysqlAdminPasswordSecret: azure.#Resource & {
-			type: "azure-native:keyvault:Secret"
+		mysqlAdminPasswordSecret: azure.#AzureKeyVaultSecret & {
 			options: {
 				dependsOn: ["${keyVaultAccessPolicyForQvs}"]
 				_azureProvider
@@ -106,7 +96,6 @@ DesignPattern: {
 				resourceGroupName: "${resourceGroup.name}"
 				secretName:        "dbadminpassword"
 				vaultName:         "${keyVault.name}"
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 	}

@@ -1,12 +1,10 @@
 package azureAppServicePlan
 
 import (
-	"qmonus.net/adapter/official/pulumi/base/azure"
+	"qmonus.net/adapter/official/types:azure"
 )
 
 DesignPattern: {
-	name: "sample:azureAppServicePlan"
-
 	parameters: {
 		appName:                string
 		azureResourceGroupName: string
@@ -15,8 +13,7 @@ DesignPattern: {
 	_azureProvider: provider: "${AzureProvider}"
 
 	resources: app: {
-		appServicePlan: azure.#Resource & {
-			type:    "azure-native:web:AppServicePlan"
+		appServicePlan: azure.#AzureAppServicePlan & {
 			options: _azureProvider
 			properties: {
 				name:                      "qvs-\(parameters.appName)-asp"
@@ -32,7 +29,6 @@ DesignPattern: {
 					size:     "P1v3"
 					tier:     "PremiumV3"
 				}
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 	}

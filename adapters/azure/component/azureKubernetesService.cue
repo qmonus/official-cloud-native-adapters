@@ -3,12 +3,10 @@ package azureKubernetesService
 import (
 	"strconv"
 
-	"qmonus.net/adapter/official/pulumi/base/azure"
+	"qmonus.net/adapter/official/types:azure"
 )
 
 DesignPattern: {
-	name: "sample:azureKubernetesService"
-
 	parameters: {
 		appName:             string
 		azureSubscriptionId: string
@@ -40,8 +38,7 @@ DesignPattern: {
 	_azureProvider: provider:        "${AzureProvider}"
 
 	resources: app: {
-		kubernetesCluster: azure.#Resource & {
-			type:    "azure:containerservice:KubernetesCluster"
+		kubernetesCluster: azure.#AzureKubernetesCluster & {
 			options: _azureClassicProvider
 			properties: {
 				kubernetesVersion:             parameters.kubernetesVersion
@@ -91,12 +88,10 @@ DesignPattern: {
 					networkPolicy: "azure"
 					serviceCidr:   "10.0.24.0/22"
 				}
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 
-		kubeconfigSecret: azure.#Resource & {
-			type: "azure-native:keyvault:Secret"
+		kubeconfigSecret: azure.#AzureKeyVaultSecret & {
 			options: {
 				dependsOn: ["${keyVaultAccessPolicyForQvs}"]
 				_azureProvider
@@ -108,12 +103,10 @@ DesignPattern: {
 				resourceGroupName: "${resourceGroup.name}"
 				secretName:        "kubeconfig"
 				vaultName:         "${keyVault.name}"
-				tags: "managed-by": "Qmonus Value Stream"
 			}
 		}
 
-		agicResouceGroupReaderRoleAssignment: azure.#Resource & {
-			type: "azure-native:authorization:RoleAssignment"
+		agicResouceGroupReaderRoleAssignment: azure.#AzureRoleAssignment & {
 			options: {
 				dependsOn: ["${kubernetesCluster}"]
 				_azureProvider
@@ -126,8 +119,7 @@ DesignPattern: {
 			}
 		}
 
-		agicApplicationGatewayContributorRoleAssignment: azure.#Resource & {
-			type: "azure-native:authorization:RoleAssignment"
+		agicApplicationGatewayContributorRoleAssignment: azure.#AzureRoleAssignment & {
 			options: {
 				dependsOn: ["${kubernetesCluster}"]
 				_azureProvider
@@ -140,8 +132,7 @@ DesignPattern: {
 			}
 		}
 
-		agicApplicationGatewaySubnetNetworkContributorRoleAssignment: azure.#Resource & {
-			type: "azure-native:authorization:RoleAssignment"
+		agicApplicationGatewaySubnetNetworkContributorRoleAssignment: azure.#AzureRoleAssignment & {
 			options: {
 				dependsOn: ["${kubernetesCluster}"]
 				_azureProvider
@@ -154,8 +145,7 @@ DesignPattern: {
 			}
 		}
 
-		acrPullRoleAssignment: azure.#Resource & {
-			type:    "azure-native:authorization:RoleAssignment"
+		acrPullRoleAssignment: azure.#AzureRoleAssignment & {
 			options: _azureProvider
 			properties: {
 				scope:            "${containerRegistry.id}"

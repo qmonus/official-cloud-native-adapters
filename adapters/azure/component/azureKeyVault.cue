@@ -1,13 +1,11 @@
 package azureKeyVault
 
 import (
-	"qmonus.net/adapter/official/pulumi/base/azure"
-	"qmonus.net/adapter/official/pulumi/base/random"
+	"qmonus.net/adapter/official/types:azure"
+	"qmonus.net/adapter/official/types:random"
 )
 
 DesignPattern: {
-	name: "sample:azureKeyVault"
-
 	parameters: {
 		keyVaultAccessAllowedObjectIds: [...string]
 	}
@@ -17,8 +15,7 @@ DesignPattern: {
 	_randomProvider: provider:       "${RandomProvider}"
 
 	resources: app: {
-		vaultNameSuffix: random.#Resource & {
-			type:    "random:RandomString"
+		vaultNameSuffix: random.#RandomString & {
 			options: _randomProvider
 			properties: {
 				length:  8
@@ -26,8 +23,7 @@ DesignPattern: {
 			}
 		}
 
-		keyVault: azure.#Resource & {
-			type: "azure-native:keyvault:Vault"
+		keyVault: azure.#AzureKeyVault & {
 			options: {
 				_azureProvider
 
@@ -38,7 +34,6 @@ DesignPattern: {
 				vaultName:         "qvs-key-vault-${vaultNameSuffix.result}"
 				resourceGroupName: "${resourceGroup.name}"
 				location:          "japaneast"
-				tags: "managed-by": "Qmonus Value Stream"
 				properties: {
 					accessPolicies: []
 					tenantId:
@@ -60,8 +55,7 @@ DesignPattern: {
 			}
 		}
 
-		keyVaultAccessPolicyForQvs: azure.#Resource & {
-			type:    "azure:keyvault:AccessPolicy"
+		keyVaultAccessPolicyForQvs: azure.#AzureKeyVaultAccessPolicy & {
 			options: _azureClassicProvider
 			properties: {
 				keyVaultId: "${keyVault.id}"
@@ -78,8 +72,7 @@ DesignPattern: {
 		}
 
 		for x, n in parameters.keyVaultAccessAllowedObjectIds {
-			"keyVaultAccessPolicyForUser\(x+1)": azure.#Resource & {
-				type:    "azure:keyvault:AccessPolicy"
+			"keyVaultAccessPolicyForUser\(x+1)": azure.#AzureKeyVaultAccessPolicy & {
 				options: _azureClassicProvider
 				properties: {
 					keyVaultId: "${keyVault.id}"
