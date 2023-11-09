@@ -1,0 +1,34 @@
+params:
+  - name: appName
+    type: string
+  - name: azureStaticSiteLocation
+    type: string
+  - name: azureSubscriptionId
+    type: string
+  - name: azureResourceGroupName
+    type: string
+  - name: azureDnsZoneResourceGroupName
+    type: string
+  - name: azureDnsZoneName
+    type: string
+  - name: relativeRecordSetName
+    type: string
+  - name: azureCnameRecordTtl
+    type: string
+
+
+modules:
+  - name: qmonus.net/adapter/official
+    revision: v0.17.0
+
+designPatterns:
+  - pattern: qmonus.net/adapter/qmonus.net/adapter/official/adapters/azure/serverless/staticSite/frontend  
+    params:
+      appName: $(params.appName)
+      azureStaticSiteLocation: $(params.azureStaticSiteLocation)
+      azureSubscriptionId: $(params.azureSubscriptionId)
+      azureResourceGroupName: $(params.azureResourceGroupName)
+      azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
+      azureDnsZoneName: $(params.azureDnsZoneName)
+      relativeRecordSetName: $(relativeRecordSetName)
+      azureCnameRecordTtl: $(params.azureCnameRecordTtl)

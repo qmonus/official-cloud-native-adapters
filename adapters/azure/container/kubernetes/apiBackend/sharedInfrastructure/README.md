@@ -48,6 +48,93 @@ Native Adapterです。
 The cert-manager project logo is created by Jetstack Ltd. and licensed under
 the [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/).
 
+* [Shared Infrastructure Adapter](./README.md) を用いて払い出されたKubeconfigは、下記の手順でAzure Key Vaultから取得できます。
+
+    - Azure Portal を使用して取得する
+        Azure Key VaultからKubeconfigを取得する方法例を示します。
+
+        1. [Azure portal](https://portal.azure.com/) で、事前に [Shared Infrastructure Adapter](./README.md) を用いて作成したリソースグループ内の「qvs-key-vault-******** (*はランダムなsuffix)」キーコンテナーに移動します。
+
+        1. 「シークレット」を選択し、以下の名前で保存されている目的のSecretの名前をクリックします。
+             - `kubeconfig` : cluster-admin権限のkubeconfigを保持しているSecret、本Adapter利用時にデフォルトでSecretが生成されます
+             - `kubeconfig-<namespace>` : namespace単位のadmin権限をもつkubeconfigを保持するSecret、本Adapter利用時に`appK8sNamepaces` パラメータで指定したnamespace毎にSecretが生成されます
+        1. 「現在のバージョン」を選択し、「シークレット値」の右側の「クリップボードにコピー」をクリックします。
+
+    - Azure CLI を使用して取得する
+        Azure Key VaultからKubeconfigを取得する方法例を示します。
+
+        1. Azureテナントにサインインします  
+
+            ※Azure Cloudshell の場合は不要です。  
+            [Azure CLI を使用してサインインする](https://learn.microsoft.com/ja-jp/cli/azure/authenticate-azure-cli#authentication-methods) に基づき認証を行います。詳細は公式ドキュメントをご参照ください。
+
+            ```bash
+            az login
+            ```
+
+        1. Kubeconfigを取得するために必要な情報を変数に格納します
+        任意の値に置き換えて、それぞれ格納してください
+            - `NAME` : 以下の名前で保存されている目的のSecretの名前
+              - `kubeconfig` : cluster-admin権限のkubeconfigを保持しているSecret、本Adapter利用時にデフォルトでSecretが生成されます
+              - `kubeconfig-<namespace>` : namespace単位のadmin権限をもつkubeconfigを保持するSecret、本Adapter利用時に`appK8sNamespaces` パラメータで指定したnamespace毎にSecretが生成されます
+            - `VAULT_NAME`: 作成されたキー コンテナの名前「qvs-key-vault-******** (*はランダムなsuffix)」
+
+            ```bash
+            NAME="<YOUR_SECRET_NAME>"   # e.g. kubeconfig-<namespace>(cluster-admin権限を持ったKubeconfigを使いたい場合は、kubeconfig)
+            VAULT_NAME="<YOUR_VAULT_NAME>"   # e.g. qvs-key-vault-********
+            ```
+
+        1. キー コンテナーからKubeconfigを取得します。
+
+            ```bash
+            az keyvault secret show --name ${NAME} --vault-name ${VAULT_NAME} --query value -o tsv
+            ```
+
+また、 [Shared Infrastructure Adapter](./README.md) を用いて払い出されたKubeconfigの認証情報を再作成したい場合は、下記の手順を実行してください。
+
+
+- Namespaceを制限したKubeconfigの場合
+
+    1. Azure CLI を使用してAzureテナントにサインインします  
+
+        ※Azure Cloudshell の場合は不要です。  
+        [Azure CLI を使用してサインインする](https://learn.microsoft.com/ja-jp/cli/azure/authenticate-azure-cli#authentication-methods) に基づき認証を行います。詳細は公式ドキュメントをご参照ください。
+
+        ```bash
+        az login
+        ```
+
+    1. Kubeconfigを取得するために必要な情報を変数に格納します
+
+        任意の値に置き換えて、それぞれ格納してください
+            - `VAULT_NAME`: 作成されたキー コンテナの名前「qvs-key-vault-******** (*はランダムなsuffix)」
+
+        ```bash
+        VAULT_NAME="<YOUR_VAULT_NAME>"   # e.g. qvs-key-vault-********
+        ```
+
+    1. キー コンテナーからKubeconfigを取得します。
+
+        ```bash
+        az keyvault secret show --name kubeconfig --vault-name ${VAULT_NAME} --query value -o tsv > ~/.kube/config
+        ```
+
+    1. kubectlをインストールします。
+
+        ```bash
+        az aks install-cli
+        ```
+
+    1. KubernetesのSecretからService Account Tokenを削除します。
+
+        ```bash
+        kubectl delete secret qmonus-kubeconfig-token
+        ```
+
+    1. Shared InfrasctuctureのAssemblyLineを再実行します。
+
+
+
 ## Platform
 
 Microsoft Azure
@@ -204,6 +291,7 @@ Sample: サンプル実装
 | azureSubscriptionId         | string | yes      | -       | AzureのSubscriptionID                             |yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy | yes          |
 | azureTenantId               | string | yes      | -       | AzureのTenantID                                   |zzzzzzzz-zzzz-zzzz-zzzz-zzzzzzzzzzzz | yes          |
 | azureClientSecretName       | string | yes      | -       | AzureのClientSecretを保管しているSecret名                 |	azure-default-xxxxxxxxxxxxxxxxxxxx | yes          |
+| appK8sNamespaces | string | no | "" | アプリケーションのデプロイ先のKubernetesのNamespace名、複数のNamespaceを指定する場合はカンマ区切りの文字列で指定します。<br><br>指定されたNamespaceの作成とNamespace単位のadmin権限をもつkubeconfigが自動生成されます。 | "backend-app-1,backend-app-2" | no |
 
 ## Application Resources
 
@@ -278,6 +366,7 @@ Sample: サンプル実装
 | compile-adapter-into-pulumi-yaml     | deploy   | git-checkout                                                             | リポジトリ内の QVS Config に記載されている Cloud Native Adapter をコンパイルし、PulumiYamlのプロジェクトファイルを生成します。AdapterOptionsのuseSshKeyがFalseかつrepositoryKindがgithub, gitlabの場合に作成されます。     |
 | compile-adapter-into-pulumi-yaml-ssh | deploy   | git-checkout-ssh                                                         | リポジトリ内の QVS Config に記載されている Cloud Native Adapter をコンパイルし、PulumiYamlのプロジェクトファイルを生成します。AdapterOptionsのuseSshKeyがTrueまたはrepositoryKindがbitbucket, backlogの場合に作成されます。 |
 | deploy-by-pulumi-yaml                | deploy   | compile-adapter-into-pulumi-yaml or compile-adapter-into-pulumi-yaml-ssh | コンパイルされたPulumiYamlのプロジェクトファイルを指定の環境にデプロイします。                                                                                                                      |
+| generate-kubeconfig | deploy | deploy-by-pulumi-yaml | AKSクラスターにNamespaceを作成し、アプリケーションのデプロイに使用するKubeconfigをAzure Key VaultのSecretに保存します。 |
 
 ## Usage
 

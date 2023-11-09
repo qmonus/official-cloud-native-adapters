@@ -1,6 +1,8 @@
 package sharedInfrastructure
 
 import (
+	"strconv"
+
 	"qmonus.net/adapter/official/types:azure"
 	"qmonus.net/adapter/official/types:kubernetes"
 	"qmonus.net/adapter/official/types:random"
@@ -16,6 +18,7 @@ import (
 	"qmonus.net/adapter/official/adapters/azure/component:azureResourceGroup"
 	"qmonus.net/adapter/official/adapters/azure/component:azureVirtualNetwork"
 	"qmonus.net/adapter/official/pipeline/deploy:simpleDeployByPulumiYaml"
+	"qmonus.net/adapter/official/pipeline/tasks:generateKubeconfigAzure"
 )
 
 DesignPattern: {
@@ -36,6 +39,8 @@ DesignPattern: {
 		certmanagerVersion:            string | *"1.11.4"
 		esoVersion:                    string | *"0.9.0"
 		keyVaultAccessAllowedObjectIds: [...string]
+		useMySQL: string | *"true"
+		useRedis: string | *"true"
 	}
 
 	pipelineParameters: {
@@ -44,18 +49,15 @@ DesignPattern: {
 		useSshKey:      bool | *false
 	}
 
+	let _useMySQL = strconv.ParseBool(parameters.useMySQL)
+	let _useRedis = strconv.ParseBool(parameters.useRedis)
+
 	composites: [
 		{
 			pattern: azureApplicationGateway.DesignPattern
 			params: {
 				appName:             parameters.appName
 				azureSubscriptionId: parameters.azureSubscriptionId
-			}
-		},
-		{
-			pattern: azureCacheForRedis.DesignPattern
-			params: {
-				appName: parameters.appName
 			}
 		},
 		{
@@ -72,14 +74,6 @@ DesignPattern: {
 			pattern: azureContainerRegistry.DesignPattern
 			params: {
 				appName: parameters.appName
-			}
-		},
-		{
-			pattern: azureDatabaseForMysql.DesignPattern
-			params: {
-				appName:      parameters.appName
-				mysqlSkuName: parameters.mysqlSkuName
-				mysqlVersion: parameters.mysqlVersion
 			}
 		},
 		{
@@ -125,6 +119,24 @@ DesignPattern: {
 			pattern: azureVirtualNetwork.DesignPattern
 			params: {
 				appName: parameters.appName
+			}
+		},
+		if _useMySQL {
+			{
+				pattern: azureDatabaseForMysql.DesignPattern
+				params: {
+					appName:      parameters.appName
+					mysqlSkuName: parameters.mysqlSkuName
+					mysqlVersion: parameters.mysqlVersion
+				}
+			}
+		},
+		if _useRedis {
+			{
+				pattern: azureCacheForRedis.DesignPattern
+				params: {
+					appName: parameters.appName
+				}
 			}
 		},
 		{
@@ -177,5 +189,15 @@ DesignPattern: {
 		"\(_randomProvider)": random.#RandomProvider
 	}
 
-	pipelines: _
+	pipelines: {
+		deploy: {
+			tasks: {
+				"generate-kubeconfig": {
+					generateKubeconfigAzure.#Builder & {
+						runAfter: ["deploy"]
+					}
+				}
+			}
+		}
+	}
 }

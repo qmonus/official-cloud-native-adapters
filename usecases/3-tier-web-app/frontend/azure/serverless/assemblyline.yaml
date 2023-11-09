@@ -1,0 +1,34 @@
+apiVersion: vs.axis-dev.io/v1
+kind: AssemblyLine
+metadata:
+  name: <YOUR_ASSEMBLYLINE_NAME>
+spec:
+  params:
+    - name: gitRevision
+      description: ""
+  results:
+    - name: publicUrl
+      value: $(stages.publish-site.results.publicUrl)
+    - name: gitRevision
+      value: $(inputs.gitRevision)
+  stages:
+    - name: deploy
+      spec:
+        deployment:
+          app: <YOUR_APPLICATION>
+          name: <YOUR_DEPLOYMENT>
+        params:
+          - name: gitRevision
+            value: $(inputs.gitRevision)
+        pipeline: <YOUR_APPLICATION>-deploy
+    - name: publish-site
+      spec:
+        deployment:
+          app: <YOUR_APPLICATION>
+          name: <YOUR_DEPLOYMENT>
+        params:
+          - name: gitRevision
+            value: $(inputs.gitRevision)
+        pipeline: <YOUR_APPLICATION>-publish-site
+      runAfter:
+        - deploy

@@ -44,6 +44,8 @@ Sample: サンプル実装
 
 * 事前に [Shared Infrastructure Adapter](./sharedInfrastructure/README.md) を用いて各種クラウドリソースを作成してください。
 
+* AKSクラスタにアプリケーションをデプロイするために利用するkubeconfigは[Shared Infrastructure Adapter](./sharedInfrastructure/README.md) を用いて作成されます。kubeconfigの取得方法はドキュメントを参照してください。
+
 ### Constraints
 
 * 作成するMySQLのユーザアカウントのパスワードは、それぞれ1文字以上の大小英数字を含む、16文字でランダムで生成されます。
@@ -55,46 +57,52 @@ Sample: サンプル実装
   * Redisのホスト名
   * Redisのポート番号
   * Redisの接続に使用するパスワード
+* 環境変数を追加する場合はQVS ConfigにenvironmentVariablesパラメータを設定してください。
+* 環境変数に機密情報を含む値を設定する場合はQVS Configにsecretsパラメータを設定し、Deployment Secretと併用して利用ください。
+* アプリケーションに引数を渡す場合はQVS Configにargsパラメータを設定し、Deployment Configでカンマ区切りの文字列で指定してください。
 
 ## Infrastructure Parameters
 
-| Parameter Name | Type | Required | Default | Description | Example | Auto Binding |
-| --- | --- | --- | --- | --- | --- | --- |
-| appName | string | yes | - | QVSにおけるApplication名 | nginx | yes |
-| azureSubscriptionId | string | yes | - | 事前に用意したAzureのリソースが含まれるサブスクリプション名 | xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx | yes |
-| azureResourceGroupName | string | yes | - | 事前に用意したAzureのリソースが含まれるリソースグループ名 | sample-resourcegroup | yes |
-| azureDnsZoneName | string | yes | - | 事前に用意したDNSゾーン名 | foo.example.com | no |
-| azureDnsZoneResourceGroupName | string | yes | - | 事前に用意したDNSゾーンが所属するリソースグループ名 | sample-dnszone-resourcegroup | no |
-| azureDnsARecordName | string | yes | - | 新たに作成するAレコード名 | www | no |
-| azureStaticIpAddress | string | yes | - | 新たに作成するAレコードで指定するIPアドレス | 192.168.x.x | no |
-| azureARecordTtl | string | no | "3600" | 新たに作成するAレコードに設定するTTLの値 | "3600" | no |
-| mysqlCreateUserName | string | no | dbuser | 新たに作成するMySQLのユーザー名 | dbuser | no |
-| mysqlCreateDbName | string | yes | - | 新たに作成するMySQLのデータベース名 | sample-db | no |
-| mysqlCreateDbCharacterSet | string | no | utf8mb3 | 新たに作成するMySQLのデータベースに設定するキャラクタセット | utf8mb3 | no |
-| mysqlEndpoint | string | no | `dbHost` の値 | 接続するMySQLのエンドポイント（hostname / Unix domain socket） | example.mysql.database.azure.com | no |
-| azureKeyVaultKeyContainerName | string | yes | - | 事前に用意したキーコンテナ名 | sample-keyvault | no |
-| azureKeyVaultDbAdminSecretName | string | no | dbadminuser | 事前に用意した、MySQLのAdminユーザー名が格納されているシークレット名 | dbadminuser | no |
-| azureKeyVaultDbAdminPasswordSecretName | string | no | dbadminpassword | 事前に用意した、MySQLのAdminパスワードが格納されているシークレット名 | dbadminpassword | no |
-| azureKeyVaultDbUserSecretName | string | no | dbuser | MySQLのユーザー名を格納するシークレット名 | dbuser | no |
-| azureKeyVaultDbPasswordSecretName | string | no | dbpassword | MySQLのユーザーパスワードを格納するシークレット名 | dbpassword | no |
-| clusterIssuerName | string | yes | - | 使用するClusterIssuerリソース名 | letsencrypt | no |
-| k8sNamespace | string | yes | - | アプリケーションをデプロイする対象のNamespace | qvs-sample | yes |
-| imageName | string | yes | - | デプロイするDocker Image | nginx:latest | no |
-| replicas | string | no | "1" | 作成するPodのレプリカ数 | "1" | no |
-| portEnvironmentVariableName | string | no | PORT | アプリケーションが利用するポート番号としてアプリケーションPodに渡される環境変数名 | PORT | no |
-| port | string | yes | - | アプリケーションが利用するポート番号 | "3000" | no |
-| dbHostEnvironmentVariableName | string | no | DB_HOST | Azure Database for MySQLのホスト名としてアプリケーションPodに渡される環境変数名 | DB_HOST | no |
-| dbHost | string | yes | - | Azure Database for MySQLのホスト名 | example.mysql.database.azure.com | no |
-| dbUserEnvironmentVariableName | string | no | DB_USER | Azure Database for MySQLに接続するユーザ名としてアプリケーションPodに渡される環境変数名 | DB_USER | no |
-| dbPasswordEnvironmentVariableName | string | no | DB_PASS | Azure Database for MySQLに接続するユーザのパスワードとしてアプリケーションPodに渡される環境変数名 | DB_PASS | no |
-| redisHostEnvironmentVariableName | string | no | REDIS_HOST | Azure Cache for Redisのホスト名としてアプリケーションPodに渡される環境変数名 | REDIS_HOST | no |
-| redisHost | string | yes | - | Azure Cache for Redisのホスト名 | example.redis.cache.windows.net | no |
-| redisPortEnvironmentVariableName | string | no | REDIS_PORT | Azure Cache for Redisのポート番号としてアプリケーションPodに渡される環境変数名 | REDIS_PORT | no |
-| redisPort | string | no | "6380" | Azure Cache for Redisのポート番号（6380 または 6379 のみ指定可能） | "6380" | no |
-| redisPasswordEnvironmentVariableName | string | no | REDIS_PASS | Azure Cache for Redisの接続に使用するパスワードとしてアプリケーションPodに渡される環境変数名 | REDIS_PASS | no |
-| redisPasswordSecretName | string | yes | - | Azure Cache for Redisの接続に使用するパスワードが格納されているシークレット名 | redispass | no |
-| host | string | yes | - | 公開するアプリケーションのホスト名 | www.foo.example.com | no |
-| clusterSecretStoreName | string | no | qvs-global-azure-store | 使用するClusterSecretStoreリソース名 | qvs-global-azure-store | no |
+| Parameter Name                         | Type   | Required | Default                | Description                                                    | Example                              | Auto Binding |
+|----------------------------------------|--------|----------|------------------------|----------------------------------------------------------------|--------------------------------------|--------------|
+| appName                                | string | yes      | -                      | QVSにおけるApplication名                                            | nginx                                | yes          |
+| azureSubscriptionId                    | string | yes      | -                      | 事前に用意したAzureのリソースが含まれるサブスクリプション名                               | xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx | yes          |
+| azureResourceGroupName                 | string | yes      | -                      | 事前に用意したAzureのリソースが含まれるリソースグループ名                                | sample-resourcegroup                 | yes          |
+| azureDnsZoneName                       | string | yes      | -                      | 事前に用意したDNSゾーン名                                                 | foo.example.com                      | no           |
+| azureDnsZoneResourceGroupName          | string | yes      | -                      | 事前に用意したDNSゾーンが所属するリソースグループ名                                    | sample-dnszone-resourcegroup         | no           |
+| azureDnsARecordName                    | string | yes      | -                      | 新たに作成するAレコード名                                                  | www                                  | no           |
+| azureStaticIpAddress                   | string | yes      | -                      | 新たに作成するAレコードで指定するIPアドレス                                        | 192.168.x.x                          | no           |
+| azureARecordTtl                        | string | no       | "3600"                 | 新たに作成するAレコードに設定するTTLの値                                         | "3600"                               | no           |
+| mysqlCreateUserName                    | string | no       | dbuser                 | 新たに作成するMySQLのユーザー名                                             | dbuser                               | no           |
+| mysqlCreateDbName                      | string | yes      | -                      | 新たに作成するMySQLのデータベース名                                           | sample-db                            | no           |
+| mysqlCreateDbCharacterSet              | string | no       | utf8mb3                | 新たに作成するMySQLのデータベースに設定するキャラクタセット                               | utf8mb3                              | no           |
+| mysqlEndpoint                          | string | no       | `dbHost` の値            | 接続するMySQLのエンドポイント（hostname / Unix domain socket）               | example.mysql.database.azure.com     | no           |
+| azureKeyVaultKeyContainerName          | string | yes      | -                      | 事前に用意したキーコンテナ名                                                 | sample-keyvault                      | no           |
+| azureKeyVaultDbAdminSecretName         | string | no       | dbadminuser            | 事前に用意した、MySQLのAdminユーザー名が格納されているシークレット名                        | dbadminuser                          | no           |
+| azureKeyVaultDbAdminPasswordSecretName | string | no       | dbadminpassword        | 事前に用意した、MySQLのAdminパスワードが格納されているシークレット名                        | dbadminpassword                      | no           |
+| azureKeyVaultDbUserSecretName          | string | no       | dbuser                 | MySQLのユーザー名を格納するシークレット名                                        | dbuser                               | no           |
+| azureKeyVaultDbPasswordSecretName      | string | no       | dbpassword             | MySQLのユーザーパスワードを格納するシークレット名                                    | dbpassword                           | no           |
+| clusterIssuerName                      | string | yes      | -                      | 使用するClusterIssuerリソース名                                         | letsencrypt                          | no           |
+| k8sNamespace                           | string | yes      | -                      | アプリケーションをデプロイする対象のNamespace                                    | qvs-sample                           | yes          |
+| imageName                              | string | yes      | -                      | デプロイするDocker Image                                             | nginx:latest                         | no           |
+| replicas                               | string | no       | "1"                    | 作成するPodのレプリカ数                                                  | "1"                                  | no           |
+| portEnvironmentVariableName            | string | no       | PORT                   | アプリケーションが利用するポート番号としてアプリケーションPodに渡される環境変数名                     | PORT                                 | no           |
+| port                                   | string | yes      | -                      | アプリケーションが利用するポート番号                                             | "3000"                               | no           |
+| dbHostEnvironmentVariableName          | string | no       | DB_HOST                | Azure Database for MySQLのホスト名としてアプリケーションPodに渡される環境変数名          | DB_HOST                              | no           |
+| dbHost                                 | string | yes      | -                      | Azure Database for MySQLのホスト名                                  | example.mysql.database.azure.com     | no           |
+| dbUserEnvironmentVariableName          | string | no       | DB_USER                | Azure Database for MySQLに接続するユーザ名としてアプリケーションPodに渡される環境変数名      | DB_USER                              | no           |
+| dbPasswordEnvironmentVariableName      | string | no       | DB_PASS                | Azure Database for MySQLに接続するユーザのパスワードとしてアプリケーションPodに渡される環境変数名 | DB_PASS                              | no           |
+| redisHostEnvironmentVariableName       | string | no       | REDIS_HOST             | Azure Cache for Redisのホスト名としてアプリケーションPodに渡される環境変数名             | REDIS_HOST                           | no           |
+| redisHost                              | string | yes      | -                      | Azure Cache for Redisのホスト名                                     | example.redis.cache.windows.net      | no           |
+| redisPortEnvironmentVariableName       | string | no       | REDIS_PORT             | Azure Cache for Redisのポート番号としてアプリケーションPodに渡される環境変数名            | REDIS_PORT                           | no           |
+| redisPort                              | string | no       | "6380"                 | Azure Cache for Redisのポート番号（6380 または 6379 のみ指定可能）              | "6380"                               | no           |
+| redisPasswordEnvironmentVariableName   | string | no       | REDIS_PASS             | Azure Cache for Redisの接続に使用するパスワードとしてアプリケーションPodに渡される環境変数名     | REDIS_PASS                           | no           |
+| redisPasswordSecretName                | string | yes      | -                      | Azure Cache for Redisの接続に使用するパスワードが格納されているシークレット名              | redispass                            | no           |
+| host                                   | string | yes      | -                      | 公開するアプリケーションのホスト名                                              | www.foo.example.com                  | no           |
+| clusterSecretStoreName                 | string | no       | qvs-global-azure-store | 使用するClusterSecretStoreリソース名                                    | qvs-global-azure-store               | no           |
+| secrets                                | object | no       | -                      | アプリケーションPodに渡される環境変数名とDeployment Secret名のペア                    | PASSWORD: password                   | no           |
+| environmentVariables                   | object | no       | -                      | アプリケーションPodに渡される環境変数名と値のペア                                     | ENV: prod                            | no           |
+| args                                   | array  | no       | -                      | アプリケーションPodに渡される引数。カンマ区切りの文字列がコンテナのargsに配列として渡されます。            | "--debug,--profile"                  | no           |
 
 ## CI/CD Parameters
 
@@ -193,6 +201,13 @@ designPatterns:
       redisHost: $(params.redisHost)
       redisPasswordSecretName: $(params.redisPasswordSecretName)
       host: $(params.host)
+      secrets:
+        SECRET1: $(params.secret1)
+        SECRET2: $(params.secret2)
+      environmentVariables:
+        ENV1: $(params.env1)
+        ENV2: $(params.env2)
+      args: [ "$(params.args[*])" ]
 ```
 
 ## Code

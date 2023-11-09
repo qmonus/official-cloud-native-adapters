@@ -2,6 +2,7 @@ package apiBackend
 
 import (
 	"qmonus.net/adapter/official/types:azure"
+	"qmonus.net/adapter/official/types:base"
 	"qmonus.net/adapter/official/types:kubernetes"
 	"qmonus.net/adapter/official/types:mysql"
 	"qmonus.net/adapter/official/types:random"
@@ -9,6 +10,7 @@ import (
 	"qmonus.net/adapter/official/pipeline/deploy:simpleDeployByPulumiYaml"
 
 	"strconv"
+	"list"
 )
 
 DesignPattern: {
@@ -48,6 +50,9 @@ DesignPattern: {
 		redisPasswordSecretName:                string
 		host:                                   string
 		clusterSecretStoreName:                 string | *"qvs-global-azure-store"
+		secrets: [string]:              base.#Secret
+		environmentVariables: [string]: string
+		args?: [...string]
 	}
 
 	pipelineParameters: {
@@ -99,6 +104,7 @@ DesignPattern: {
 	let _service = "K8sService_apiBackend"
 	let _deployment = "K8sDeployment_apiBackend"
 	let _externalSecret = "K8sExternalSecret_apiBackend"
+	let _secretName = "\(parameters.appName)-application-secret"
 
 	parameters: #resourceId: {
 		azureProvider:    _azureProvider
@@ -295,6 +301,45 @@ DesignPattern: {
 			}
 		}
 
+		#envData: {
+			name:  string
+			value: string
+		}
+
+		let _envData = [
+			for n, v in parameters.environmentVariables {
+				#envData & {
+					name:  n
+					value: v
+				}
+			},
+		]
+		_envElems: [...#envData] &
+			_envData+[{
+				name:  parameters.portEnvironmentVariableName
+				value: parameters.port
+			}, {
+				name:  parameters.dbHostEnvironmentVariableName
+				value: parameters.dbHost
+			}, {
+				name:  parameters.redisHostEnvironmentVariableName
+				value: parameters.redisHost
+			}, {
+				name:  parameters.redisPortEnvironmentVariableName
+				value: parameters.redisPort
+			}]
+
+		_envSet: [string]: #envData
+		_envSet: {
+			for e in _envElems {
+				"\(e.name)": e
+			}
+		}
+
+		_uniqEnvData: [ for s in _envSet {s}]
+		// sort with name to make results deterministic
+		let _envDataSorted = list.Sort(_uniqEnvData, {x: {}, y: {}, less: x.name < y.name})
+
 		"\(_deployment)": kubernetes.#K8sDeployment & {
 			options: {
 				provider: "${\(_k8sProvider)}"
@@ -322,40 +367,20 @@ DesignPattern: {
 								{
 									name:  parameters.appName
 									image: parameters.imageName
-									env: [{
-										name:  parameters.portEnvironmentVariableName
-										value: parameters.port
-									}, {
-										name:  parameters.dbHostEnvironmentVariableName
-										value: parameters.dbHost
-									}, {
-										name: parameters.dbUserEnvironmentVariableName
-										valueFrom: secretKeyRef: {
-											name: "\(parameters.appName)-application-secret"
-											key:  parameters.azureKeyVaultDbUserSecretName
-										}
-									}, {
-										name: parameters.dbPasswordEnvironmentVariableName
-										valueFrom: secretKeyRef: {
-											name: "\(parameters.appName)-application-secret"
-											key:  parameters.azureKeyVaultDbPasswordSecretName
-										}
-									}, {
-										name:  parameters.redisHostEnvironmentVariableName
-										value: parameters.redisHost
-									}, {
-										name:  parameters.redisPortEnvironmentVariableName
-										value: parameters.redisPort
-									}, {
-										name: parameters.redisPasswordEnvironmentVariableName
-										valueFrom: secretKeyRef: {
-											name: "\(parameters.appName)-application-secret"
-											key:  parameters.redisPasswordSecretName
-										}
-									}]
+									env:   _envDataSorted
+									if len(parameters.secrets) > 0 {
+										envFrom: [
+											{
+												secretRef: name: _secretName
+											},
+										]
+									}
 									ports: [{
 										containerPort: strconv.Atoi(parameters.port)
 									}, ...]
+									if parameters.args != _|_ {
+										args: parameters.args
+									}
 								},
 							]
 						}
@@ -363,6 +388,56 @@ DesignPattern: {
 				}
 			}
 		}
+
+		#secretData: {
+			secretKey: string
+			remoteRef: {
+				base.#Secret
+			}
+		}
+
+		let _secretData = [
+			for name, s in parameters.secrets {
+				#secretData & {
+					secretKey: name
+					remoteRef: {
+						key:     s.key
+						version: s.version
+					}
+				}
+			},
+		]
+
+		_secretElems: [...#secretData] &
+			_secretData+[{
+				secretKey: parameters.dbUserEnvironmentVariableName
+				remoteRef: {
+					key: parameters.azureKeyVaultDbUserSecretName
+				}
+			}, {
+				secretKey: parameters.dbPasswordEnvironmentVariableName
+				remoteRef: {
+					key: parameters.azureKeyVaultDbPasswordSecretName
+				}
+			}, {
+				secretKey: parameters.redisPasswordEnvironmentVariableName
+				remoteRef: {
+					key: parameters.redisPasswordSecretName
+				}
+			}]
+
+		_secretSet: [string]: #secretData
+		_secretSet: {
+			for e in _secretElems {
+				"\(e.secretKey)": e
+			}
+		}
+
+		_uniqSecretData: [ for s in _secretSet {s}]
+
+		// sort with secretKey to make results deterministic
+		let _secretDataSorted = list.Sort(_uniqSecretData, {x: {}, y: {}, less: x.secretKey < y.secretKey})
+
 		"\(_externalSecret)": kubernetes.#K8sExternalSecret & {
 			options: {
 				provider: "${\(_k8sProvider)}"
@@ -383,25 +458,10 @@ DesignPattern: {
 						kind: "ClusterSecretStore"
 					}
 					target: {
-						name:           "\(parameters.appName)-application-secret"
+						name:           _secretName
 						creationPolicy: "Owner"
 					}
-					data: [{
-						secretKey: parameters.azureKeyVaultDbUserSecretName
-						remoteRef: {
-							key: parameters.azureKeyVaultDbUserSecretName
-						}
-					}, {
-						secretKey: parameters.azureKeyVaultDbPasswordSecretName
-						remoteRef: {
-							key: parameters.azureKeyVaultDbPasswordSecretName
-						}
-					}, {
-						secretKey: parameters.redisPasswordSecretName
-						remoteRef: {
-							key: parameters.redisPasswordSecretName
-						}
-					}]
+					data: _secretDataSorted
 				}
 			}
 		}

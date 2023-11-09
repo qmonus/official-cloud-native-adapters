@@ -109,6 +109,122 @@ import (
 		]
 		workingDir: "/opt"
 	}, {
+		name:   "display-deploy-resources-overview"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/pulumi-patched:\(base.config.pulumiPatchedImageTag)"
+		script: """
+		#!/usr/bin/env bash
+		pulumi login ${PULUMI_BACKEND_URL} &> /dev/null
+		pulumi stack select --create \(_stack)  &> /dev/null
+		PULUMI_PREVIEW=`pulumi preview -r --stack \(_stack) -j --show-sames`
+		echo $PULUMI_PREVIEW | jq -c '.steps[] | {action:.op, urn:.urn}' > tmp_preview_list.txt
+		if [ ! -s "tmp_preview_list.txt" ]; then
+		  echo 'error: invalid Pulumi.yaml.'
+		  echo 'error: faild to run "pulumi preview".'
+		  exit 1
+		fi
+		ERROR_MESSAGE=`echo $PULUMI_PREVIEW | jq -c '.diagnostics // empty'`
+		if [ -n "$ERROR_MESSAGE" ]; then
+		  echo 'error: faild to run "pulumi preview".'
+		  echo $ERROR_MESSAGE | jq -cr '.[] | .message'
+		  exit 1
+		fi
+		while read -r PREVIEW; do
+		  URN=$(echo "${PREVIEW}" | jq -r '.urn')
+		  if grep -q "pulumi:pulumi:Stack" <<< "$URN"; then
+		    continue
+		  fi
+		  ACTION=$(echo "${PREVIEW}" | jq -r '.action')
+		  if [ "$ACTION" = "same" ]; then ACTION="unchanged"; fi
+		  SPLIT_URN=(${URN//::/ })
+		  echo ${SPLIT_URN[2]} ${SPLIT_URN[3]} ${ACTION}
+		  echo "$PREVIEW" >> preview_list.txt
+		done < tmp_preview_list.txt
+		if [ ! -s "preview_list.txt" ]; then echo "no resources."; fi
+		pulumi stack export 2> /dev/null | jq -c '.deployment.resources[]?' > resources_before_deploy.txt
+		"""
+		env:    list.FlattenN([
+			{
+				name:  "PULUMI_BACKEND_URL"
+				value: "file://\(_workingDir)"
+			},
+			{
+				name: "PULUMI_CONFIG_PASSPHRASE"
+				valueFrom: secretKeyRef: {
+					name: _input.pulumiCredentialName
+					key:  "passphrase"
+				}
+			},
+			if _input.useCred.kubernetes {
+				name:  "KUBECONFIG"
+				value: "/secret/kubernetes/kubeconfig"
+			},
+			if _input.useCred.gcp {
+				name:  "GOOGLE_CREDENTIALS"
+				value: "/secret/gcp/account.json"
+			},
+			if _input.useCred.aws {
+				name:  "AWS_SHARED_CREDENTIALS_FILE"
+				value: "/secret/aws/credentials"
+			},
+			if _input.useCred.azure {
+				[
+					{
+						name:  "ARM_CLIENT_ID"
+						value: "$(params.azureApplicationId)"
+					},
+					{
+						name:  "ARM_TENANT_ID"
+						value: "$(params.azureTenantId)"
+					},
+					{
+						name:  "ARM_SUBSCRIPTION_ID"
+						value: "$(params.azureSubscriptionId)"
+					},
+					{
+						name: "ARM_CLIENT_SECRET"
+						valueFrom: secretKeyRef: {
+							name: "$(params.azureClientSecretName)"
+							key:  "password"
+						}
+					},
+				]
+			},
+		], -1)
+		volumeMounts: [
+			if _input.useCred.kubernetes {
+				{
+					mountPath: "/secret/kubernetes"
+					name:      "user-kubeconfig"
+					readOnly:  true
+				}
+			},
+			if _input.useCred.gcp {
+				{
+					mountPath: "/secret/gcp"
+					name:      "gcp-secret"
+					readOnly:  true
+				}
+			},
+			if _input.useCred.aws {
+				{
+					mountPath: "/secret/aws"
+					name:      "aws-secret"
+					readOnly:  true
+				}
+			},
+		]
+		resources: {
+			requests: {
+				cpu:    "1"
+				memory: "2Gi"
+			}
+			limits: {
+				cpu:    "1"
+				memory: "2Gi"
+			}
+		}
+		workingDir: "\(_configPath)"
+	}, {
 		name:    "deploy"
 		image:   "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/pulumi-patched:\(base.config.pulumiPatchedImageTag)"
 		onError: "continue"
@@ -198,6 +314,61 @@ import (
 					mountPath: "/secret/aws"
 					name:      "aws-secret"
 					readOnly:  true
+				}
+			},
+		]
+		workingDir: "\(_configPath)"
+	}, {
+		name:    "display-deploy-result-overview"
+		image:   "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/pulumi-patched:\(base.config.pulumiPatchedImageTag)"
+		onError: "continue"
+		script:  """
+		#!/usr/bin/env bash
+		if [ ! -s "preview_list.txt" ]; then
+		  echo 'no difference.'
+		  exit 0
+		fi
+		pulumi login ${PULUMI_BACKEND_URL} &> /dev/null
+		pulumi stack select \(_stack)  &> /dev/null
+		pulumi stack export 2> /dev/null | jq -c '.deployment.resources[]' > resources_after_deploy.txt
+		RESOURCES_BEFORE_DEPLOY=`cat resources_before_deploy.txt`
+		RESOURCES_AFTER_DEPLOY=`cat resources_after_deploy.txt`
+		while read -r PREVIEW; do
+		  ACTION=$(echo "${PREVIEW}" | jq -r '.action')
+		  URN=$(echo "${PREVIEW}" | jq -r '.urn')
+		  RESULT="failed"
+		  case "$ACTION" in
+		    create)
+		      AFTER_DEPLOY=`echo $RESOURCES_AFTER_DEPLOY | jq -r "select(.urn == \\"$URN\\")"`
+		      if [ -n "$AFTER_DEPLOY" ]; then RESULT="created"; fi ;;
+		    update)
+		      BEFORE_UPDATE=`echo $RESOURCES_BEFORE_DEPLOY | jq -r "select(.urn == \\"$URN\\") | .modified"`
+		      AFTER_UPDATE=`echo $RESOURCES_AFTER_DEPLOY | jq -r "select(.urn == \\"$URN\\") | .modified"`
+		      if [ "$BEFORE_UPDATE" != "$AFTER_UPDATE" ]; then RESULT="updated"; fi ;;
+		    replace)
+		      BEFORE_REPLACE=`echo $RESOURCES_BEFORE_DEPLOY | jq -r "select(.urn == \\"$URN\\") | .created"`
+		      AFTER_REPLACE=`echo $RESOURCES_AFTER_DEPLOY | jq -r "select(.urn == \\"$URN\\") | .created"`
+		      if [ "$BEFORE_REPLACE" != "$AFTER_REPLACE" ]; then RESULT="replaced"; fi ;;
+		    delete)
+		      AFTER_DEPLOY=`echo $RESOURCES_AFTER_DEPLOY | jq -r "select(.urn == \\"$URN\\")"`
+		      if [ -z "$AFTER_DEPLOY" ]; then RESULT="deleted"; fi ;;
+		    same)
+		      RESULT="unchanged"
+		  esac
+		  SPLIT_URN=(${URN//::/ })
+		  echo ${SPLIT_URN[2]} ${SPLIT_URN[3]} ${RESULT}
+		done < preview_list.txt
+		"""
+		env: [
+			{
+				name:  "PULUMI_BACKEND_URL"
+				value: "file://\(_workingDir)"
+			},
+			{
+				name: "PULUMI_CONFIG_PASSPHRASE"
+				valueFrom: secretKeyRef: {
+					name: _input.pulumiCredentialName
+					key:  "passphrase"
 				}
 			},
 		]
