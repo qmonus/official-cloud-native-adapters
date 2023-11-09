@@ -1,6 +1,8 @@
 package sharedInfrastructure
 
 import (
+	"strconv"
+
 	"qmonus.net/adapter/official/types:azure"
 	"qmonus.net/adapter/official/types:random"
 	"qmonus.net/adapter/official/adapters/azure/component:azureCacheForRedis"
@@ -21,6 +23,8 @@ DesignPattern: {
 		mysqlSkuName:           string | *"B_Standard_B2s"
 		mysqlVersion:           string | *"8.0.21"
 		keyVaultAccessAllowedObjectIds: [...string]
+		useMySQL: string | *"true"
+		useRedis: string | *"true"
 	}
 
 	pipelineParameters: {
@@ -29,25 +33,14 @@ DesignPattern: {
 		useSshKey:      bool | *false
 	}
 
+	let _useMySQL = strconv.ParseBool(parameters.useMySQL)
+	let _useRedis = strconv.ParseBool(parameters.useRedis)
+
 	composites: [
-		{
-			pattern: azureCacheForRedis.DesignPattern
-			params: {
-				appName: parameters.appName
-			}
-		},
 		{
 			pattern: azureContainerRegistry.DesignPattern
 			params: {
 				appName: parameters.appName
-			}
-		},
-		{
-			pattern: azureDatabaseForMysql.DesignPattern
-			params: {
-				appName:      parameters.appName
-				mysqlSkuName: parameters.mysqlSkuName
-				mysqlVersion: parameters.mysqlVersion
 			}
 		},
 		{
@@ -70,6 +63,24 @@ DesignPattern: {
 				useAKS:                false
 				useApplicationGateway: false
 				useAppService:         true
+			}
+		},
+		if _useMySQL {
+			{
+				pattern: azureDatabaseForMysql.DesignPattern
+				params: {
+					appName:      parameters.appName
+					mysqlSkuName: parameters.mysqlSkuName
+					mysqlVersion: parameters.mysqlVersion
+				}
+			}
+		},
+		if _useRedis {
+			{
+				pattern: azureCacheForRedis.DesignPattern
+				params: {
+					appName: parameters.appName
+				}
 			}
 		},
 		{
