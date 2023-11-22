@@ -1,7 +1,6 @@
 # Shared Infrastructure Adapter
 
-CI/CD AdapterとInfrastructure Adapterを組み合わせて、HTTPSで外部公開できるアプリケーションをAzure上にデプロイするために、必要なAzureリソース群をデプロイするCloud
-Native Adapterです。
+CI/CD AdapterとInfrastructure Adapterを組み合わせて、HTTPSで外部公開できるアプリケーションをAzure上にデプロイするために、必要なAzureリソース群をデプロイするCloud Native Adapterです。
 
 以下のリソースを作成します。
 
@@ -31,9 +30,14 @@ Native Adapterです。
             * `qvs-cluster-issuer`という名前で作成されます。
         * ClusterSecretStore
             * `qvs-global-azure-store`という名前で作成されます。
+* Azure Log Analytics Workspace
+    * ログを格納する Log Analytics Workspace を作成します
+    * ログ機能を有効にすると AKS 上にエージェントがデプロイされ、ログをワークスペースに転送します。
 * Azure Network Security Group
-    * 2つ作成して、サブネットに関連付けます。
-    * セキュリティ規則は任意のポート・プロトコル・IPアドレスからのアクセスを許可します。
+    * AKSクラスター用のものとApplication Gateway用のものを1つずつ作成して、それぞれのサブネットに関連付けます。
+    * 受信セキュリティ規則は、以下のように設定されます。
+        * AKSクラスター用NSG: Azureによってデフォルトで作成される受信セキュリティ規則のみが設定されます。
+        * Application Gateway用NSG: Application Gatewayの利用に必要な受信セキュリティ規則に加え、`宛先ポート:443`・`プロトコル:TCP`のアクセスを許可します。ソースIPアドレスには、任意のIPアドレスまたはCIDR範囲を指定できます。IPアドレスの指定を省略した場合は、インターネットの全てのIPアドレスからのHTTPSアクセスを許可します。
 * Azure Public IP Address
     * Application Gateway用に作成します。
 * Azure Virtual Network
@@ -65,7 +69,7 @@ the [Creative Commons Attribution 4.0 International License](http://creativecomm
 
         1. Azureテナントにサインインします  
 
-            ※Azure Cloudshell の場合は不要です。  
+            ※Azure CloudShell の場合は不要です。  
             [Azure CLI を使用してサインインする](https://learn.microsoft.com/ja-jp/cli/azure/authenticate-azure-cli#authentication-methods) に基づき認証を行います。詳細は公式ドキュメントをご参照ください。
 
             ```bash
@@ -97,7 +101,7 @@ the [Creative Commons Attribution 4.0 International License](http://creativecomm
 
     1. Azure CLI を使用してAzureテナントにサインインします  
 
-        ※Azure Cloudshell の場合は不要です。  
+        ※Azure CloudShell の場合は不要です。  
         [Azure CLI を使用してサインインする](https://learn.microsoft.com/ja-jp/cli/azure/authenticate-azure-cli#authentication-methods) に基づき認証を行います。詳細は公式ドキュメントをご参照ください。
 
         ```bash
@@ -131,7 +135,7 @@ the [Creative Commons Attribution 4.0 International License](http://creativecomm
         kubectl delete secret qmonus-kubeconfig-token
         ```
 
-    1. Shared InfrasctuctureのAssemblyLineを再実行します。
+    1. Shared InfrastructureのAssemblyLineを再実行します。
 
 
 
@@ -170,7 +174,7 @@ Sample: サンプル実装
 
         1. Azureテナントにサインインします  
 
-            ※Azure Cloudshell の場合は不要です。  
+            ※Azure CloudShell の場合は不要です。  
             [Azure CLI を使用してサインインする](https://learn.microsoft.com/ja-jp/cli/azure/authenticate-azure-cli#authentication-methods) に基づき認証を行います。詳細は公式ドキュメントをご参照ください。
 
             ```bash
@@ -254,6 +258,7 @@ Sample: サンプル実装
 | azureTenantId                  | string | yes      | -              | 事前に用意したAzureのテナントID                                                                                                                                                                                                                                        | yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy                                        | yes          |
 | azureResourceGroupName         | string | yes      | -              | 作成するリソースグループ名                                                                                                                                                                                                                                              | sample-resourcegroup                                                        | yes          |
 | keyVaultAccessAllowedObjectIds | array  | yes      | -              | Key Vaultのシークレットにアクセスを許可するオブジェクトIDのリスト <br> 以下を参考に、アクセスを許可したいユーザプリンシパルまたはADアプリケーションに対応するオブジェクトIDを指定してください。 <br> https://learn.microsoft.com/ja-jp/partner-center/marketplace/find-tenant-object-id#find-user-object-id                                     | "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa,bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" | no           |
+| applicationGatewayNsgAllowedSourceIps | array | no | [] | Application Gateway用NSGへのアクセスを許可するソースIPアドレスのリスト <br> アプリケーションへのアクセスを許可したいIPアドレスまたはCIDR範囲を指定してください。複数のIPアドレスを指定する場合はカンマ区切りの文字列で指定します。指定を省略した場合は、インターネットの全てのIPアドレスからのアクセスが許可されます。 | "192.168.0.1,172.16.0.0/12" | no |
 | mysqlSkuName                   | string | no       | B_Standard_B2s | MySQLのSKU名<br>以下を参考に、SKU名を指定してください。<br>https://learn.microsoft.com/ja-jp/azure/mysql/flexible-server/concepts-service-tiers-storage<br>また、指定するコンピューティング レベルに従ってプレフィックスをつける必要があります。<br>例：コンピューティング レベル`Burstable`の場合はB、`General Purpose`の場合はGPをプレフィックスとします。 | B_Standard_B2s                                                        | no           |
 | mysqlVersion                   | string | no       | "8.0.21"       | MySQLのバージョン<br>`5.7`,`8.0.21`のいずれかを指定します。                                                                                                                                                                                                                  | "8.0.21"                                                                       | no           |
 | kubernetesVersion              | string | no       | ""             | Kubernetesのバージョン<br>デフォルトではデプロイ時点での最新バージョンとなります。                                                                                                                                                                                                           | ""                                                                    | no           |
@@ -263,6 +268,12 @@ Sample: サンプル実装
 | kubernetesOsDiskGb             | string | no       | "32"           | ワーカーノードが使用するVMのディスクサイズ(GB)                                                                                                                                                                                                                                 | "32"                                                                        | no           |
 | certmanagerVersion             | string | no       | "1.11.4"       | cert-managerのバージョン                                                                                                                                                                                                                                         | "1.11.4"                                                                     | no           |
 | esoVersion                     | string | no       | "0.9.0"        | External Secrets Operatorのバージョン                                                                                                                                                                                                                            | "0.9.0"                                                                     | no           |
+| enableContainerLog             | string | no       | "true"           | ログ機能の有効/無効。`true`` にした場合、Log Analytics Workspace の作成と、収集エージェントがAKSにデプロイされます | "true" | no |
+| retentionInDays                | string | no | "30" | `enableContainerLog` が `"true"` の場合のみ設定できます。各ログのテーブルを対話型で保持する期間を設定します。最長で 730 (2年間) まで指定することができます | "30" | no |
+| location                       | string | no | Japaneast | `enableContainerLog` が `"true"` の場合のみ設定できます。Log Analytics Workspace をデプロイするロケーションを設定します | Japaneast | no |
+| capacityReservationLevel       | string | no | "100" | `enableContainerLog` が `"true"` の場合のみ設定できます。sku に `CapacityReservation` を設定した際、コミットメントレベルを指定します。詳細は[公式ドキュメント]([Log Analytics ワークスペースの価格レベルを変更する](https://learn.microsoft.com/ja-jp/azure/azure-monitor/logs/change-pricing-tier?tabs=azure-portal))を確認してください | "100" | no |
+| dailyQuotaGb                   | string | no | "-1"  | `enableContainerLog` が `"true"` の場合のみ設定できます。Log Analytics Workspace に対する1日当たりのログの日次上限で単位はGBです。デフォルトは無制限になっています。 | "-1" | no |
+| workspaceAccessMode | string | no | resource | `enableContainerLog` が `"true"` の場合のみ設定できます。Log Analytics Workspace へのアクセスモードを指定します。`resource` の場合、ユーザはアクセス許可のあるリソースのログを確認することが可能です。ワークスペース全体へのアクセスはできません。`workspace` の場合、ユーザがログにアクセスするためには、明示的にワークスペースへアクセス許可を付与される必要があります。| resource  | no |
 
 ## CI/CD Parameters
 
@@ -321,7 +332,7 @@ Sample: サンプル実装
 | keyVault                                                     | Azure    | Azure Key Vault              | Key Vaultを作成します。                                                                                                         |
 | kubernetesCluster                                            | Azure    | Azure kubernetes Service     | AKSクラスターを作成します。                                                                                                          |
 | kubeconfigSecret                                             | Azure    | Azure Key Vault              | 作成したAKSクラスターのKubeconfigをKeyVaultのシークレットとして格納します。                                                                         |
-| agicResouceGroupReaderRoleAssignment                         | Azure    | Managed ID                   | resourceGroupに対するReaderロールをイングレス コントローラーに割り当てます。                                                                         |
+| agicResourceGroupReaderRoleAssignment                        | Azure    | Managed ID                   | resourceGroupに対するReaderロールをイングレス コントローラーに割り当てます。                                                                         |
 | agicApplicationGatewayContributorRoleAssignment              | Azure    | Managed ID                   | applicationGatewayに対するContributorロールをイングレス コントローラーに割り当てます。                                                               |
 | agicApplicationGatewaySubnetNetworkContributorRoleAssignment | Azure    | Managed ID                   | applicationGatewayのサブネットに対するNetworkContributorロールをイングレス コントローラーに割り当てます。                                                  |
 | acrPullRoleAssignment                                        | Azure    | Managed ID                   | kubernetesClusterのマネージドIDに、containerRegistryに対するAcr Pullロールを割り当てます。 |
@@ -329,12 +340,13 @@ Sample: サンプル実装
 | resourceGroup                                                | Azure    | Azure Resource Manager       | リソースグループを作成します。                                                                                                          |
 | certmanagerUserAssignedIdentity                              | Azure    | Managed ID                   | cert-manager用のユーザ割り当てマネージドIDを作成します。このマネージドIDを利用して、DNSリソースを制御します。                                                         |
 | certmanagerRoleAssignment                                    | Azure    | Managed ID                   | certmanagerUserAssignedIdentityリソースに対して、ロールを割り当てます。cert-managerのClusterIssuerリソースが必要とするDNS Zone Contributorロールが割り当てられます。 |
-| certmanagerFederatedIdentityCredentials                      | Azure    | Managed ID                   | リソースがDNSリソースを制御するために必要な資格情報をk8s servicaccountに連携します。                                                                     |
+| certmanagerFederatedIdentityCredentials                      | Azure    | Managed ID                   | リソースがDNSリソースを制御するために必要な資格情報をk8s serviceaccountに連携します。                                                                     |
 | esoUserAssignedIdentity                                      | Azure    | Managed ID                   | external-secrets用のユーザ割り当てマネージドIDを作成します。このマネージドIDを利用して、keyvaultリソースを制御します。                                                |
-| esFederatedIdentityCredentials                               | Azure    | Managed ID                   | リソースがKeyvaultを制御するために必要な資格情報をk8s servicaccountに連携します。                                                                    |
+| esFederatedIdentityCredentials                               | Azure    | Managed ID                   | リソースがKeyvaultを制御するために必要な資格情報をk8s serviceaccountに連携します。                                                                    |
 | keyVaultAccessPolicyForEso                                   | Azure    | Azure Key Vault              | esoUserAssignedIdentityがKeyvaultに対して値の読み取りを行うために必要なアクセスポリシーを生成します。                                                       |
 | keyVaultAccessPolicyForQvs                                   | Azure    | Azure Key Vault              | Qmonus Value Streamに登録したサービスプリンシパルがKeyvaultに対して値の読み取り・書き込みを行うために必要なアクセスポリシーを生成します。                                       |
 | keyVaultAccessPolicyForUser                                  | Azure    | Azure Key Vault              | 任意のオブジェクトIDがKeyvaultに対して値の読み取り・書き込みを行うために必要なアクセスポリシーを生成します。                                                              |
+| logAnalyticsWorkspace                                        | Azure    | Log Analytics Workspace      | ログを格納するワークスペースを作成します。 |
 
 ### Kubernetes Resources
 
@@ -379,6 +391,8 @@ designPatterns:
       azureTenantId: $(params.azureTenantId)
       azureSubscriptionId: $(params.azureSubscriptionId)
       keyVaultAccessAllowedObjectIds: [ "$(params.keyVaultAccessAllowedObjectIds[*])" ]
+      applicationGatewayNsgAllowedSourceIps: ["$(params.applicationGatewayNsgAllowedSourceIps[*])"]
+      enableContainerLog: $(paramas.enableContainerLog)
 ```
 
 ## Code

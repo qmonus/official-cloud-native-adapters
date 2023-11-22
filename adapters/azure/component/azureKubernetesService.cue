@@ -16,6 +16,7 @@ DesignPattern: {
 		kubernetesNodeVmSize: string | *"Standard_B2s"
 		kubernetesNodeCount:  string | *"1"
 		kubernetesOsDiskGb:   string | *"32"
+		enableContainerLog:   string | *"true"
 	}
 
 	_builtInRolesId: {
@@ -37,6 +38,8 @@ DesignPattern: {
 	_azureClassicProvider: provider: "${AzureClassicProvider}"
 	_azureProvider: provider:        "${AzureProvider}"
 
+	let _enableContainerLog = strconv.ParseBool(parameters.enableContainerLog)
+
 	resources: app: {
 		kubernetesCluster: azure.#AzureKubernetesCluster & {
 			options: _azureClassicProvider
@@ -47,7 +50,6 @@ DesignPattern: {
 				localAccountDisabled:          false
 				location:                      "japaneast"
 				name:                          "qvs-\(parameters.appName)-aks-cluster"
-				publicNetworkAccessEnabled:    true
 				roleBasedAccessControlEnabled: true
 				nodeResourceGroup:             "MC-aks-node-${resourceGroup.name}"
 				oidcIssuerEnabled:             true
@@ -88,6 +90,11 @@ DesignPattern: {
 					networkPolicy: "azure"
 					serviceCidr:   "10.0.24.0/22"
 				}
+				if _enableContainerLog {
+					omsAgent: {
+						logAnalyticsWorkspaceId: "${logAnalyticsWorkspace.id}"
+					}
+				}
 			}
 		}
 
@@ -106,7 +113,7 @@ DesignPattern: {
 			}
 		}
 
-		agicResouceGroupReaderRoleAssignment: azure.#AzureRoleAssignment & {
+		agicResourceGroupReaderRoleAssignment: azure.#AzureRoleAssignment & {
 			options: {
 				dependsOn: ["${kubernetesCluster}"]
 				_azureProvider

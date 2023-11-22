@@ -6,6 +6,7 @@ import (
 	"qmonus.net/adapter/official/pipeline/tasks:buildAzureStaticWebApps"
 	"qmonus.net/adapter/official/pipeline/tasks:deployAzureStaticWebApps"
 	"qmonus.net/adapter/official/pipeline/tasks:getUrlOfAzureStaticWebApps"
+	"qmonus.net/adapter/official/pipeline/tasks:generateEnvironmentVariablesFile"
 )
 
 DesignPattern: {
@@ -47,8 +48,11 @@ DesignPattern: {
 						}
 					}
 				}
-				"build": buildAzureStaticWebApps.#Builder & {
+				"generate-env-file": generateEnvironmentVariablesFile.#Builder & {
 					runAfter: ["checkout"]
+				}
+				"build": buildAzureStaticWebApps.#Builder & {
+					runAfter: ["generate-env-file"]
 				}
 				"deploy": deployAzureStaticWebApps.#Builder & {
 					runAfter: ["build"]

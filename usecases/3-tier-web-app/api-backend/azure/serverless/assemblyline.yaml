@@ -1,0 +1,51 @@
+apiVersion: vs.axis-dev.io/v1
+kind: AssemblyLine
+metadata:
+  name: <YOUR_ASSEMBLYLINE_NAME>
+spec:
+  params:
+    - name: gitRevision
+      description: ''
+  results:
+    - name: defaultDomain
+      value: $(stages.get-url-after-deploy.results.defaultDomain)
+    - name: customDomain
+      value: $(stages.get-url-after-deploy.results.customDomain)
+  artifacts:
+    - path: ./
+  stages:
+    - name: app-build
+      spec:
+        deployment:
+          app: <YOUR_APPLICATION_ID>
+          name: <YOUR_DEPLOYMENT_ID>
+        params:
+          - name: gitRevision
+            value: $(inputs.gitRevision)
+          - name: imageTag
+            value: $(params.appName)
+          - name: imageShortName
+            value: $(params.appName)
+        pipeline: <YOUR_APPLICATION_ID>-build
+    - name: app-deploy
+      spec:
+        deployment:
+          app: <YOUR_APPLICATION_ID>
+          name: <YOUR_DEPLOYMENT_ID>
+        params:
+          - name: gitRevision
+            value: $(inputs.gitRevision)
+          - name: imageFullNameTag
+            value: $(stages.app-build.results.imageFullNameTag)
+        pipeline: <YOUR_APPLICATION_ID>-deploy
+      runAfter:
+        - app-build
+    - name: get-url-after-deploy
+      spec:
+        deployment:
+          app: <YOUR_APPLICATION_ID>
+          name: <YOUR_DEPLOYMENT_ID>
+        params: []
+        pipeline: <YOUR_APPLICATION_ID>-get-url-after-deploy
+      runAfter:
+        - app-deploy

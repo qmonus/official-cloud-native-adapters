@@ -6,10 +6,11 @@ import (
 
 DesignPattern: {
 	parameters: {
-		appName:               string
-		useAKS:                bool | *true
-		useApplicationGateway: bool | *true
-		useAppService:         bool | *false
+		appName:                               string
+		useAKS:                                bool | *true
+		useApplicationGateway:                 bool | *true
+		useAppService:                         bool | *false
+		applicationGatewayNsgAllowedSourceIps: [...string] | *[]
 	}
 
 	_azureProvider: provider: "${AzureProvider}"
@@ -47,17 +48,6 @@ DesignPattern: {
 					resourceGroupName:        "${resourceGroup.name}"
 					networkSecurityGroupName: "qvs-\(parameters.appName)-aks-nsg"
 					location:                 "japaneast"
-					securityRules: [{
-						access:                   "Allow"
-						destinationAddressPrefix: '*'
-						destinationPortRange:     '*'
-						direction:                "Inbound"
-						name:                     "public-inbound-rule"
-						priority:                 2000
-						protocol:                 '*'
-						sourceAddressPrefix:      '*'
-						sourcePortRange:          '*'
-					}]
 				}
 			}
 		}
@@ -89,22 +79,40 @@ DesignPattern: {
 						destinationAddressPrefix: '*'
 						destinationPortRange:     '65200-65535'
 						direction:                "Inbound"
-						name:                     "application-gateway-specific-rule"
+						name:                     "QvsApplicationGatewaySpecificRule"
 						priority:                 1000
-						protocol:                 '*'
-						sourceAddressPrefix:      '*'
+						protocol:                 "Tcp"
+						sourceAddressPrefix:      "GatewayManager"
 						sourcePortRange:          '*'
-					}, {
-						access:                   "Allow"
-						destinationAddressPrefix: '*'
-						destinationPortRange:     '*'
-						direction:                "Inbound"
-						name:                     "public-inbound-rule"
-						priority:                 2000
-						protocol:                 '*'
-						sourceAddressPrefix:      '*'
-						sourcePortRange:          '*'
-					}]
+					},
+						// if there is no user-specified acl, default acl is set
+						if len(parameters.applicationGatewayNsgAllowedSourceIps) == 0 {
+							{
+								access:                   "Allow"
+								destinationAddressPrefix: '*'
+								destinationPortRange:     '443'
+								direction:                "Inbound"
+								name:                     "QvsAllowHttpsInBound"
+								priority:                 2000
+								protocol:                 "Tcp"
+								sourceAddressPrefix:      "Internet"
+								sourcePortRange:          '*'
+							}
+						},
+						if len(parameters.applicationGatewayNsgAllowedSourceIps) > 0 {
+							{
+								access:                   "Allow"
+								destinationAddressPrefix: '*'
+								destinationPortRange:     '443'
+								direction:                "Inbound"
+								name:                     "QvsAllowHttpsInBound"
+								priority:                 2000
+								protocol:                 "Tcp"
+								sourceAddressPrefixes:    parameters.applicationGatewayNsgAllowedSourceIps
+								sourcePortRange:          '*'
+							}
+						},
+					]
 				}
 			}
 		}
@@ -131,17 +139,6 @@ DesignPattern: {
 					resourceGroupName:        "${resourceGroup.name}"
 					networkSecurityGroupName: "qvs-\(parameters.appName)-web-app-nsg"
 					location:                 "japaneast"
-					securityRules: [{
-						access:                   "Allow"
-						destinationAddressPrefix: '*'
-						destinationPortRange:     '*'
-						direction:                "Inbound"
-						name:                     "public-inbound-rule"
-						priority:                 2000
-						protocol:                 '*'
-						sourceAddressPrefix:      '*'
-						sourcePortRange:          '*'
-					}]
 				}
 			}
 		}

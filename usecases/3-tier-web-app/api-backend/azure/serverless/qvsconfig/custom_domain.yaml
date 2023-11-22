@@ -1,0 +1,40 @@
+params:
+  - name: appName
+    type: string
+  - name: azureSubscriptionId
+    type: string
+  - name: azureResourceGroupName
+    type: string
+  - name: azureDnsZoneResourceGroupName
+    type: string
+  - name: containerRegistryName
+    type: string
+  - name: dnsZoneName
+    type: string
+  - name: dbHost
+    type: string
+  - name: redisHost
+    type: string
+  - name: azureKeyVaultName
+    type: string
+  - name: imageFullNameTag
+    type: string
+  - name: subdomainName
+    type: string
+modules:
+  - name: github.com/qmonus/official-cloud-native-adapters
+    revision: main
+designPatterns:
+  - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend
+    params:
+      appName: $(params.appName)
+      azureResourceGroupName: $(params.azureResourceGroupName)
+      azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
+      azureSubscriptionId: $(params.azureSubscriptionId)
+      containerRegistryName: $(params.containerRegistryName)
+      dnsZoneName: $(params.dnsZoneName)
+      dbHost: $(params.dbHost)
+      redisHost: $(params.redisHost)
+      azureKeyVaultName: $(params.azureKeyVaultName)
+      imageFullNameTag: $(params.imageFullNameTag)
+      subDomainName: $(params.subdomainName)

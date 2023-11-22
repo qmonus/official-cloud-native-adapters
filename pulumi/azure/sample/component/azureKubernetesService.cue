@@ -109,7 +109,7 @@ DesignPattern: {
 			}
 		}
 
-		agicResouceGroupReaderRoleAssignment: azure.#Resource & {
+		agicResourceGroupReaderRoleAssignment: azure.#Resource & {
 			type: "azure-native:authorization:RoleAssignment"
 			options: {
 				dependsOn: ["${kubernetesCluster}"]

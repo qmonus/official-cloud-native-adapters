@@ -17,12 +17,18 @@ Sample: サンプル実装
 
 ### Constraints
 * デプロイするファイルはnpmでパッケージ管理されリポジトリのrootディレクトリでビルドできる必要があります。
-
+* 環境変数を追加する場合はQVS ConfigにenvironmentVariablesパラメータを設定してください。
 
 ## Platform
 Azure Static Web Apps, Microsoft Azure
 
-## Parameters
+## Infrastructure Parameters
+
+| Parameter Name | Type | Required | Default | Description | Example | Auto Binding |
+| --- | --- | --- | --- | --- | --- | --- |
+| environmentVariables | object | no | - | アプリケーションに渡される環境変数名と値のペア | ENV: prod | no |
+
+## ## CI/CD Parameters
 
 ### Adapter Options
 | Parameter Name | Type | Required | Default | Description | Example |
@@ -56,13 +62,20 @@ Azure Static Web Apps, Microsoft Azure
 | --- | --- | --- | --- |
 | git-checkout | publish-site | - | 指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはGit Tokenを使用します。AdapterOptionsのuseSshKeyがFalseかつrepositoryKindがgithub, gitlabの場合に作成されます。 |
 | git-checkout-ssh | publish-site | - | 指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはSSH Keyを使用します。AdapterOptionsのuseSshKeyがTrueまたはrepositoryKindがbitbucket, backlogの場合に作成されます。 |
-| build-azure-static-web-apps | publish-site | git-checkout or git-checkout-ssh | リポジトリ内のnpmプロジェクトをビルドし、静的ファイルを生成します。 |
+| generate-environment-variables-file | publish-site | git-checkout or git-checkout-ssh | 環境変数をexportするスクリプトを作成します。|
+| build-azure-static-web-apps | publish-site | generate-environment-variables-file | リポジトリ内のnpmプロジェクトをビルドし、静的ファイルを生成します。 |
 | deploy-azure-static-web-apps | publish-site | build-azure-static-web-apps | ビルドされた静的ファイルをデプロイします。 |
+| get-url-azure-static-web-apps | publish-site | deploy-azure-static-web-apps | デプロイされたアプリケーションの公開URLを取得します。 |
 
 ## Usage
 ``` yaml
 designPatterns:
   - pattern: qmonus.net/adapter/official/pipeline/deploy:azureStaticWebApps
+    pipelineParams:
+      repositoryKind: github
+    params:
+      environmentVariables:
+        ENV1: $(params.env1)
 ```
 
 ## Code

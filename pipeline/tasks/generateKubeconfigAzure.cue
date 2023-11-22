@@ -89,7 +89,7 @@ import (
 			mountPath: "/tmp"
 		}]
 	}, {
-		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/qvsctl:v0.12.0-rc.1"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/qvsctl:v0.13.0"
 		name:  "gen-kubeconfig"
 		script: """
 			set -e

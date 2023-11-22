@@ -28,7 +28,6 @@ DesignPattern: {
 	}
 
 	pipelineParameters: {
-		// common parameters derived from multiple adapters
 		repositoryKind: string | *""
 		useSshKey:      bool | *false
 	}
