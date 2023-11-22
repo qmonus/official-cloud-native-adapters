@@ -47,6 +47,12 @@ import "qmonus.net/adapter/official/types:base"
 	properties: metadata: base.#QvsManagedLabel
 }
 
+#AzureClassicCNameRecord: {
+	base.#Resource
+	type: "azure:dns:CNameRecord"
+	properties: tags: base.#QvsManagedLabel
+}
+
 #AzureDnsZone: {
 	base.#Resource
 	type: "azure-native:network:Zone"
@@ -81,10 +87,15 @@ import "qmonus.net/adapter/official/types:base"
 	properties: tags: base.#QvsManagedLabel
 }
 
+#AzureOperationalinsightsWorkspace: {
+	base.#Resource
+	type: "azure-native:operationalinsights:Workspace"
+	properties: tags: base.#QvsManagedLabel
+}
+
 #AzureManagedCertificate: {
 	base.#Resource
 	type: "azure:appservice:ManagedCertificate"
-	properties: tags: base.#QvsManagedLabel
 }
 
 #AzureMysqlFlexibleServer: {

@@ -2,10 +2,12 @@ package apiBackend
 
 import (
 	"qmonus.net/adapter/official/types:azure"
+	"qmonus.net/adapter/official/types:base"
 	"qmonus.net/adapter/official/adapters/azure/component:azureAppServicePlan"
 	"qmonus.net/adapter/official/adapters/azure/component:azureWebAppForContainers"
 	"qmonus.net/adapter/official/pipeline/build:buildkitAzure"
 	"qmonus.net/adapter/official/pipeline/deploy:simpleDeployByPulumiYaml"
+	"qmonus.net/adapter/official/pipeline/sample:getUrlOfAzureAppService"
 )
 
 DesignPattern: {
@@ -22,6 +24,10 @@ DesignPattern: {
 		redisHost:                     string
 		azureKeyVaultName:             string
 		imageFullNameTag:              string
+		args?: [...string]
+		environmentVariables: [string]: string
+		secrets: [string]:              base.#Secret
+		appServiceAllowedSourceIps: [...string] | *[]
 	}
 
 	pipelineParameters: {
@@ -52,8 +58,14 @@ DesignPattern: {
 				redisHost:                     parameters.redisHost
 				azureKeyVaultName:             parameters.azureKeyVaultName
 				imageFullNameTag:              parameters.imageFullNameTag
+				environmentVariables:          parameters.environmentVariables
+				secrets:                       parameters.secrets
+				appServiceAllowedSourceIps:    parameters.appServiceAllowedSourceIps
 				if parameters.subnetId != "" {
 					subnetId: parameters.subnetId
+				}
+				if parameters.args != _|_ {
+					args: parameters.args
 				}
 			}
 		},
@@ -82,6 +94,9 @@ DesignPattern: {
 				importStackName:   ""
 				useBastionSshCred: false
 			}
+		},
+		{
+			pattern: getUrlOfAzureAppService.DesignPattern
 		},
 	]
 

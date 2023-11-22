@@ -1,0 +1,24 @@
+params:
+  - name: appName
+    type: string
+  - name: azureResourceGroupName
+    type: string
+  - name: azureTenantId
+    type: string
+  - name: azureSubscriptionId
+    type: string
+  - name: keyVaultAccessAllowedObjectIds
+    type: array
+
+modules:
+  - name: github.com/qmonus/official-cloud-native-adapters
+    revision: main
+
+designPatterns:
+  - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend/sharedInfrastructure
+    params:
+      appName: $(params.appName)
+      azureResourceGroupName: $(params.azureResourceGroupName)
+      azureTenantId: $(params.azureTenantId)
+      azureSubscriptionId: $(params.azureSubscriptionId)
+      keyVaultAccessAllowedObjectIds: ['$(params.keyVaultAccessAllowedObjectIds[*])']

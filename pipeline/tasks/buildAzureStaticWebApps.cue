@@ -23,6 +23,8 @@ import (
 		name: "shared"
 	}]
 
+	let _scriptPath = "$(workspaces.shared.path)/env/environment_variables.sh"
+
 	steps: [{
 		name:  "install-dependencies"
 		image: "node:18-alpine3.17"
@@ -40,10 +42,19 @@ import (
 			}
 		}
 	}, {
-		name:  "build"
-		image: "swacli/static-web-apps-cli:1.1.4"
-		command: ["swa"]
-		args: ["build", "--auto"]
+		name:       "build"
+		image:      "swacli/static-web-apps-cli:1.1.4"
+		script:     """
+			#!/bin/bash
+
+			SCRIPT_PATH="\(_scriptPath)"
+			if [ -e  $SCRIPT_PATH ]; then
+			  echo "set environment variables."
+			  source $SCRIPT_PATH
+			fi
+
+			swa build --auto
+			"""
 		workingDir: "$(workspaces.shared.path)/source/$(params.buildTargetDir)"
 		resources: {
 			requests: {

@@ -17,6 +17,7 @@ import (
 	"qmonus.net/adapter/official/adapters/azure/component:azurePublicIpAddress"
 	"qmonus.net/adapter/official/adapters/azure/component:azureResourceGroup"
 	"qmonus.net/adapter/official/adapters/azure/component:azureVirtualNetwork"
+	"qmonus.net/adapter/official/adapters/azure/component:azureLogAnalyticsWorkspace"
 	"qmonus.net/adapter/official/pipeline/deploy:simpleDeployByPulumiYaml"
 	"qmonus.net/adapter/official/pipeline/tasks:generateKubeconfigAzure"
 )
@@ -39,18 +40,26 @@ DesignPattern: {
 		certmanagerVersion:            string | *"1.11.4"
 		esoVersion:                    string | *"0.9.0"
 		keyVaultAccessAllowedObjectIds: [...string]
-		useMySQL: string | *"true"
-		useRedis: string | *"true"
+		applicationGatewayNsgAllowedSourceIps:       [...string] | *[]
+		useMySQL:                                    string | *"true"
+		useRedis:                                    string | *"true"
+		enableLogAccessUsingOnlyResourcePermissions: string | *"true"
+		enableContainerLog:                          string | *"true"
+		retentionInDays:                             string | *"30"
+		location:                                    string | *"Japaneast"
+		capacityReservationLevel?:                   string | *"100"
+		dailyQuotaGb:                                string | *"-1"
+		workspaceAccessMode:                         string | *"resource"
 	}
 
 	pipelineParameters: {
-		// common parameters derived from multiple adapters
 		repositoryKind: string | *""
 		useSshKey:      bool | *false
 	}
 
 	let _useMySQL = strconv.ParseBool(parameters.useMySQL)
 	let _useRedis = strconv.ParseBool(parameters.useRedis)
+	let _enableContainerLog = strconv.ParseBool(parameters.enableContainerLog)
 
 	composites: [
 		{
@@ -90,6 +99,24 @@ DesignPattern: {
 				keyVaultAccessAllowedObjectIds: parameters.keyVaultAccessAllowedObjectIds
 			}
 		},
+		if _enableContainerLog {
+			{
+
+				{
+					pattern: azureLogAnalyticsWorkspace.DesignPattern
+					params: {
+						appName:         parameters.appName
+						retentionInDays: parameters.retentionInDays
+						location:        parameters.location
+						if parameters.capacityReservationLevel != _|_ {
+							capacityReservationLevel: parameters.capacityReservationLevel
+						}
+						dailyQuotaGb:        parameters.dailyQuotaGb
+						workspaceAccessMode: parameters.workspaceAccessMode
+					}
+				}
+			}
+		},
 		{
 			pattern: azureKubernetesService.DesignPattern
 			params: {
@@ -100,6 +127,7 @@ DesignPattern: {
 				kubernetesNodeVmSize: parameters.kubernetesNodeVmSize
 				kubernetesNodeCount:  parameters.kubernetesNodeCount
 				kubernetesOsDiskGb:   parameters.kubernetesOsDiskGb
+				enableContainerLog:   parameters.enableContainerLog
 			}
 		},
 		{
@@ -118,7 +146,8 @@ DesignPattern: {
 		{
 			pattern: azureVirtualNetwork.DesignPattern
 			params: {
-				appName: parameters.appName
+				appName:                               parameters.appName
+				applicationGatewayNsgAllowedSourceIps: parameters.applicationGatewayNsgAllowedSourceIps
 			}
 		},
 		if _useMySQL {

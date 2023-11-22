@@ -1,0 +1,42 @@
+params:
+  - name: appName
+    type: string
+  - name: azureTenantId
+    type: string
+  - name: azureSubscriptionId
+    type: string
+  - name: azureResourceGroupName
+    type: string
+  - name: azureDnsZoneResourceGroupName
+    type: string
+  - name: dnsZoneName
+    type: string
+  - name: keyVaultAccessAllowedObjectIds
+    type: array
+  - name: enableContainerLog
+    type: string
+  - name: retentionInDays
+    type: string
+  - name: capacityReservationLevel
+    type: string
+  - name: enableLogAccessUsingOnlyResourcePermissions
+    type: string
+
+modules:
+  - name: qmonus.net/adapter/official
+    revision: v0.17.0
+
+designPatterns:
+  - pattern: qmonus.net/adapter/official/adapters/azure/container/kubernetes/apiBackend/sharedInfrastructure
+    params:
+      appName: $(params.appName)
+      azureTenantId: $(params.azureTenantId)
+      azureSubscriptionId: $(params.azureSubscriptionId)
+      azureResourceGroupName: $(params.azureResourceGroupName)
+      azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
+      dnsZoneName: $(params.dnsZoneName)
+      keyVaultAccessAllowedObjectIds: ["$(params.keyVaultAccessAllowedObjectIds[*])"]
+      enableContainerLog: $(params.enableContainerLog)
+      retentionInDays: $(params.retentionInDays)
+      capacityReservationLevel: $(params.capacityReservationLevel)
+      enableLogAccessUsingOnlyResourcePermissions: $(params.enableLogAccessUsingOnlyResourcePermissions)

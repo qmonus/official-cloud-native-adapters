@@ -1,0 +1,21 @@
+apiVersion: vs.axis-dev.io/v1
+kind: AssemblyLine
+metadata:
+  name: <YOUR_ASSEMBLYLINE_NAME>
+spec:
+  params:
+    - name: gitRevision
+      description: ""
+  results:
+    - name: gitRevision
+      value: $(inputs.gitRevision)
+  stages:
+    - name: deploy
+      spec:
+        deployment:
+          app: <YOUR_APPLICATION>
+          name: <YOUR_DEPLOYMENT>
+        params:
+          - name: gitRevision
+            value: $(inputs.gitRevision)
+        pipeline: <YOUR_APPLICATION>-deploy

@@ -9,7 +9,7 @@
 
 Adapter を利用して静的 Web アプリケーションをデプロイするにあたり、以下の項目をご準備ください。
 
-1. サービスプリンシパル の作成  
+1. サービスプリンシパル の作成
     Frontend Adapter を利用してWebアプリケーションをデプロイする際、Azure Static Web Apps を利用するための権限が付与されたサービスプリンシパル を作成する必要があります。
     「[ポータルで Azure AD アプリとサービス プリンシパルを作成する](https://learn.microsoft.com/ja-jp/azure/active-directory/develop/howto-create-service-principal-portal) 」と「[Frontend Adapter](../../../../../adapters/azure/serverless/staticSite/frontend/README.md)」 を参考にして必要な権限を付与したサービスプリンシパルを作成するか、以下に示している CLI での作成例を参考にしてください。
 
@@ -20,9 +20,9 @@ Adapter を利用して静的 Web アプリケーションをデプロイする�
 
     Azure CLI が必要なため「[Azure Cloud Shellを利用する](https://learn.microsoft.com/ja-jp/azure/cloud-shell/quickstart?tabs=azurecli)」、もしくは「[Azure CLIをローカル端末にインストール](https://learn.microsoft.com/ja-jp/cli/azure/install-azure-cli)」を実施してから手順を実施してください。
 
-    1. Azureテナントにサインインします  
+    1. Azureテナントにサインインします
 
-        ※Azure Cloudshell の場合は不要です。  
+        ※Azure Cloudshell の場合は不要です。
         [Azure CLI を使用してサインインする](https://learn.microsoft.com/ja-jp/cli/azure/authenticate-azure-cli#authentication-methods) に基づき認証を行います。詳細は公式ドキュメントをご参照ください。
 
         ```bash
@@ -32,16 +32,16 @@ Adapter を利用して静的 Web アプリケーションをデプロイする�
     1. サブスクリプションIDを取得します。
         サービスプリンシパルを作成するサブスクリプションと、権限のスコープ指定のためにサブスクリプションIDを取得し表示します。
 
-        ```bash    
+        ```bash
         SUBSCID=$(az account show --query id --output tsv)
         echo ${SUBSCID}
         ```
 
         このとき、必ず表示された値を別途保存してください。Environmentリソースの作成時に利用します。
-    
-    1. 共同作成者ロールのサービスプリンシパルをサブスクリプションスコープで作ります  
-        `<YOUR_SERVICE_PRICIPAL_NAME>` は自身が登録したいサービスプリンシパル名に変更してください    
-        
+
+    1. 共同作成者ロールのサービスプリンシパルをサブスクリプションスコープで作ります
+        `<YOUR_SERVICE_PRICIPAL_NAME>` は自身が登録したいサービスプリンシパル名に変更してください
+
         ```bash
         az ad sp create-for-rbac -n <YOUR_SERVICE_PRICIPAL_NAME> --role Contributor --scopes /subscriptions/${SUBSCID} /subscriptions/${SUBSCID}
         ```
@@ -54,26 +54,23 @@ Adapter を利用して静的 Web アプリケーションをデプロイする�
 
         もし保存し忘れてしまった場合は同じコマンドを再実行することで password が再生成されます。
 
-    1. サービスプリンシパルが作成されたことを確認します    
+    1. サービスプリンシパルが作成されたことを確認します
 
         ```bash
         az ad sp list --display-name <YOUR_SERVICE_PRICIPAL_NAME>
         ```
 
-1. 共有リソースの作成    
+1. 共有リソースの作成
     Frontend Adapter を利用するには事前に必要なリソースがあります。
 
     - Azure DNS Zone を作成する（すでに作成済みの場合はスキップします）
 
 ## Value Stream によるリソースデプロイ
 
-1. Value Stream リソースの作成  
-   Repository、Application、Environment、Deployment などの Value Stream リソースを作成して登録してください。
-   Environmentリソース作成時、Azure の Provisioning Targetでは `Public` を選択してください。
+1. QVS Config の登録
 
-1. QVS Config の登録と Pipeline/Tasks の生成  
-    QVS Config をアプリケーションのリポジトリに登録してください。リポジトリに最小パラメータで利用できる [qvs.yaml](./qvsconfig/qvs.yaml) と、全パラメータを設定する [full_params_qvs.yaml](./qvsconfig/full_params_qvs.yaml) を配置しているので適宜利用してください。  
-    リポジトリに登録した後、Qmonus Values Stream の Assemblyline のページにある `COMPILE AND APPLY PIPELINE/TASK` 機能を利用して Pipeline/Tasks を生成してください。
+    QVS Config をアプリケーションのリポジトリに登録してください。リポジトリに最小パラメータで利用できる [qvs.yaml](./qvsconfig/qvs.yaml) と、全パラメータを設定する [full_params_qvs.yaml](./qvsconfig/full_params_qvs.yaml) を配置しているので適宜利用してください。
+    ユースケースに応じて設定変更は [こちら](#ユースケースに応じた設定変更) をご参照ください。
 
     以下にデフォルト設定の QVS Config を示します。
 
@@ -95,7 +92,7 @@ Adapter を利用して静的 Web アプリケーションをデプロイする�
         revision: v0.17.0
 
     designPatterns:
-      - pattern: qmonus.net/adapter/official/adapters/azure/serverless/staticSite/frontend  
+      - pattern: qmonus.net/adapter/official/adapters/azure/serverless/staticSite/frontend
         params:
           appName: $(params.appName)
           azureSubscriptionId: $(params.azureSubscriptionId)
@@ -104,7 +101,17 @@ Adapter を利用して静的 Web アプリケーションをデプロイする�
           azureDnsZoneName: $(params.azureDnsZoneName)
     ```
 
-1. AssemblyLine の作成と登録、および実行  
+1. Value Stream リソースの作成
+
+   Repository、Application、Environment、Deployment などの Value Stream リソースを作成して登録してください。
+   Environmentリソース作成時、Azure の Provisioning Targetでは `Public` を選択してください。
+
+1. Pipeline/Tasks の生成
+
+    Qmonus Values Stream の Assemblyline のページにある `COMPILE AND APPLY PIPELINE/TASK` 機能を利用して Pipeline/Tasks を生成してください。
+
+1. AssemblyLine の作成と登録、および実行
+
     AssemblyLineを作成して Value Stream に登録し、実行してください。
     [assemblyline.yaml](./assemblyline.yaml) ファイルを必要に応じて参照し、ファイル中のアプリケーション名や Deployment などを指定する <YOUR_XXXX> のパラメータは、自身の環境に合わせて置き換えてください。
 
@@ -136,13 +143,13 @@ Adapter を利用して静的 Web アプリケーションをデプロイする�
          type: string
     +  - name: relativeRecordSetName
     +    type: string
- 
+
      modules:
        - name: qmonus.net/adapter/official
          revision: v0.17.0
- 
+
      designPatterns:
-       - pattern: qmonus.net/adapter/official/adapters/azure/serverless/staticSite/frontend  
+       - pattern: qmonus.net/adapter/official/adapters/azure/serverless/staticSite/frontend
          params:
            appName: $(params.appName)
            azureSubscriptionId: $(params.azureSubscriptionId)
@@ -161,7 +168,7 @@ Adapter を利用して静的 Web アプリケーションをデプロイする�
     relativeRecordSetName: my-app
     ```
 
-4. AssemblyLineを実行します。  
+4. AssemblyLineを実行します。
     実行が成功するとAzure Static Web AppsでStatic Siteが作成され、公開されるURLは `my-app` のサブドメインを持つようになります。
     Assemblyline Results に表示されている `publicUrl` を確認し、アクセスできることを確認してください。
 
@@ -195,14 +202,14 @@ Webアプリがデプロイされるデフォルトのロケーションは `Eas
        - name: azureDnsZoneName
          type: string
     +  - name: relativeRecordSetName
-    +    type: string         
- 
+    +    type: string
+
     modules:
        - name: qmonus.net/adapter/official
          revision: v0.17.0
- 
+
      designPatterns:
-       - pattern: qmonus.net/adapter/official/adapters/azure/serverless/staticSite/frontend  
+       - pattern: qmonus.net/adapter/official/adapters/azure/serverless/staticSite/frontend
          params:
            appName: $(params.appName)
     +      azureStaticSiteLocation: ${params.azureStaticSiteLocation)
@@ -223,7 +230,7 @@ Webアプリがデプロイされるデフォルトのロケーションは `Eas
       relativeRecordSetName: my-app-us
       ```
 
-4. Assemblyline を実行します。  
+4. Assemblyline を実行します。
     実行が成功するとAzure Static Web AppsでStatic Siteが作成されます。
     Azure Portal から Azure Static Web Apps に移動し、デプロイされているロケーションが `Central US` に、公開されるURLが `my-app-us` のサブドメインを持っていることを確認します。
 

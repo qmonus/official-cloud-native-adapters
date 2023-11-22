@@ -67,6 +67,7 @@ Sample: サンプル実装
 
 * デプロイするファイルはnpmでパッケージ管理されている必要があります。
 * デプロイ対象のフロントエンドプロジェクトがルートディレクトリに存在しない場合は、buildTargetDir　及び、deployTargetDirのパラメータで適切なパスを指定してください。
+* 環境変数を追加する場合はQVS ConfigにenvironmentVariablesパラメータを設定してください。
 
 ## Infrastructure Parameters
 
@@ -80,6 +81,7 @@ Sample: サンプル実装
 | azureDnsZoneName | string | yes | - | 事前に用意したDNSゾーン名 | foo.example.com | no |
 | relativeRecordSetName | string | no | www | 公開するURLのドメイン名となるDNSレコード。`azureDnsZoneName` と 合わせて `<relativeRecordSetName>.<azureDnsZoneName>` の形式でパブリック公開されます | www | no |
 | azureCnameRecordTtl | string | no | "3600" | 新たに作成するCレコードに設定するTTLの値 | "3600" | no |
+| environmentVariables | object | no | - | アプリケーションに渡される環境変数名と値のペア | ENV: prod | no |
 
 ## CI/CD Parameters
 
@@ -139,7 +141,8 @@ Sample: サンプル実装
 | compile-adapter-into-pulumi-yaml     | deploy               | git-checkout                                                             | リポジトリ内の QVS Config に記載されている Cloud Native Adapter をコンパイルし、PulumiYamlのプロジェクトファイルを生成します。AdapterOptionsのuseSshKeyがFalseかつrepositoryKindがgithub, gitlabの場合に作成されます。     |
 | compile-adapter-into-pulumi-yaml-ssh | deploy               | git-checkout-ssh                                                         | リポジトリ内の QVS Config に記載されている Cloud Native Adapter をコンパイルし、PulumiYamlのプロジェクトファイルを生成します。AdapterOptionsのuseSshKeyがTrueまたはrepositoryKindがbitbucket, backlogの場合に作成されます。 |
 | deploy-by-pulumi-yaml                | deploy               | compile-adapter-into-pulumi-yaml or compile-adapter-into-pulumi-yaml-ssh | コンパイルされたPulumiYamlのプロジェクトファイルを指定の環境にデプロイします。                                                                                                                      |
-| build-azure-static-web-apps          | publish-site         | git-checkout or git-checkout-ssh                                         | リポジトリ内のnpmプロジェクトをビルドし、静的ファイルを生成します。                                                                                                                               |
+| generate-environment-variables-file  | publish-site         | git-checkout or git-checkout-ssh                                         | 環境変数をexportするスクリプトを作成します。                                                                                                                          |
+| build-azure-static-web-apps          | publish-site         | generate-environment-variables-file                                      | リポジトリ内のnpmプロジェクトをビルドし、静的ファイルを生成します。                                                                                                                               |
 | deploy-azure-static-web-apps         | publish-site         | build-azure-static-web-apps                                              | ビルドされた静的ファイルをデプロイします。                                                                                                                                             |
 | get-url-azure-static-web-apps        | publish-site         | deploy-azure-static-web-apps                                             | デプロイされたアプリケーションの公開URLを取得します。                                                                                                                                      |
 
@@ -155,7 +158,9 @@ designPatterns:
       azureResourceGroupName: $(params.azureResourceGroupName)
       azureDnsZoneName: $(params.azureDnsZoneName)
       azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
-
+      environmentVariables:
+        ENV1: $(params.env1)
+        ENV2: $(params.env2)
 ```
 
 ## Code

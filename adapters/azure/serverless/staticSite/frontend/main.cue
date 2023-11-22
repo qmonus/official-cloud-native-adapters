@@ -17,6 +17,8 @@ DesignPattern: {
 		azureDnsZoneName:              string
 		relativeRecordSetName:         string | *"www"
 		azureCnameRecordTtl:           string | *"3600"
+		// used for azureStaticWebApps pipeline.
+		environmentVariables: [string]: string
 	}
 	pipelineParameters: {
 		// common parameters derived from multiple adapters
