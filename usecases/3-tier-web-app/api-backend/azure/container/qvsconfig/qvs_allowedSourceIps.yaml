@@ -1,0 +1,33 @@
+params:
+  - name: appName
+    type: string
+  - name: azureTenantId
+    type: string
+  - name: azureSubscriptionId
+    type: string
+  - name: azureResourceGroupName
+    type: string
+  - name: azureDnsZoneResourceGroupName
+    type: string
+  - name: dnsZoneName
+    type: string
+  - name: keyVaultAccessAllowedObjectIds
+    type: array
+  - name: applicationGatewayNsgAllowedSourceIps
+    type: array
+
+modules:
+  - name: github.com/qmonus/official-cloud-native-adapters
+    revision: v0.20.0
+
+designPatterns:
+  - pattern: qmonus.net/adapter/official/adapters/azure/container/kubernetes/apiBackend/sharedInfrastructure
+    params:
+      appName: $(params.appName)
+      azureTenantId: $(params.azureTenantId)
+      azureSubscriptionId: $(params.azureSubscriptionId)
+      azureResourceGroupName: $(params.azureResourceGroupName)
+      azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
+      dnsZoneName: $(params.dnsZoneName)
+      keyVaultAccessAllowedObjectIds: ["$(params.keyVaultAccessAllowedObjectIds[*])"]
+      applicationGatewayNsgAllowedSourceIps: ["$(params.applicationGatewayNsgAllowedSourceIps[*])"]

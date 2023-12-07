@@ -4,7 +4,6 @@ import (
 	"list"
 	"strings"
 	"qmonus.net/adapter/official/pipeline/schema"
-	"qmonus.net/adapter/official/pipeline/base"
 )
 
 #BuildInput: {
@@ -46,7 +45,7 @@ import (
 			ENV_SET_NAME="\(_envSetName)"
 			
 			if [ -z "$ENVS" ]; then
-			  echo "No environment variables."
+			  echo "no environment variables."
 			  exit 0
 			fi
 
@@ -79,10 +78,6 @@ import (
 				"open('$(workspaces.shared.path)/params.json', 'w').write(json.dumps({'params': params}, indent=4))",
 			],
 		]), "\n")
-		env: [{
-			name: "VS_SECRETS"
-			valueFrom: fieldRef: fieldPath: "metadata.annotations['\(base.config.qmonusVsSecretKey)']"
-		}]
 		workingDir: "$(workspaces.shared.path)/source/"
 	}, {
 		name:       "generate-env-file"
@@ -114,6 +109,8 @@ import (
 			      echo export ${_KEY}=${_PARAM} >> $ENV_FILE_PATH;;
 			  esac
 			done < ${ENV_SET_PATH}
+
+			echo "successfully created a env file." 
 			"""
 		workingDir: "$(workspaces.shared.path)/source/"
 	}]

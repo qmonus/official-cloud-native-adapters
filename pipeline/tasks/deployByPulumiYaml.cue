@@ -38,6 +38,8 @@ import (
 
 	let _stack = "$(params.appName)-$(params.qvsDeploymentName)-$(params.deployStateName)"
 	let _workingDir = "$(workspaces.shared.path)/pulumi/\(_stack)"
+	let _previewListFileName = "preview_list.txt"
+	let _resourcesBeforeDeployFileName = "resources_before_deploy.txt"
 
 	params: {
 		appName: desc:           "Application Name of QmonusVS"
@@ -113,19 +115,24 @@ import (
 		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/pulumi-patched:\(base.config.pulumiPatchedImageTag)"
 		script: """
 		#!/usr/bin/env bash
+		if [ -e \(_previewListFileName) ]; then
+			rm \(_previewListFileName)
+		fi
 		pulumi login ${PULUMI_BACKEND_URL} &> /dev/null
 		pulumi stack select --create \(_stack)  &> /dev/null
 		PULUMI_PREVIEW=`pulumi preview -r --stack \(_stack) -j --show-sames`
+		PULUMI_PREVIEW_ERROR=`[[ $? != 0 ]] && echo true || echo false`
 		echo $PULUMI_PREVIEW | jq -c '.steps[] | {action:.op, urn:.urn}' > tmp_preview_list.txt
 		if [ ! -s "tmp_preview_list.txt" ]; then
 		  echo 'error: invalid Pulumi.yaml.'
 		  echo 'error: faild to run "pulumi preview".'
 		  exit 1
 		fi
-		ERROR_MESSAGE=`echo $PULUMI_PREVIEW | jq -c '.diagnostics // empty'`
-		if [ -n "$ERROR_MESSAGE" ]; then
-		  echo 'error: faild to run "pulumi preview".'
-		  echo $ERROR_MESSAGE | jq -cr '.[] | .message'
+		DIAGNOSTICS=`echo $PULUMI_PREVIEW | jq -c '.diagnostics // empty'`
+		if "$PULUMI_PREVIEW_ERROR"; then
+		  echo "error: faild to run "pulumi preview"."
+		  echo -e '\\nDiagnostics:'
+		  echo $DIAGNOSTICS | jq -cr '.[] | .message'
 		  exit 1
 		fi
 		while read -r PREVIEW; do
@@ -137,10 +144,14 @@ import (
 		  if [ "$ACTION" = "same" ]; then ACTION="unchanged"; fi
 		  SPLIT_URN=(${URN//::/ })
 		  echo ${SPLIT_URN[2]} ${SPLIT_URN[3]} ${ACTION}
-		  echo "$PREVIEW" >> preview_list.txt
+		  echo "$PREVIEW" >> \(_previewListFileName)
 		done < tmp_preview_list.txt
-		if [ ! -s "preview_list.txt" ]; then echo "no resources."; fi
-		pulumi stack export 2> /dev/null | jq -c '.deployment.resources[]?' > resources_before_deploy.txt
+		if [ ! -s "\(_previewListFileName)" ]; then echo "no resources."; fi
+		pulumi stack export 2> /dev/null | jq -c '.deployment.resources[]?' > \(_resourcesBeforeDeployFileName)
+		if [ -n "$DIAGNOSTICS" ]; then
+		  echo -e '\\nDiagnostics:'
+		  echo $DIAGNOSTICS | jq -cr '.[] | .message'
+		fi
 		"""
 		env:    list.FlattenN([
 			{
@@ -324,14 +335,14 @@ import (
 		onError: "continue"
 		script:  """
 		#!/usr/bin/env bash
-		if [ ! -s "preview_list.txt" ]; then
+		if [ ! -s "\(_previewListFileName)" ]; then
 		  echo 'no difference.'
 		  exit 0
 		fi
 		pulumi login ${PULUMI_BACKEND_URL} &> /dev/null
 		pulumi stack select \(_stack)  &> /dev/null
 		pulumi stack export 2> /dev/null | jq -c '.deployment.resources[]' > resources_after_deploy.txt
-		RESOURCES_BEFORE_DEPLOY=`cat resources_before_deploy.txt`
+		RESOURCES_BEFORE_DEPLOY=`cat \(_resourcesBeforeDeployFileName)`
 		RESOURCES_AFTER_DEPLOY=`cat resources_after_deploy.txt`
 		while read -r PREVIEW; do
 		  ACTION=$(echo "${PREVIEW}" | jq -r '.action')
@@ -357,7 +368,7 @@ import (
 		  esac
 		  SPLIT_URN=(${URN//::/ })
 		  echo ${SPLIT_URN[2]} ${SPLIT_URN[3]} ${RESULT}
-		done < preview_list.txt
+		done < \(_previewListFileName)
 		"""
 		env: [
 			{

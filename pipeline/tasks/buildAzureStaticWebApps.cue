@@ -23,7 +23,7 @@ import (
 		name: "shared"
 	}]
 
-	let _scriptPath = "$(workspaces.shared.path)/env/environment_variables.sh"
+	let _envFilePath = "$(workspaces.shared.path)/env/environment_variables.sh"
 
 	steps: [{
 		name:  "install-dependencies"
@@ -47,10 +47,10 @@ import (
 		script:     """
 			#!/bin/bash
 
-			SCRIPT_PATH="\(_scriptPath)"
-			if [ -e  $SCRIPT_PATH ]; then
+			ENV_FILE_PATH="\(_envFilePath)"
+			if [ -e  $ENV_FILE_PATH ]; then
 			  echo "set environment variables."
-			  source $SCRIPT_PATH
+			  source $ENV_FILE_PATH
 			fi
 
 			swa build --auto

@@ -1,0 +1,63 @@
+params:
+  - name: appName
+    type: string
+  - name: azureSubscriptionId
+    type: string
+  - name: azureResourceGroupName
+    type: string
+  - name: azureDnsZoneResourceGroupName
+    type: string
+  - name: azureDnsZoneName
+    type: string
+  - name: azureDnsARecordName
+    type: string
+  - name: azureStaticIpAddress
+    type: string
+  - name: mysqlCreateDbName
+    type: string
+  - name: azureKeyVaultKeyContainerName
+    type: string
+  - name: clusterIssuerName
+    type: string
+  - name: k8sNamespace
+    type: string
+  - name: imageName
+    type: string
+  - name: port
+    type: string
+  - name: dbHost
+    type: string
+  - name: redisHost
+    type: string
+  - name: redisPasswordSecretName
+    type: string
+  - name: host
+    type: string
+  - name: args
+    type: array
+
+modules:
+  - name: github.com/qmonus/official-cloud-native-adapters
+    revision: v0.20.0
+
+designPatterns:
+  - pattern: qmonus.net/adapter/official/adapters/azure/container/kubernetes/apiBackend
+    params:
+      appName: $(params.appName)
+      azureSubscriptionId: $(params.azureSubscriptionId)
+      azureResourceGroupName: $(params.azureResourceGroupName)
+      azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
+      azureDnsZoneName: $(params.azureDnsZoneName)
+      azureDnsARecordName: $(params.azureDnsARecordName)
+      azureStaticIpAddress: $(params.azureStaticIpAddress)
+      mysqlCreateDbName: $(params.mysqlCreateDbName)
+      azureKeyVaultKeyContainerName: $(params.azureKeyVaultKeyContainerName)
+      clusterIssuerName: $(params.clusterIssuerName)
+      k8sNamespace: $(params.k8sNamespace)
+      imageName: $(params.imageName)
+      port: $(params.port)
+      dbHost: $(params.dbHost)
+      redisHost: $(params.redisHost)
+      redisPasswordSecretName: $(params.redisPasswordSecretName)
+      host: $(params.host)
+      args: ["$(params.args[*])"]
