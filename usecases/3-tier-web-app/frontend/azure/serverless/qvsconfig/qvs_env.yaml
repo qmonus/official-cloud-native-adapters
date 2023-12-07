@@ -1,0 +1,31 @@
+params:
+  - name: appName
+    type: string
+  - name: azureSubscriptionId
+    type: string
+  - name: azureResourceGroupName
+    type: string
+  - name: azureDnsZoneResourceGroupName
+    type: string
+  - name: azureDnsZoneName
+    type: string
+  - name: env1
+    type: string
+  - name: env2
+    type: string
+
+modules:
+  - name: qmonus.net/adapter/official
+    revision: v0.19.0
+
+designPatterns:
+  - pattern: qmonus.net/adapter/qmonus.net/adapter/official/adapters/azure/serverless/staticSite/frontend  
+    params:
+      appName: $(params.appName)
+      azureSubscriptionId: $(params.azureSubscriptionId)
+      azureResourceGroupName: $(params.azureResourceGroupName)
+      azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
+      azureDnsZoneName: $(params.azureDnsZoneName)
+      environmentVariables:
+        ENV1: $(params.env1)
+        ENV2: $(params.env2)

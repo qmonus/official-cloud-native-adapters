@@ -397,4 +397,133 @@ Adapter を利用して API バックエンドアプリケーションをデプ�
 
 3. secret1, secret2のキーをDeployment Secret画面から設定してください。Secretの登録方法については [Secretの登録](https://docs.valuestream.qmonus.net/guide/secrets.html)をご参照ください。
 
+### アプリケーションの公開範囲を制限したい
+
+デプロイするアプリケーションにアクセスできるソースIPアドレスを制限できます。制限しない場合は、インターネットの全てのIPアドレスからのアクセスが許可されます。
+
+1. QVS Config にパラメータを追加し、アプリケーションのリポジトリにコミットします。
+
+   QVS Config は [qvs_allowedSourceIps.yaml](./qvsconfig/qvs_allowedSourceIps.yaml) を利用してください。以下にデフォルトとの差分を示します。
+
+   ```diff
+   params:
+     - name: appName
+       type: string
+     - name: azureSubscriptionId
+       type: string
+     - name: azureResourceGroupName
+       type: string
+     - name: azureDnsZoneResourceGroupName
+       type: string
+     - name: containerRegistryName
+       type: string
+     - name: dbHost
+       type: string
+     - name: redisHost
+       type: string
+     - name: azureKeyVaultName
+       type: string
+     - name: imageFullNameTag
+       type: string
+   + - name: appServiceAllowedSourceIps
+   +   type: array
+
+   modules:
+     - name: github.com/qmonus/official-cloud-native-adapters
+       revision: v0.19.0
+
+   designPatterns:
+     - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend
+       params:
+         appName: $(params.appName)
+         azureResourceGroupName: $(params.azureResourceGroupName)
+         azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
+         azureSubscriptionId: $(params.azureSubscriptionId)
+         containerRegistryName: $(params.containerRegistryName)
+         dbHost: $(params.dbHost)
+         redisHost: $(params.redisHost)
+         azureKeyVaultName: $(params.azureKeyVaultName)
+         imageFullNameTag: $(params.imageFullNameTag)
+   +     appServiceAllowedSourceIps: ["$(params.appServiceAllowedSourceIps[*])"]
+   ```
+
+2. コミット後、Pipeline および Task の更新のため、再度 Pipeline/Task のコンパイルと登録を実施してください。
+
+3. QVS の画面から Deployment Config にパラメータを追加してください。
+
+   以下の例の通り、複数のIPアドレスを設定する場合、カンマ区切りで引数を指定します。
+   IPアドレスはCIDR表記で指定してください。CIDR表記の末尾が `/32` のIPアドレスを設定する場合も、`/32` まで省略せずに記述してください。
+
+   ```yaml
+   appServiceAllowedSourceIps: 192.168.0.1/32,172.16.0.0/12
+   ```
+
+### 複数種類のアプリケーションをデプロイしたい
+
+同じ共有リソースに対して、API Backend Adapter を利用する複数の AssemblyLine を作成して複数種類のアプリケーションをデプロイできますが、全ての Optional なパラメータでデフォルト値を使用していた場合、2つめ以降の API Backend Adapter によって新規作成される一部のリソースが、同じ名前を持つ既存のリソースと競合してデプロイに失敗します。
+
+このため、すでに API Backend Adapter でデフォルト値を使用してアプリケーションをデプロイ済みの状態で、さらに追加で別のアプリケーションをデプロイする場合は、新規作成されるリソースが既存のリソースと競合しないように、一部の Optional なパラメータではデフォルト値とは異なる値を明示的に設定する必要があります。
+
+1. 以下のパラメータでは、複数の AssemblyLine で同じデフォルト値を共通的に使用できません。
+
+   すでに1つの AssemblyLine でデフォルト値が使われている場合、2つめ以降の AssemblyLine ではデフォルト値とは異なる値を設定してください。
+
+    - `subDomainName`
+
+2. QVS Config にパラメータを追加し、アプリケーションのリポジトリにコミットします。
+
+   QVS Config は [qvs_another.yaml](./qvsconfig/qvs_another.yaml) を利用してください。以下にデフォルトとの差分を示します。
+
+   ```diff
+   params:
+     - name: appName
+       type: string
+     - name: azureSubscriptionId
+       type: string
+     - name: azureResourceGroupName
+       type: string
+     - name: azureDnsZoneResourceGroupName
+       type: string
+     - name: containerRegistryName
+       type: string
+     - name: dbHost
+       type: string
+     - name: redisHost
+       type: string
+     - name: azureKeyVaultName
+       type: string
+     - name: imageFullNameTag
+       type: string
+   + - name: subDomainName
+   +   type: string
+
+   modules:
+     - name: github.com/qmonus/official-cloud-native-adapters
+       revision: v0.19.0
+
+   designPatterns:
+     - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend
+       params:
+         appName: $(params.appName)
+         azureResourceGroupName: $(params.azureResourceGroupName)
+         azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
+         azureSubscriptionId: $(params.azureSubscriptionId)
+         containerRegistryName: $(params.containerRegistryName)
+         dbHost: $(params.dbHost)
+         redisHost: $(params.redisHost)
+         azureKeyVaultName: $(params.azureKeyVaultName)
+         imageFullNameTag: $(params.imageFullNameTag)
+   +     subDomainName: $(params.subDomainName)
+   ```
+
+3. コミット後、Pipeline および Task の更新のため、再度 Pipeline/Task のコンパイルと登録を実施してください。
+
+4. QVS の画面から Deployment Config にパラメータを追加してください。
+
+   以下の例を参考にしてください。
+
+   ```yaml
+   subDomainName: api2
+   ```
+
 そのほか指定可能なパラメータについては [API Backend Adapter](../../../../../adapters/azure/serverless/webApp/apiBackend/main.cue)をご参照ください。

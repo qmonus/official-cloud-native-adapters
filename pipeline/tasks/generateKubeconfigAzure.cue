@@ -40,13 +40,19 @@ import (
 			import json
 			import sys
 			with open("/tmp/vault-name", mode="w") as vn:
-				vn.write('')
+			  vn.write('')
 			f = open('./.pulumi/stacks/local/\(_stack).json', 'r')
 			json_object = json.load(f)
+			found = False
 			for resource in json_object["checkpoint"]["latest"]["resources"]:
-				if (resource["type"] == "azure-native:keyvault:Secret") and (resource["outputs"]["name"] == "kubeconfig"):
-					with open("/tmp/vault-name", mode="w") as vn:
-						vn.write(resource["inputs"]["vaultName"])
+			  if (resource["type"] == "azure-native:keyvault:Secret") and (resource["outputs"]["name"] == "kubeconfig"):
+			    with open("/tmp/vault-name", mode="w") as vn:
+			      vn.write(resource["inputs"]["vaultName"])
+			    print("Found kubeconfig secret: " + resource["inputs"]["vaultName"])
+			    found = True
+			if not found:
+			  print("Failed to find kubeconfig secret")
+			  sys.exit(1)
 			"""
 		workingDir: "$(workspaces.shared.path)/pulumi/\(_stack)"
 		volumeMounts: [{
@@ -55,7 +61,7 @@ import (
 		}]
 	}, {
 		image: "mcr.microsoft.com/azure-cli"
-		name:  "download-kubeconfig"
+		name:  "download-admin-kubeconfig"
 		script: """
 			#!/bin/sh
 			set -o nounset
@@ -74,8 +80,12 @@ import (
 			fi
 
 			az login --service-principal -u $(params.azureApplicationId) -p $AZURE_CLIENT_SECRET --tenant $(params.azureTenantId) > /dev/null
-			az keyvault secret show --name kubeconfig --vault-name $VAULT_NAME --subscription $(params.azureSubscriptionId) --query value -o tsv > /tmp/kubeconfig-admin
-			set -x
+			if az keyvault secret show --name kubeconfig --vault-name $VAULT_NAME --subscription $(params.azureSubscriptionId) --query value -o tsv > /tmp/kubeconfig-admin; then
+			  echo "Successfully downloaded admin kubeconfig."
+			else
+			  echo "Failed to download admin kubeconfig."
+			  exit 1
+			fi
 			"""
 		env: [{
 			name: "AZURE_CLIENT_SECRET"
@@ -105,11 +115,19 @@ import (
 			fi
 
 			appK8sNamespaces="$(params.appK8sNamespaces)"
-			for ns in $(echo -n "$appK8sNamespaces" | tr "," "\n")
-			do
-				/src/qvsctl plugin gen-kubeconfig -n ${ns} -o /tmp/output.kubeconfig-${ns}.yaml -y
-				echo ""
-			done
+			if [ -z "$appK8sNamespaces" ]; then
+			  echo "appK8sNamespaces is empty. Skip generating kubeconfig."
+			  exit 0
+			else
+			  for ns in $(echo -n "$appK8sNamespaces" | tr "," "\n")
+			  do
+			    if /src/qvsctl plugin gen-kubeconfig -n ${ns} -o /tmp/output.kubeconfig-${ns}.yaml -y; then
+			      echo "Successfully generated kubeconfig for ${ns}."
+			    else
+			      echo "Failed to generate kubeconfig for ${ns}."
+			    fi
+			  done
+			fi
 			"""
 		env: [{
 			name:  "KUBECONFIG"
@@ -143,12 +161,20 @@ import (
 			fi
 
 			appK8sNamespaces="$(params.appK8sNamespaces)"
-			for ns in $(echo -n "$appK8sNamespaces" | tr "," "\n")
-			do
-				az login --service-principal -u $(params.azureApplicationId) -p $AZURE_CLIENT_SECRET --tenant $(params.azureTenantId) > /dev/null
-				az keyvault secret set --name kubeconfig-${ns} --vault-name $VAULT_NAME --file /tmp/output.kubeconfig-${ns}.yaml --only-show-errors --output none
-			done
-			set -x
+			if [ -z "$appK8sNamespaces" ]; then
+			  echo "appK8sNamespaces is empty. Skip saving kubeconfig."
+			  exit 0
+			else
+			  for ns in $(echo -n "$appK8sNamespaces" | tr "," "\n")
+			  do
+			    az login --service-principal -u $(params.azureApplicationId) -p $AZURE_CLIENT_SECRET --tenant $(params.azureTenantId) > /dev/null
+			    if az keyvault secret set --name kubeconfig-${ns} --vault-name $VAULT_NAME --file /tmp/output.kubeconfig-${ns}.yaml --only-show-errors --output none; then
+			      echo "Successfully saved kubeconfig for ${ns}."
+			    else
+			      echo "Failed to save kubeconfig for ${ns}."
+			    fi
+			  done
+			fi
 			"""
 		env: [{
 			name: "AZURE_CLIENT_SECRET"

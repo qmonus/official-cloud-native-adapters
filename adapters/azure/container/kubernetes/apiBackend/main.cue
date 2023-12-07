@@ -368,13 +368,11 @@ DesignPattern: {
 									name:  parameters.appName
 									image: parameters.imageName
 									env:   _envDataSorted
-									if len(parameters.secrets) > 0 {
-										envFrom: [
-											{
-												secretRef: name: _secretName
-											},
-										]
-									}
+									envFrom: [
+										{
+											secretRef: name: _secretName
+										},
+									]
 									ports: [{
 										containerPort: strconv.Atoi(parameters.port)
 									}, ...]

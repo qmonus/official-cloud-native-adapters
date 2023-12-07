@@ -237,3 +237,56 @@ Webアプリがデプロイされるデフォルトのロケーションは `Eas
 
 
 ユースケースを組み合わせて利用することもできます。そのほか指定可能なパラメータについては [Frontend Adapter](https://github.com/qmonus/official-cloud-native-adapters-internal/tree/main/adapters/azure/serverless/staticSite/frontend)をご参照ください。
+
+### アプリケーションの環境変数を設定したい
+
+デプロイするアプリケーションに任意の環境変数を設定することができます。
+
+1. QVS Config にパラメータを追加し、アプリケーションのリポジトリにコミットします。
+
+   QVS config は [qvs_env.yaml](./qvsconfig/qvs_env.yaml) を利用してください。以下にデフォルトとの差分を示します。
+   [qvs_env.yaml](./qvsconfig/qvs_env.yaml) のENV1, ENV2部分は、設定したい環境変数に置き換えてご利用ください。
+
+    ```diff
+     params:
+       - name: appName
+         type: string
+       - name: azureSubscriptionId
+         type: string
+       - name: azureResourceGroupName
+         type: string
+       - name: azureDnsZoneResourceGroupName
+         type: string
+       - name: azureDnsZoneName
+         type: string
+    +  - name: env1
+    +    type: string
+    +  - name: env2
+    +    type: string
+
+     modules:
+       - name: qmonus.net/adapter/official
+         revision: v0.19.0
+
+     designPatterns:
+       - pattern: qmonus.net/adapter/qmonus.net/adapter/official/adapters/azure/serverless/staticSite/frontend  
+         params:
+           appName: $(params.appName)
+           azureSubscriptionId: $(params.azureSubscriptionId)
+           azureResourceGroupName: $(params.azureResourceGroupName)
+           azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
+           azureDnsZoneName: $(params.azureDnsZoneName)
+    +      environmentVariables:
+    +        ENV1: $(params.env1)
+    +        ENV2: $(params.env2)
+    ```
+
+2. コミット後、Pipeline および Task の更新のため、再度 Pipelines/Tasks のコンパイルを実施してください。
+
+3. QVS の画面から Deployment Config にパラメータを追加します。
+  以下の例を参考にしてください。
+
+    ```yaml
+    env1: hoge
+    env2: fuga
+    ```
