@@ -45,6 +45,18 @@ import (
 		}
 	}
 
+	results: {
+		module: {
+			description: "Adapter module"
+		}
+		adapterRevision: {
+			description: "Adapter version"
+		}
+		adapters: {
+			description: "List of Adapters used in Assemblyline"
+		}
+	}
+
 	workspaces: [{
 		name: "shared"
 	}]
@@ -54,37 +66,93 @@ import (
 		emptyDir: {}
 	}]
 
-	steps: list.Concat([[{
-		name:   "make-params-json"
-		image:  "python"
-		script: strings.Join(list.Concat([
-			[
-				"#!/usr/bin/env python3",
-				"import json",
-				"import os",
-				"params = []",
-			],
-			[
-				"params.append({'name': 'pathToSharedSource', 'value': '$(workspaces.shared.path)/source/'})", // Reserved parameter passing source code path to manfiest.
-			],
-			[ for k in appconfigParams {
-				"params.append({'name': '\(k)', 'value': '$(params.\(k))'})"
-			}],
-			[
-				"vs_secrets = os.environ.get('VS_SECRETS')",
-				"secrets = json.loads(vs_secrets) if vs_secrets else []",
-			],
-			[
-				"print(json.dumps({'params': params, 'secrets': secrets}, indent=4))",
-				"open('$(workspaces.shared.path)/params.json', 'w').write(json.dumps({'params': params, 'secrets': secrets}, indent=4))",
-			],
-		]), "\n")
-		env: [{
-			name: "VS_SECRETS"
-			valueFrom: fieldRef: fieldPath: "metadata.annotations['\(base.config.qmonusVsSecretKey)']"
-		}]
-		workingDir: "$(workspaces.shared.path)/source/$(params.pathToSource)"
-	}], _compileStep, _debugStep])
+	steps: list.Concat([_displayAdapterInfoStep, _makeParamsJsonStep, _compileStep, _debugStep])
+
+	_displayAdapterInfoStep: [{
+		name:  "display-adapter-info"
+		image: "linuxserver/yq:3.2.3"
+		script: """
+			#!/usr/bin/env bash
+
+			# Set Default Pipeline Results
+			echo -n "" > /tekton/results/module
+			echo -n "" > /tekton/results/adapterRevision
+			echo -n "" > /tekton/results/adapters
+
+			# Extract module name
+			module=$(yq -r '.modules[0].name' $(params.qvsConfigPath))
+			echo "module: $module"
+			echo -n $module > /tekton/results/module
+
+			# Extract adapter_revision
+			module_revision=$(yq -r '.modules[0].revision' $(params.qvsConfigPath))
+			module_local_path=$(yq -r '.modules[0].local.path' $(params.qvsConfigPath))
+			module_remote_revision=$(yq -r '.modules[0].remote.revision' $(params.qvsConfigPath))			
+						
+			if [ "$module_revision" == "null" ]; then
+				case "$module_local_path" in
+					null)
+						# Extract adapter_revision when using remote/repo style module
+						adapter_revision=$module_remote_revision
+						;;
+					*)
+						# Extract adapter_revision when using local module
+						qvsctl_mod_path="$(dirname $(params.qvsConfigPath))/${module_local_path}/qvsctl.mod"
+						if [ -r "$qvsctl_mod_path" ]; then
+							IFS='@' read -ra separated_list < "$qvsctl_mod_path"
+							adapter_revision=${separated_list[1]}
+						fi
+						;;
+				esac
+			else
+				# Extract adapter_revision when using remote module
+				adapter_revision=$module_revision
+			fi
+			echo "adapter_revision: $adapter_revision"
+			echo -n $adapter_revision > /tekton/results/adapterRevision
+
+			# Extract design patterns as a comma-separated line
+			adapters=$(yq -r '.designPatterns[].pattern' $(params.qvsConfigPath) | tr '\n' ',' | sed 's/,$//')
+			echo "adapters: $adapters"
+			echo -n $adapters > /tekton/results/adapters
+			"""
+		onError:    "continue"
+		workingDir: "$(workspaces.shared.path)/source"
+	}]
+
+	_makeParamsJsonStep: [
+		{
+			name:   "make-params-json"
+			image:  "python"
+			script: strings.Join(list.Concat([
+				[
+					"#!/usr/bin/env python3",
+					"import json",
+					"import os",
+					"params = []",
+				],
+				[
+					"params.append({'name': 'pathToSharedSource', 'value': '$(workspaces.shared.path)/source/'})", // Reserved parameter passing source code path to manfiest.
+				],
+				[ for k in appconfigParams {
+					"params.append({'name': '\(k)', 'value': '$(params.\(k))'})"
+				}],
+				[
+					"vs_secrets = os.environ.get('VS_SECRETS')",
+					"secrets = json.loads(vs_secrets) if vs_secrets else []",
+				],
+				[
+					"print(json.dumps({'params': params, 'secrets': secrets}, indent=4))",
+					"open('$(workspaces.shared.path)/params.json', 'w').write(json.dumps({'params': params, 'secrets': secrets}, indent=4))",
+				],
+			]), "\n")
+			env: [{
+				name: "VS_SECRETS"
+				valueFrom: fieldRef: fieldPath: "metadata.annotations['\(base.config.qmonusVsSecretKey)']"
+			}]
+			workingDir: "$(workspaces.shared.path)/source/$(params.pathToSource)"
+		},
+	]
 
 	_compileStep: [{
 		name:  "compile-app"

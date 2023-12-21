@@ -112,6 +112,11 @@ DesignPattern: {
 					runAfter: ["deploy-preview"]
 				}
 			}
+			results: {
+				module:          tasks["compile"].results.module
+				adapterRevision: tasks["compile"].results.adapterRevision
+				adapters:        tasks["compile"].results.adapters
+			}
 		}
 	}
 }
