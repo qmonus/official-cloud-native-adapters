@@ -2,6 +2,7 @@ package generateKubeconfigAzure
 
 import (
 	"qmonus.net/adapter/official/pipeline/schema"
+	"qmonus.net/adapter/official/pipeline/base"
 )
 
 #BuildInput: {
@@ -99,7 +100,7 @@ import (
 			mountPath: "/tmp"
 		}]
 	}, {
-		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/qvsctl:v0.13.0"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/qvsctl:\(base.config.qmonusQvsctlRevision)"
 		name:  "gen-kubeconfig"
 		script: """
 			set -e

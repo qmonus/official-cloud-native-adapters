@@ -243,6 +243,7 @@ import (
 		#!/usr/bin/env bash
 		set -o nounset
 		set -o xtrace
+		if [ -n "${GOOGLE_CREDENTIALS:-}" ]; then gcloud auth activate-service-account --key-file=${GOOGLE_CREDENTIALS}; fi
 		pulumi login ${PULUMI_BACKEND_URL}
 		pulumi stack select --create \(_stack)
 		pulumi up -y -r --stack \(_stack)

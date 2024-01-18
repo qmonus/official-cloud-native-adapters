@@ -10,11 +10,6 @@ package base
 	{[string]: _}
 }
 
-#QvsManagedLabel: {
-	"managed-by": "Qmonus Value Stream"
-	...
-}
-
 #Secret: {
 	key:      string
 	version?: string
