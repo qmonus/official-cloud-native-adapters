@@ -45,6 +45,12 @@ import "qmonus.net/adapter/official/types:base"
 	type: "kubernetes:core/v1:Namespace"
 }
 
+#K8sServiceAccount: {
+	base.#Resource
+	#K8sResource
+	type: "kubernetes:core/v1:ServiceAccount"
+}
+
 #K8sCustomResource: {
 	base.#Resource
 	#K8sResource

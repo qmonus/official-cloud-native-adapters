@@ -73,6 +73,9 @@ package base
 	defer?: {
 		#ResourceOutput
 	}
+
+	// exported values
+	outputs?: {[string]: _}
 }
 
 #Call: #DesignPattern & {
