@@ -12,10 +12,30 @@ import "qmonus.net/adapter/official/types:base"
 	{[string]: string}
 }
 
+#FirebaseHostingSite: {
+	base.#Resource
+	type: "gcp:firebase:HostingSite"
+}
+
+#FirebaseHostingCustomDomain: {
+	base.#Resource
+	type: "gcp:firebase:HostingCustomDomain"
+}
+
 #GcpArtifactRegistry: {
 	base.#Resource
 	type: "gcp:artifactregistry:Repository"
 	properties: labels: #QvsManagedLabel
+}
+
+#GcpCloudArmorPolicy: {
+	base.#Resource
+	type: "gcp:compute:SecurityPolicy"
+}
+
+#GcpCloudDnsRecordSet: {
+	base.#Resource
+	type: "gcp:dns:RecordSet"
 }
 
 #GcpCloudNatGateway: {
@@ -26,6 +46,11 @@ import "qmonus.net/adapter/official/types:base"
 #GcpCloudRouter: {
 	base.#Resource
 	type: "gcp:compute:Router"
+}
+
+#GcpCloudSqlDatabase: {
+	base.#Resource
+	type: "gcp:sql:Database"
 }
 
 #GcpCloudSqlInstance: {
@@ -55,6 +80,12 @@ import "qmonus.net/adapter/official/types:base"
 		resourceLabels: #QvsManagedLabel
 		{[string]: _}
 	}
+}
+
+#GcpGlobalIpAddress: {
+	base.#Resource
+	type: "gcp:compute:GlobalAddress"
+	properties: labels: #QvsManagedLabel
 }
 
 #GcpIamMember: {

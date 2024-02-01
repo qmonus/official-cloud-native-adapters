@@ -44,7 +44,7 @@ Sample: サンプル実装
 
 * 事前に [Shared Infrastructure Adapter](./sharedInfrastructure/README.md) を用いて各種クラウドリソースを作成してください。
 
-* AKSクラスタにアプリケーションをデプロイするために利用するkubeconfigは[Shared Infrastructure Adapter](./sharedInfrastructure/README.md) を用いて作成されます。kubeconfigの取得方法はドキュメントを参照してください。
+* AKSクラスタにアプリケーションをデプロイするために利用するkubeconfigは[Shared Infrastructure Adapter](./sharedInfrastructure/README.md) を用いて作成されます。kubeconfigの取得方法は [ドキュメント](./sharedInfrastructure/README.md#appendix) を参照してください。
 
 ### Constraints
 

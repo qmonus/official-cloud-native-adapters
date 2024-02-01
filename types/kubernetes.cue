@@ -57,6 +57,14 @@ import "qmonus.net/adapter/official/types:base"
 	type: "kubernetes:apiextensions.k8s.io:CustomResource"
 }
 
+#K8sBackendConfig: {
+	#K8sCustomResource
+	properties: {
+		apiVersion: "cloud.google.com/v1"
+		kind:       "BackendConfig"
+	}
+}
+
 #K8sCertificate: {
 	#K8sCustomResource
 	properties: {
@@ -86,5 +94,13 @@ import "qmonus.net/adapter/official/types:base"
 	properties: {
 		apiVersion: "external-secrets.io/v1beta1"
 		kind:       "ExternalSecret"
+	}
+}
+
+#K8sManagedCertificate: {
+	#K8sCustomResource
+	properties: {
+		apiVersion: "networking.gke.io/v1"
+		kind:       "ManagedCertificate"
 	}
 }

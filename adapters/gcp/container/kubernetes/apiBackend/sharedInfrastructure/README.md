@@ -20,6 +20,8 @@ HTTPSで外部公開できるアプリケーションをGoogle Cloud上にデプ
     * Cloud NAT IPアドレスとして使用します。
 * Artifact Registry
 * Cloud SQL for MySQL
+    * インスタンス
+    * rootユーザアカウント
 * サービスアカウント
     * GKEノードプール用のサービスアカウント
     * External Secrets Operator（ESO）が使用するWorkload Identity用サービスアカウント
@@ -43,7 +45,7 @@ Google Cloud, Kubernetes
 ## Module
 
 * Module: `qmonus.net/adapter/official`
-* Import path `qmonus.net/adapter/official/adapters/gcp/container/kubernetes/apiBackend/sharedInfrastructure`
+* Import path: `qmonus.net/adapter/official/adapters/gcp/container/kubernetes/apiBackend/sharedInfrastructure`
 
 ## Level
 
@@ -54,11 +56,15 @@ Sample: サンプル実装
 ### Prerequisites
 
 * 事前にGoogle Cloudサービスアカウントを作成し、Qmonus Value Streamへ認証情報を登録する必要があります。以下のロールまたは同じ権限を持つカスタムロールをサービスアカウントに付与してください。
-    * 編集者 （ `roles/editor` ）
+    * Artifact Registry 管理者 （ `roles/artifactregistry.admin` ）
+    * Cloud SQL 管理者 （ `roles/cloudsql.admin` ）
+    * Compute ネットワーク管理者 （ `roles/compute.networkAdmin` ）
     * Kubernetes Engine 管理者 （ `roles/container.admin` ）
     * Project IAM 管理者 （ `roles/resourcemanager.projectIamAdmin` ）
+    * Secret Manager 管理者 （ `roles/secretmanager.admin` ）
+    * サービス アカウント ユーザー （ `roles/iam.serviceAccountUser` ）
     * サービス アカウント管理者 （ `roles/iam.serviceAccountAdmin` ）
-    * Secret Manager のシークレット アクセサー （ `roles/secretmanager.secretAccessor` ）
+
 * 本Adapterは、1つのGoogle Cloudプロジェクトに対して1つのみ使用することを想定しています。本Adapterを利用する複数のAssemblyLineを作成して複数のリソース群をデプロイしたい場合は、デプロイ先となるGoogle CloudプロジェクトをAssemblyLineごとにそれぞれ用意してください。
 
 ### Constraints
@@ -89,17 +95,22 @@ Sample: サンプル実装
         * Cloud SQL for MySQLのrootユーザ用パスワード: `qvs-${appName}-mysql-root-password`
 * Cloud NATゲートウェイ
     * `asia-northeast1` リージョンに作成します。
-    * Cloud NAT IPアドレスは手動で割り当てます。
+    * Cloud NAT IPアドレスの割り当て方法として、手動割り当てを使用します。
         * Cloud NAT IPアドレスとして使用される外部静的IPアドレスは1個です。
 * Artifact Registry
     * DOCKER形式として作成します。
     * `asia-northeast1` リージョンに作成します。
 * Cloud SQL for MySQL
-    * `asia-northeast1` リージョンに作成します。
-    * パブリックIPアドレスを使用するようにインスタンスを構成します。
-    * 承認済みネットワークに0.0.0.0/0が設定されます。このため、インターネット上の全てのIPアドレスからインスタンスにアクセスできます。
-    * インスタンスと合わせてMySQLのrootユーザを作成します。
-        * rootユーザ用パスワードは、1文字以上の大小英数字記号を含む16文字でランダムで生成されます。
+    * インスタンス
+        * `asia-northeast1` リージョンに作成します。
+        * パブリックIPアドレスを使用するようにインスタンスを構成します。
+        * 承認済みネットワークに0.0.0.0/0が設定されます。このため、インターネット上の全てのIPアドレスからインスタンスにアクセスできます。
+        * クライアントからの接続は、SSL接続のみ許可します。
+    * rootユーザアカウント
+        * Cloud SQL for MySQLインスタンス作成時に存在する [デフォルトのユーザアカウント](https://cloud.google.com/sql/docs/mysql/users?hl=ja) を削除した上で、新しいユーザアカウントとして作成します。
+        * `root'@'%` として作成します。
+        * パスワードは、1文字以上の大小英数字記号を含む16文字でランダムで生成されます。
+        * ユーザアカウントに付与される権限については [公式ドキュメント](https://cloud.google.com/sql/docs/mysql/users?hl=ja#other_mysql_user_accounts) をご参照ください。
 * サービスアカウント
     * 各サービスアカウントには、以下のロールを付与します。
         * GKEノードプール用のサービスアカウント
@@ -127,10 +138,10 @@ Sample: サンプル実装
 | gkeNodeMachineType | string | no | e2-medium | GKEノードのマシンタイプ。以下を参考に指定してください。<br>https://cloud.google.com/compute/docs/general-purpose-machines?hl=ja | e2-medium | no |
 | gkeNodeCount | string | no | "1" | GKEノードの数 | "1" | no |
 | esoVersion | string | no | "0.9.9" | External Secrets Operatorのバージョン | "0.9.9" | no |
-| mysqlCpuCount | string | no | "2" | MySQLインスタンスのvCPUの数。1または2～96の間の偶数に設定して下さい。 | "2" | no |
-| mysqlMemorySizeMb | string | no | "4096" | MySQLインスタンスのメモリのサイズ（MB）。vCPUあたり0.9～6.5GB、かつ256MBの倍数、かつ3840MB以上の条件を満たす値に設定して下さい。 | "4096" | no |
-| mysqlDatabaseVersion | string | no | "MYSQL_8_0" | MySQLインスタンスのデータベースのバージョン。利用可能なバージョンは以下で確認できます。<br>https://cloud.google.com/sdk/gcloud/reference/sql/instances/create#--database-version | "MYSQL_8_0" | no |
-| mysqlAvailabilityType | string | no | "ZONAL" | MySQLインスタンスの可用性。`"ZONAL"`, `"REGIONAL"` のいずれかを設定できます。`"ZONAL"` の場合は、インスタンスとバックアップを1つのゾーンに配置し、停止時にフェイルオーバーは発生しません。 | "ZONAL" | no |
+| mysqlCpuCount | string | no | "2" | Cloud SQL for MySQLインスタンスのvCPUの数。1または2～96の間の偶数に設定して下さい。 | "2" | no |
+| mysqlMemorySizeMb | string | no | "4096" | Cloud SQL for MySQLインスタンスのメモリのサイズ（MB）。vCPUあたり0.9～6.5GB、かつ256MBの倍数、かつ3840MB以上の条件を満たす値に設定して下さい。 | "4096" | no |
+| mysqlDatabaseVersion | string | no | "MYSQL_8_0" | Cloud SQL for MySQLインスタンスのデータベースのバージョン。利用可能なバージョンは以下で確認できます。<br>https://cloud.google.com/sdk/gcloud/reference/sql/instances/create#--database-version | "MYSQL_8_0" | no |
+| mysqlAvailabilityType | string | no | "ZONAL" | Cloud SQL for MySQLインスタンスの可用性。`"ZONAL"`, `"REGIONAL"` のいずれかを設定できます。`"ZONAL"` の場合は、インスタンスとバックアップを1つのゾーンに配置し、停止時にフェイルオーバーは発生しません。 | "ZONAL" | no |
 
 ## CI/CD Parameters
 
@@ -180,11 +191,11 @@ Sample: サンプル実装
 | esoGcpServiceAccountIamMemberSecretManagerSecretAccessor | gcp | IAM | ESOが使用するWorkload Identity用サービスアカウントにSecret Manager のシークレット アクセサーロールを付与します。 |
 | esoGcpServiceAccountIamPolicyBindingWorkloadIdentityUser | gcp | IAM | ESOが使用するWorkload Identity用サービスアカウントに対するWorkload Identity ユーザーロールを、KubernetesのESO用ServiceAccountリソースに付与します。 |
 | artifactRegistry | gcp | Artifact Registry | コンテナイメージを保存するためのArtifact Registryリポジトリを作成します。 |
-| mysqlInstance | gcp | Cloud SQL for MySQLインスタンス | MySQLインスタンスを作成します。 |
-| mysqlRootUser | gcp | Cloud SQL for MySQLユーザ | MySQLのrootユーザを作成します。 |
-| mysqlRootPassword | random | RandomPassword | MySQL rootパスワードを、1文字以上の大小英数字記号を含む16文字で生成します。 |
-| mysqlRootPasswordSecret | gcp | Secret Managerシークレット | MySQL rootパスワード用のシークレットを作成します。シークレットの値自体は、シークレットではなくシークレットバージョンとして作成されます。 |
-| mysqlRootPasswordSecretVersion | gcp | Secret Managerシークレットバージョン | MySQL rootパスワードが格納されたシークレットバージョンを作成します。 |
+| mysqlInstance | gcp | Cloud SQL for MySQLインスタンス | Cloud SQL for MySQLインスタンスを作成します。 |
+| mysqlRootUser | gcp | Cloud SQL for MySQLユーザ | Cloud SQL for MySQLのrootユーザアカウントを作成します。 |
+| mysqlRootPassword | random | RandomPassword | Cloud SQL for MySQLのrootユーザ用パスワードを、1文字以上の大小英数字記号を含む16文字で生成します。 |
+| mysqlRootPasswordSecret | gcp | Secret Managerシークレット | Cloud SQL for MySQLのrootユーザ用パスワード用のシークレットを作成します。シークレットの値自体は、シークレットではなくシークレットバージョンとして作成されます。 |
+| mysqlRootPasswordSecretVersion | gcp | Secret Managerシークレットバージョン | Cloud SQL for MySQLのrootユーザ用パスワードが格納されたシークレットバージョンを作成します。 |
 
 ### Kubernetes Resources
 
@@ -228,3 +239,7 @@ designPatterns:
 ## Code
 
 [sharedInfrastructure](main.cue)
+
+## Appendix
+
+* 本Adapterによって作成されたSecret Managerシークレットのデータの取得方法については、[公式ドキュメント](https://cloud.google.com/secret-manager/docs/access-secret-version?hl=ja) をご参照ください。

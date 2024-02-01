@@ -52,101 +52,14 @@ CI/CD AdapterとInfrastructure Adapterを組み合わせて、HTTPSで外部公�
 The cert-manager project logo is created by Jetstack Ltd. and licensed under
 the [Creative Commons Attribution 4.0 International License](http://creativecommons.org/licenses/by/4.0/).
 
-* [Shared Infrastructure Adapter](./README.md) を用いて払い出されたKubeconfigは、下記の手順でAzure Key Vaultから取得できます。
-
-    - Azure Portal を使用して取得する
-        Azure Key VaultからKubeconfigを取得する方法例を示します。
-
-        1. [Azure portal](https://portal.azure.com/) で、事前に [Shared Infrastructure Adapter](./README.md) を用いて作成したリソースグループ内の「qvs-key-vault-******** (*はランダムなsuffix)」キーコンテナーに移動します。
-
-        1. 「シークレット」を選択し、以下の名前で保存されている目的のSecretの名前をクリックします。
-             - `kubeconfig` : cluster-admin権限のkubeconfigを保持しているSecret、本Adapter利用時にデフォルトでSecretが生成されます
-             - `kubeconfig-<namespace>` : namespace単位のadmin権限をもつkubeconfigを保持するSecret、本Adapter利用時に`appK8sNamepaces` パラメータで指定したnamespace毎にSecretが生成されます
-        1. 「現在のバージョン」を選択し、「シークレット値」の右側の「クリップボードにコピー」をクリックします。
-
-    - Azure CLI を使用して取得する
-        Azure Key VaultからKubeconfigを取得する方法例を示します。
-
-        1. Azureテナントにサインインします  
-
-            ※Azure CloudShell の場合は不要です。  
-            [Azure CLI を使用してサインインする](https://learn.microsoft.com/ja-jp/cli/azure/authenticate-azure-cli#authentication-methods) に基づき認証を行います。詳細は公式ドキュメントをご参照ください。
-
-            ```bash
-            az login
-            ```
-
-        1. Kubeconfigを取得するために必要な情報を変数に格納します
-        任意の値に置き換えて、それぞれ格納してください
-            - `NAME` : 以下の名前で保存されている目的のSecretの名前
-              - `kubeconfig` : cluster-admin権限のkubeconfigを保持しているSecret、本Adapter利用時にデフォルトでSecretが生成されます
-              - `kubeconfig-<namespace>` : namespace単位のadmin権限をもつkubeconfigを保持するSecret、本Adapter利用時に`appK8sNamespaces` パラメータで指定したnamespace毎にSecretが生成されます
-            - `VAULT_NAME`: 作成されたキー コンテナの名前「qvs-key-vault-******** (*はランダムなsuffix)」
-
-            ```bash
-            NAME="<YOUR_SECRET_NAME>"   # e.g. kubeconfig-<namespace>(cluster-admin権限を持ったKubeconfigを使いたい場合は、kubeconfig)
-            VAULT_NAME="<YOUR_VAULT_NAME>"   # e.g. qvs-key-vault-********
-            ```
-
-        1. キー コンテナーからKubeconfigを取得します。
-
-            ```bash
-            az keyvault secret show --name ${NAME} --vault-name ${VAULT_NAME} --query value -o tsv
-            ```
-
-また、 [Shared Infrastructure Adapter](./README.md) を用いて払い出されたKubeconfigの認証情報を再作成したい場合は、下記の手順を実行してください。
-
-
-- Namespaceを制限したKubeconfigの場合
-
-    1. Azure CLI を使用してAzureテナントにサインインします  
-
-        ※Azure CloudShell の場合は不要です。  
-        [Azure CLI を使用してサインインする](https://learn.microsoft.com/ja-jp/cli/azure/authenticate-azure-cli#authentication-methods) に基づき認証を行います。詳細は公式ドキュメントをご参照ください。
-
-        ```bash
-        az login
-        ```
-
-    1. Kubeconfigを取得するために必要な情報を変数に格納します
-
-        任意の値に置き換えて、それぞれ格納してください
-            - `VAULT_NAME`: 作成されたキー コンテナの名前「qvs-key-vault-******** (*はランダムなsuffix)」
-
-        ```bash
-        VAULT_NAME="<YOUR_VAULT_NAME>"   # e.g. qvs-key-vault-********
-        ```
-
-    1. キー コンテナーからKubeconfigを取得します。
-
-        ```bash
-        az keyvault secret show --name kubeconfig --vault-name ${VAULT_NAME} --query value -o tsv > ~/.kube/config
-        ```
-
-    1. kubectlをインストールします。
-
-        ```bash
-        az aks install-cli
-        ```
-
-    1. KubernetesのSecretからService Account Tokenを削除します。
-
-        ```bash
-        kubectl delete secret qmonus-kubeconfig-token
-        ```
-
-    1. Shared InfrastructureのAssemblyLineを再実行します。
-
-
-
 ## Platform
 
-Microsoft Azure
+Microsoft Azure, Kubernetes
 
 ## Module
 
 * Module: `qmonus.net/adapter/official`
-* Import path `qmonus.net/adapter/official/adapters/azure/container/kubernetes/apiBackend/sharedInfrastructure`
+* Import path: `qmonus.net/adapter/official/adapters/azure/container/kubernetes/apiBackend/sharedInfrastructure`
 
 ## Level
 
@@ -159,30 +72,36 @@ Sample: サンプル実装
 * 事前にサービスプリンシパルを作成し、Qmonus Value Streamへ認証情報を登録する必要があります。以下の権限をサブスクリプション配下で付与してください。
     * 共同作成者
     * ユーザー アクセス管理者
-* 事前にDNS ゾーンを作成する必要があります。Azure に DNSゾーンを作成し、各委譲元のDNSプロバイダで委譲設定を行ってください。
-    
-    ※DNS ゾーンを作成せず、お持ちの既存のAzure DNSゾーンを利用する場合は本手順は不要です。
-    
-    - Azure Portal で作成する
+
+* 事前にDNSゾーンを作成する必要があります。AzureにDNSゾーンを作成し、各委譲元のDNSプロバイダで委譲設定を行ってください。
+
+    ※ DNSゾーンを作成せず、お持ちの既存のAzure DNSゾーンを利用する場合は本手順は不要です。
+
+    - Azure portalで作成する
         - [クイック スタート:DNS ゾーンとレコードの作成](https://learn.microsoft.com/ja-jp/azure/dns/dns-getstarted-portal) およびそのほか公式ドキュメントをご参照ください。
-    - Azure CLI を利用して作成する  
+
+    - Azure CLIを利用して作成する
+
         DNSゾーンの作成および委譲設定を行う方法例を示します。
-        
+
         - 前提条件
-            - 委譲元のDNSゾーンがAzureであり、かつ委譲先のDNSゾーンもAzureである
-            - Azure Cloud Shell でbashを利用している/ローカルのbash環境に Azure CLI がインストールされている [※参考：AzureCLIの概要](https://learn.microsoft.com/ja-jp/cli/azure/get-started-with-azure-cli)
+            - 委譲元のDNSゾーンがAzureであり、かつ委譲先のDNSゾーンもAzureである。
+            - Azure Cloud Shellでbashを利用している/ローカルのbash環境にAzure CLIがインストールされている。 [※参考：AzureCLIの概要](https://learn.microsoft.com/ja-jp/cli/azure/get-started-with-azure-cli)
 
-        1. Azureテナントにサインインします  
+        1. Azureテナントにサインインします。
 
-            ※Azure CloudShell の場合は不要です。  
+            ※ Azure CloudShellの場合は不要です。
+
             [Azure CLI を使用してサインインする](https://learn.microsoft.com/ja-jp/cli/azure/authenticate-azure-cli#authentication-methods) に基づき認証を行います。詳細は公式ドキュメントをご参照ください。
 
             ```bash
             az login
             ```
-        
-        1. DNSゾーンを作成するために必要な情報を変数に格納します
-        任意の値に置き換えて、それぞれ格納してください
+
+        1. DNSゾーンを作成するために必要な情報を変数に格納します。
+
+            任意の値に置き換えて、それぞれ格納してください。
+
             - `CHILD_ZONE_NAME` : 作成する子ゾーン(委譲先ゾーン)の名前
             - `CHILD_RG`: 委譲先の子ゾーンを所属させる、もしくは所属しているリソースグループ
             - `PARENT_ZONE_NAME`: 既にある親ゾーン(委譲元ゾーン)の名前
@@ -195,54 +114,55 @@ Sample: サンプル実装
             PARENT_RG="<YOUR_PARENT_RG>"   # e.g. "my-parent-rg"
             CHILD_ZONE_NAME_WITHOUT_PARENT_ZONE=${CHILD_ZONE_NAME%.$PARENT_ZONE_NAME}   # remove parent zone domain. result is "myapp" in this case.
             ```
-            
+
         1. リソースグループを作成します。
-        ※すでに作成済みのリソースグループに所属させる場合はSkipで構いません。
-        location には任意のロケーションを指定してください。
-            
+
+            ※ すでに作成済みのリソースグループに所属させる場合はSkipで構いません。
+
+            `--location` には任意のロケーションを指定してください。
+
             ```bash
             az group create --name ${CHILD_RG} --location "Japan East"
             ```
-            
-        
-        1. 委譲先の子ゾーンを作成する
+
+        1. 委譲先の子ゾーンを作成します。
             
             ```bash
             az network dns zone create --name ${CHILD_ZONE_NAME} --resource-group ${CHILD_RG}
             ```
-            
-        1.  子ゾーンのネームサーバーを確認します
-            
+
+        1.  子ゾーンのネームサーバーを確認します。
+
             ```bash
             az network dns zone show --name ${CHILD_ZONE_NAME} --resource-group ${CHILD_RG} --query 'nameServers' -o tsv
             ```
-            
+
         1. 子ゾーンのネームサーバーを委譲元の親ゾーンに設定します。
-            
+
             ```bash
             nsservers=$(az network dns zone show --name ${CHILD_ZONE_NAME} --resource-group ${CHILD_RG} --query 'nameServers' -o tsv)
             for nsserver in ${nsservers[@]} ; do az network dns record-set ns add-record --resource-group ${PARENT_RG} --zone-name ${PARENT_ZONE_NAME} --record-set-name ${CHILD_ZONE_NAME_WITHOUT_PARENT_ZONE} --nsdname $nsserver; done;
             ```
-            
+
         1. 正常に設定できたかを確認します。
-            
+
             確認のためにTXTレコードを設定します。
-            
+
             ```bash
             az network dns record-set txt add-record --record-set-name hello --value "world" --resource-group ${CHILD_RG} --zone-name ${CHILD_ZONE_NAME}
             ```
-            
-            以下のコマンドを実行し、answerとして ”world” が出力されていれば正しく設定されています。
-            
+
+            以下のコマンドを実行し、answerとして "world" が出力されていれば正しく設定されています。
+
             ```bash
             dig TXT +noall +ans hello.${CHILD_ZONE_NAME}
             ```
-            
+
             確認後、不要なTXTレコードを削除します。
-            
+
             ```bash
             az network dns record-set txt remove-record --record-set-name hello --value "world"  --resource-group ${CHILD_RG} --zone-name ${CHILD_ZONE_NAME}
-            ```        
+            ```
 
 ### Constraints
 
@@ -257,10 +177,12 @@ Sample: サンプル実装
 | azureSubscriptionId            | string | yes      | -              | 事前に用意したAzureのサブスクリプション名                                                                                                                                                                                                                                    | xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx                                        | yes          |
 | azureTenantId                  | string | yes      | -              | 事前に用意したAzureのテナントID                                                                                                                                                                                                                                        | yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy                                        | yes          |
 | azureResourceGroupName         | string | yes      | -              | 作成するリソースグループ名                                                                                                                                                                                                                                              | sample-resourcegroup                                                        | yes          |
+| azureDnsZoneResourceGroupName  | string | yes      | -              | 事前に用意したDNSゾーンが所属するリソースグループ名                                    | sample-dnszone-resourcegroup         | no           |
 | keyVaultAccessAllowedObjectIds | array  | yes      | -              | Key Vaultのシークレットにアクセスを許可するオブジェクトIDのリスト <br> 以下を参考に、アクセスを許可したいユーザプリンシパルまたはADアプリケーションに対応するオブジェクトIDを指定してください。 <br> https://learn.microsoft.com/ja-jp/partner-center/marketplace/find-tenant-object-id#find-user-object-id                                     | "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa,bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" | no           |
 | applicationGatewayNsgAllowedSourceIps | array | no | [] | Application Gateway用NSGへのアクセスを許可するソースIPアドレスのリスト <br> アプリケーションへのアクセスを許可したいIPアドレスまたはCIDR範囲を指定してください。複数のIPアドレスを指定する場合はカンマ区切りの文字列で指定します。指定を省略した場合は、インターネットの全てのIPアドレスからのアクセスが許可されます。 | "192.168.0.1,172.16.0.0/12" | no |
 | mysqlSkuName                   | string | no       | B_Standard_B2s | MySQLのSKU名<br>以下を参考に、SKU名を指定してください。<br>https://learn.microsoft.com/ja-jp/azure/mysql/flexible-server/concepts-service-tiers-storage<br>また、指定するコンピューティング レベルに従ってプレフィックスをつける必要があります。<br>例：コンピューティング レベル`Burstable`の場合はB、`General Purpose`の場合はGPをプレフィックスとします。 | B_Standard_B2s                                                        | no           |
 | mysqlVersion                   | string | no       | "8.0.21"       | MySQLのバージョン<br>`5.7`,`8.0.21`のいずれかを指定します。                                                                                                                                                                                                                  | "8.0.21"                                                                       | no           |
+| dnsZoneName                    | string | yes      | -              | 事前に用意したDNSゾーン名                                                 | foo.example.com                      | no           |
 | kubernetesVersion              | string | no       | ""             | Kubernetesのバージョン<br>デフォルトではデプロイ時点での最新バージョンとなります。                                                                                                                                                                                                           | ""                                                                    | no           |
 | kubernetesSkuTier              | string | no       | Free           | Kubernetes コントロール プレーンのサービスレベル<br>デフォルトでは試験レベルである、`Free` となっています。<br>本番レベルでは、`Standard`と指定してください。                                                                                                                                                          | Free                                                                    | no           |
 | kubernetesNodeVmSize           | string | no       | Standard_B2s   | Kubernetesのワーカーノードのサイズ<br>以下を参考に、サイズを指定してください。<br>https://learn.microsoft.com/ja-jp/azure/virtual-machines/sizes                                                                                                                                           | Standard_B2s                                                              | no           |
@@ -390,6 +312,8 @@ designPatterns:
       azureResourceGroupName: $(params.azureResourceGroupName)
       azureTenantId: $(params.azureTenantId)
       azureSubscriptionId: $(params.azureSubscriptionId)
+      azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
+      dnsZoneName: $(params.dnsZoneName)
       keyVaultAccessAllowedObjectIds: [ "$(params.keyVaultAccessAllowedObjectIds[*])" ]
       applicationGatewayNsgAllowedSourceIps: ["$(params.applicationGatewayNsgAllowedSourceIps[*])"]
       enableContainerLog: $(paramas.enableContainerLog)
@@ -398,3 +322,93 @@ designPatterns:
 ## Code
 
 [sharedInfrastructure](main.cue)
+
+## Appendix
+
+* 本Adapterを用いて払い出されたkubeconfigは、下記の手順でAzure Key Vaultから取得できます。
+
+    - Azure portalを使用して取得する
+
+        1. [Azure portal](https://portal.azure.com/) で、事前に本Adapterを用いて作成したリソースグループ内の「qvs-key-vault-******** (*はランダムなsuffix)」キーコンテナーに移動します。
+
+        1. 「シークレット」を選択し、以下の名前で保存されている目的のSecretの名前をクリックします。
+             - `kubeconfig` : cluster-admin権限のkubeconfigを保持しているSecret、本Adapter利用時にデフォルトでSecretが生成されます
+             - `kubeconfig-<namespace>` : namespace単位のadmin権限をもつkubeconfigを保持するSecret、本Adapter利用時に`appK8sNamepaces` パラメータで指定したnamespace毎にSecretが生成されます
+
+        1. 「現在のバージョン」を選択し、「シークレット値」の右側の「クリップボードにコピー」をクリックします。
+
+    - Azure CLI を使用して取得する
+
+        1. Azureテナントにサインインします。
+
+            ※ Azure Cloud Shellの場合は不要です。
+
+            [Azure CLI を使用してサインインする](https://learn.microsoft.com/ja-jp/cli/azure/authenticate-azure-cli#authentication-methods) に基づき認証を行います。詳細は公式ドキュメントをご参照ください。
+
+            ```bash
+            az login
+            ```
+
+        1. kubeconfigを取得するために必要な情報を変数に格納します。
+
+            任意の値に置き換えて、それぞれ格納してください。
+
+            - `NAME` : 以下の名前で保存されている目的のSecretの名前
+                - `kubeconfig` : cluster-admin権限のkubeconfigを保持しているSecret、本Adapter利用時にデフォルトでSecretが生成されます
+                - `kubeconfig-<namespace>` : namespace単位のadmin権限をもつkubeconfigを保持するSecret、本Adapter利用時に`appK8sNamespaces` パラメータで指定したnamespace毎にSecretが生成されます
+            - `VAULT_NAME`: 作成されたキー コンテナの名前「qvs-key-vault-******** (*はランダムなsuffix)」
+
+            ```bash
+            NAME="<YOUR_SECRET_NAME>"   # e.g. kubeconfig-<namespace>(cluster-admin権限を持ったkubeconfigを使いたい場合は、kubeconfig)
+            VAULT_NAME="<YOUR_VAULT_NAME>"   # e.g. qvs-key-vault-********
+            ```
+
+        1. キー コンテナーからkubeconfigを取得します。
+
+            ```bash
+            az keyvault secret show --name ${NAME} --vault-name ${VAULT_NAME} --query value -o tsv
+            ```
+
+* 本Adapterを用いて払い出されたkubeconfigの認証情報を再作成したい場合は、下記の手順を実行してください。
+
+    - Namespaceを制限したkubeconfigの場合
+
+        1. Azure CLIを使用してAzureテナントにサインインします。
+
+            ※ Azure Cloud Shellの場合は不要です。
+
+            [Azure CLI を使用してサインインする](https://learn.microsoft.com/ja-jp/cli/azure/authenticate-azure-cli#authentication-methods) に基づき認証を行います。詳細は公式ドキュメントをご参照ください。
+
+            ```bash
+            az login
+            ```
+
+        1. kubeconfigを取得するために必要な情報を変数に格納します。
+
+            任意の値に置き換えて、それぞれ格納してください。
+
+            - `VAULT_NAME`: 作成されたキー コンテナの名前「qvs-key-vault-******** (*はランダムなsuffix)」
+
+            ```bash
+            VAULT_NAME="<YOUR_VAULT_NAME>"   # e.g. qvs-key-vault-********
+            ```
+
+        1. キー コンテナーからkubeconfigを取得します。
+
+            ```bash
+            az keyvault secret show --name kubeconfig --vault-name ${VAULT_NAME} --query value -o tsv > ~/.kube/config
+            ```
+
+        1. kubectlをインストールします。
+
+            ```bash
+            az aks install-cli
+            ```
+
+        1. KubernetesのSecretからService Account Tokenを削除します。
+
+            ```bash
+            kubectl delete secret qmonus-kubeconfig-token
+            ```
+
+        1. 本Adapterを利用するAssemblyLineを再実行します。
