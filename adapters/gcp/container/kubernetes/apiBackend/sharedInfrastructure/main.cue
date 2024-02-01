@@ -518,6 +518,7 @@ DesignPattern: {
 								name:  "All"
 							},
 						]
+						sslMode: "ENCRYPTED_ONLY"
 					}
 					tier: "db-custom-\(parameters.mysqlCpuCount)-\(parameters.mysqlMemorySizeMb)"
 				}

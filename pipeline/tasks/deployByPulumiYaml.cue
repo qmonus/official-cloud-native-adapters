@@ -118,6 +118,7 @@ import (
 		if [ -e \(_previewListFileName) ]; then
 			rm \(_previewListFileName)
 		fi
+		if [ -n "${GOOGLE_CREDENTIALS}" ]; then gcloud auth activate-service-account --key-file=${GOOGLE_CREDENTIALS}; fi
 		pulumi login ${PULUMI_BACKEND_URL} &> /dev/null
 		pulumi stack select --create \(_stack)  &> /dev/null
 		PULUMI_PREVIEW=`pulumi preview -r --stack \(_stack) -j --show-sames`
