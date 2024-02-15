@@ -37,9 +37,13 @@ import (
 		workingDir: "$(workspaces.shared.path)/source/$(params.buildTargetDir)"
 		script: """
 			#!/usr/bin/env bash
-			FIREBASE_HOSTING_SITE_ID=$(cat $(workspaces.shared.path)/siteId)
-			echo '{"projects": {"default": "'$GCP_PROJECT_ID'"}, "targets": {"'$GCP_PROJECT_ID'": {"hosting": {"'$FIREBASE_HOSTING_SITE_ID'": ["'$FIREBASE_HOSTING_SITE_ID'"]}}},"etags": {}}' > .firebaserc
-			echo '{"hosting": [{"target": "'$FIREBASE_HOSTING_SITE_ID'", "public": "'$DEPLOY_TARGET_DIR'", "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]}]}' > firebase.json
+			if [ -e $(workspaces.shared.path)/siteId ]; then
+			  FIREBASE_HOSTING_SITE_ID=$(cat $(workspaces.shared.path)/siteId)
+			  echo '{"projects": {"default": "'$GCP_PROJECT_ID'"}, "targets": {"'$GCP_PROJECT_ID'": {"hosting": {"'$FIREBASE_HOSTING_SITE_ID'": ["'$FIREBASE_HOSTING_SITE_ID'"]}}},"etags": {}}' > .firebaserc
+			  echo '{"hosting": [{"target": "'$FIREBASE_HOSTING_SITE_ID'", "public": "'$DEPLOY_TARGET_DIR'", "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]}]}' > firebase.json
+			else
+			  echo "SKIP: firebase hosting site not found"
+			fi
 			"""
 		env: [{
 			name:  "GCP_PROJECT_ID"
@@ -54,8 +58,12 @@ import (
 		workingDir: "$(workspaces.shared.path)/source/$(params.buildTargetDir)"
 		script: """
 			#!/usr/bin/env bash
-			FIREBASE_HOSTING_SITE_ID=$(cat $(workspaces.shared.path)/siteId)
-			firebase deploy --only hosting:"${FIREBASE_HOSTING_SITE_ID}"
+			if [ -e $(workspaces.shared.path)/siteId ]; then
+			  FIREBASE_HOSTING_SITE_ID=$(cat $(workspaces.shared.path)/siteId)
+			  firebase deploy --only hosting:"${FIREBASE_HOSTING_SITE_ID}"
+			else
+			  echo "SKIP: firebase hosting site not found"
+			fi
 			"""
 		env: [{
 			name:  "GOOGLE_APPLICATION_CREDENTIALS"

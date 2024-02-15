@@ -1,0 +1,15 @@
+params:
+  - name: appName
+    type: string
+  - name: gcpProjectId
+    type: string
+
+modules:
+  - name: github.com/qmonus/official-cloud-native-adapters
+    revision: v0.23.0
+
+designPatterns:
+  - pattern: qmonus.net/adapter/official/adapters/gcp/container/kubernetes/apiBackend/sharedInfrastructure
+    params:
+      appName: $(params.appName)
+      gcpProjectId: $(params.gcpProjectId)

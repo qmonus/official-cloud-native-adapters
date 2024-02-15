@@ -1,4 +1,4 @@
-package buildkitBuild
+package buildkitBuildGitConfigSecret
 
 import (
 	"qmonus.net/adapter/official/pipeline/schema"
@@ -12,7 +12,7 @@ import (
 
 #Builder: schema.#TaskBuilder
 #Builder: {
-	name:            "buildkit"
+	name:            "buildkit-git-config-secret"
 	input:           #BuildInput
 	prefix:          input.image
 	prefixAllParams: true
@@ -79,6 +79,7 @@ import (
 			--import-cache type=registry,ref=\(_cacheImageName):buildcache \\
 			--export-cache type=registry,ref=\(_cacheImageName):buildcache \\
 			--metadata-file $(workspaces.shared.path)/meta.json \\
+			--secret id=gitconfig,src=$(workspaces.shared.path)/.gitconfig \\
 			$(params.extraArgs)
 			"""
 

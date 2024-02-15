@@ -56,6 +56,9 @@ import (
 			        break
 			else:
 			    print('Could not find "gcp.firebase.HostingSite" resource in pulumi stack.')
+			    f = open('/tekton/results/defaultDomain', 'w')
+			    f.write('')
+			    f.close()
 
 			for resource in stack['checkpoint']['latest']['resources']:
 			    if resource['type'] == 'gcp:firebase/hostingCustomDomain:HostingCustomDomain':
@@ -66,6 +69,9 @@ import (
 			        break
 			else:
 			    print('Could not find "gcp:firebase/hostingCustomDomain:HostingCustomDomain" resource in pulumi stack.')
+			    f = open('/tekton/results/customDomain', 'w')
+			    f.write('')
+			    f.close()
 			"""
 		workingDir: "$(workspaces.shared.path)"
 	}]

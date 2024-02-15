@@ -33,17 +33,19 @@ import (
 
 	steps: [{
 		name:       "geturl"
-		image:      "mcr.microsoft.com/azure-cli:2.51.0"
+		image:      "mcr.microsoft.com/azure-cli:2.57.0"
 		workingDir: "$(workspaces.shared.path)/source"
 		script: """
-			az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID}
+			#!/usr/bin/env bash
+			az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID} --output none
 			# get url of custom domain url
-			result=$(az staticwebapp hostname list --name $(params.appName) --resource-group $(params.azureResourceGroupName) --query '[].domainName' -o tsv || true)
+			result=$(az staticwebapp hostname list --name ${SWA_CLI_APP_NAME} --resource-group ${AZURE_RESOURCE_GROUP} --query '[].domainName' -o tsv || true)
 			if [ -n "${result}" ]; then
-				scheme='https://'
-				echo "${scheme}${result}" | tee /tekton/results/publicUrl
+			  scheme='https://'
+			  echo "${scheme}${result}" | tee /tekton/results/publicUrl
 			else
-				echo ""  | tee /tekton/results/publicUrl
+			  echo "" > /tekton/results/publicUrl
+			  echo "SKIP: hostname of azure static web app found"
 			fi
 			"""
 		env: [{
@@ -61,6 +63,12 @@ import (
 				name: "$(params.azureClientSecretName)"
 				key:  "password"
 			}
+		}, {
+			name:  "AZURE_RESOURCE_GROUP"
+			value: "$(params.azureResourceGroupName)"
+		}, {
+			name:  "SWA_CLI_APP_NAME"
+			value: "$(params.appName)"
 		}]
 	}]
 }

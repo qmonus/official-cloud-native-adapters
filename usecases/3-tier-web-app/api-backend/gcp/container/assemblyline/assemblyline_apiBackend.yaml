@@ -1,0 +1,35 @@
+apiVersion: vs.axis-dev.io/v1
+kind: AssemblyLine
+metadata:
+  name: <YOUR_ASSEMBLYLINE_NAME>
+spec:
+  params:
+    - name: gitRevision
+      description: ""
+    - name: imageTag
+      description: ""
+  stages:
+    - name: app-build
+      spec:
+        pipeline: <YOUR_APPLICATION>-build
+        deployment:
+          app: <YOUR_APPLICATION_ID>
+          name: <YOUR_DEPLOYMENT_ID>
+        params:
+          - name: gitRevision
+            value: $(inputs.gitRevision)
+          - name: imageTag
+            value: $(inputs.imageTag)
+    - name: app-deploy
+      spec:
+        pipeline: <YOUR_APPLICATION>-deploy
+        deployment:
+          app: <YOUR_APPLICATION_ID>
+          name: <YOUR_DEPLOYMENT_ID>
+        params:
+          - name: gitRevision
+            value: $(inputs.gitRevision)
+          - name: imageName
+            value: $(stages.app-build.results.imageFullNameTag)
+      runAfter:
+        - app-build
