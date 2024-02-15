@@ -1,0 +1,34 @@
+params:
+  - name: appName
+    type: string
+  - name: gcpProjectId
+    type: string
+  - name: dnsZoneProjectId
+    type: string
+  - name: dnsZoneName
+    type: string
+  - name: gcpFirebaseHostingSiteId
+    type: string
+  - name: gcpFirebaseHostingCustomDomainName
+    type: string
+  - name: env1
+    type: string
+  - name: env2
+    type: string
+
+modules:
+  - name: qmonus.net/adapter/official
+    revision: v0.23.0
+
+designPatterns:
+  - pattern: qmonus.net/adapter/qmonus.net/adapter/official/adapters/gcp/serverless/staticSite/frontend  
+    params:
+      appName: $(params.appName)
+      gcpProjectId: $(params.gcpProjectId)
+      dnsZoneProjectId: $(params.dnsZoneProjectId)
+      dnsZoneName: $(params.dnsZoneName)
+      gcpFirebaseHostingSiteId: $(params.gcpFirebaseHostingSiteId)
+      gcpFirebaseHostingCustomDomainName: $(params.gcpFirebaseHostingCustomDomainName)
+      environmentVariables:
+        ENV1: $(params.env1)
+        ENV2: $(params.env2)

@@ -1,0 +1,52 @@
+params:
+  - name: appName
+    type: string
+  - name: gcpProjectId
+    type: string
+  - name: dnsZoneProjectId
+    type: string
+  - name: dnsZoneName
+    type: string
+  - name: dnsARecordSubdomain
+    type: string
+  - name: mysqlInstanceId
+    type: string
+  - name: mysqlDatabaseName
+    type: string
+  - name: mysqlUserName
+    type: string
+  - name: k8sNamespace
+    type: string
+  - name: imageName
+    type: string
+  - name: port
+    type: string
+  - name: mysqlInstanceIpAddress
+    type: string
+  - name: env1
+    type: string
+  - name: env2
+    type: string
+
+modules:
+  - name: github.com/qmonus/official-cloud-native-adapters
+    revision: v0.23.0
+
+designPatterns:
+  - pattern: qmonus.net/adapter/official/adapters/gcp/container/kubernetes/apiBackend
+    params:
+      appName: $(params.appName)
+      gcpProjectId: $(params.gcpProjectId)
+      dnsZoneProjectId: $(params.dnsZoneProjectId)
+      dnsZoneName: $(params.dnsZoneName)
+      dnsARecordSubdomain: $(params.dnsARecordSubdomain)
+      mysqlInstanceId: $(params.mysqlInstanceId)
+      mysqlDatabaseName: $(params.mysqlDatabaseName)
+      mysqlUserName: $(params.mysqlUserName)
+      k8sNamespace: $(params.k8sNamespace)
+      imageName: $(params.imageName)
+      port: $(params.port)
+      mysqlInstanceIpAddress: $(params.mysqlInstanceIpAddress)
+      environmentVariables:
+        ENV1: $(params.env1)
+        ENV2: $(params.env2)

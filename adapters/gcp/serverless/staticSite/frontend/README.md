@@ -162,7 +162,7 @@ Sample: サンプル実装
 | gcpFirebaseHostingSiteId | string | yes | - | デプロイする静的Webアプリケーションのデフォルトドメインに使用されるサイトID。24文字以内、かつ半角英数字とハイフン(-)のみを使用してください。 | myapp-site-id | no |
 | gcpFirebaseHostingCustomDomainName | string | yes | - | デプロイする静的WebアプリケーションのカスタムドメインのFQDN。末尾のルート（ `.` ）まで含めて指定してください。 | foo.example.com. | no |
 | dnsZoneProjectId | string | yes | - | 事前に用意したCloud DNSゾーンが所属するGoogle CloudプロジェクトID | sample-dns-zone-project | no |
-| dnsZoneName | string | yes | - | 事前に用意したDNSゾーン名 | foo.example.com | no |
+| dnsZoneName | string | yes | - | 事前に用意したDNSゾーン名 | sample-dns-zone | no |
 | environmentVariables | object | no | - | アプリケーションに渡される環境変数名と値のペア | ENV: prod | no |
 
 ## CI/CD Parameters

@@ -39,11 +39,11 @@ import (
 		name:       "check-env"
 		image:      "linuxserver/yq:3.2.3"
 		script:     """
-			QVS_JSON=`cat $(params.qvsConfigPath) | yq`			
-			ENVS=`echo ${QVS_JSON} | jq -c ".designPatterns[] | .params.\(_envParamName) // empty"`
+			QVS_JSON=`cat $(params.qvsConfigPath) | yq`
+			ENVS=`echo ${QVS_JSON} | jq -c ".designPatterns[]? | .params // empty | .\(_envParamName) // empty"`
 			ENV_FILE_DIR="\(_envFileDir)"
 			ENV_SET_NAME="\(_envSetName)"
-			
+
 			if [ -z "$ENVS" ]; then
 			  echo "no environment variables."
 			  exit 0
@@ -94,7 +94,7 @@ import (
 			if [ -e $ENV_FILE_PATH ]; then
 			  rm $ENV_FILE_PATH
 			fi
-			
+
 			PARAMS_JSON_PATH="\(_paramsJsonPath)"
 
 			while read -r ENV; do
@@ -110,7 +110,7 @@ import (
 			  esac
 			done < ${ENV_SET_PATH}
 
-			echo "successfully created a env file." 
+			echo "successfully created a env file."
 			"""
 		workingDir: "$(workspaces.shared.path)/source/"
 	}]

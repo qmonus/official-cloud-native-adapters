@@ -48,22 +48,22 @@ DesignPattern: {
 						}
 					}
 				}
-				"generate-environment-variables-file": generateEnvironmentVariablesFile.#Builder & {
+				"generate-env-file": generateEnvironmentVariablesFile.#Builder & {
 					runAfter: ["checkout"]
 				}
-				"build-gcp-firebase-hosting": buildGcpFirebaseHosting.#Builder & {
-					runAfter: ["generate-environment-variables-file"]
+				"build": buildGcpFirebaseHosting.#Builder & {
+					runAfter: ["generate-env-file"]
 				}
-				"get-url-gcp-firebase-hosting": getUrlOfGcpFirebaseHosting.#Builder & {
-					runAfter: ["build-gcp-firebase-hosting"]
+				"get-url": getUrlOfGcpFirebaseHosting.#Builder & {
+					runAfter: ["build"]
 				}
-				"deploy-gcp-firebase-hosting": deployGcpFirebaseHosting.#Builder & {
-					runAfter: ["get-url-gcp-firebase-hosting"]
+				"deploy": deployGcpFirebaseHosting.#Builder & {
+					runAfter: ["get-url"]
 				}
 			}
 			results: {
-				"defaultDomain": tasks["get-url-gcp-firebase-hosting"].results.defaultDomain
-				"customDomain":  tasks["get-url-gcp-firebase-hosting"].results.customDomain
+				"defaultDomain": tasks["get-url"].results.defaultDomain
+				"customDomain":  tasks["get-url"].results.customDomain
 			}
 		}
 	}

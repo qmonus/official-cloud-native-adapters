@@ -27,7 +27,7 @@ import (
 
 	steps: [{
 		name:  "install-dependencies"
-		image: "node:18-alpine3.17"
+		image: "node:18-alpine3.19"
 		command: ["yarn"]
 		args: ["install"]
 		workingDir: "$(workspaces.shared.path)/source/$(params.buildTargetDir)"
@@ -43,7 +43,7 @@ import (
 		}
 	}, {
 		name:       "build"
-		image:      "swacli/static-web-apps-cli:1.1.4"
+		image:      "swacli/static-web-apps-cli:1.1.6"
 		script:     """
 			#!/bin/bash
 

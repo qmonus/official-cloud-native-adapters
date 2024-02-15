@@ -32,7 +32,7 @@ Artifact Registry, Google Cloud
 ### Adapter Options
 | Parameter Name  | Type | Required | Default | Description | Example |
 | --- | --- | --- | --- | --- | --- |
-| image | string | no | "" | 生成される2つのTaskのdocker-login-gcp, buiildkit-git-config-secretに接頭語を付与します。また、resultsの値が格納されている変数名にも同様に接頭語を与えます。複数のビルド Taskを使用してValue Streamを実行する際、本パラメータにビルドするイメージ名を指定することでTaskを区別することができます。| nginx |
+| image | string | no | "" | 生成される2つのTaskのdocker-login-gcp, buildkit-git-config-secretに接頭語を付与します。また、resultsの値が格納されている変数名にも同様に接頭語を与えます。複数のビルド Taskを使用してValue Streamを実行する際、本パラメータにビルドするイメージ名を指定することでTaskを区別することができます。| nginx |
 | repositoryKind  | string | no | "" | ソースコードの管理に使用しているGitリポジトリの種類を指定してください。サポートしているのは、github, gitlab で、何も指定されない場合はgithub用の設定になります。 | gitlab |
 
 ### Parameters
@@ -65,7 +65,7 @@ Artifact Registry, Google Cloud
 ### Pipeline
 | Resource ID | Description |
 | --- | --- |
-| build | git-checkout, init-git-credentials, docker-login-gcp, buiildkit-git-config-secret のTaskを順番に実行し、Dockerfileからイメージのビルドとプッシュを行います。 |
+| build | git-checkout, init-git-credentials, docker-login-gcp, buildkit-git-config-secret のTaskを順番に実行し、Dockerfileからイメージのビルドとプッシュを行います。 |
 
 ### Task
 | Resource ID | Pipeline | runAfter | Description |
@@ -73,7 +73,7 @@ Artifact Registry, Google Cloud
 | git-checkout | build | - | 指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはGit Tokenを使用します。|
 | init-git-credentials | build | git-checkout | Git ConfigファイルにGit Tokenを設定します。 |
 | docker-login-gcp | build | init-git-credentials | 指定したコンテナレジストリへの認証を行います。|
-| buiildkit-git-config-secret | build | docker-login-gcp | Git ConfigファイルをマウントしたDockerfileからイメージをビルドし、コンテナレジストリへプッシュします。|
+| buildkit-git-config-secret | build | docker-login-gcp | Git ConfigファイルをマウントしたDockerfileからイメージをビルドし、コンテナレジストリへプッシュします。|
 
 ## Usage
 ``` yaml

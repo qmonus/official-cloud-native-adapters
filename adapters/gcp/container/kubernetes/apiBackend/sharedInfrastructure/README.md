@@ -166,7 +166,7 @@ Sample: サンプル実装
 | appName | string | yes | - | QVSにおけるApplication名 | sample | yes |
 | qvsDeploymentName | string | yes | - | QVSにおけるDeployment名 | staging | yes |
 | deployStateName | string | no | app | pulumi-stack名のSuffixとして使用される | app | no |
-| gcpServiceAccountSecretName | string | no | - | QVSにおけるDeploymentの作成時に指定したGoogle CloudサービスアカウントのJSONキーを保管しているSecret名 | gcp-default-xxxxxxxxxxxxxxxxxxxx | yes |
+| gcpServiceAccountSecretName | string | yes | - | QVSにおけるDeploymentの作成時に指定したGoogle CloudサービスアカウントのJSONキーを保管しているSecret名 | gcp-default-xxxxxxxxxxxxxxxxxxxx | yes |
 
 ## Application Resources
 

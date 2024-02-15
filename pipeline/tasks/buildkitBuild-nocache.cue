@@ -57,7 +57,7 @@ import (
 			name:  "BUILDCTL_CONNECT_RETRIES_MAX"
 			value: "20"
 		}]
-		image: "moby/buildkit:v0.9.2"
+		image: "moby/buildkit:v0.12.5"
 		name:  "build-and-push"
 		script: """
 			buildctl-daemonless.sh \\
