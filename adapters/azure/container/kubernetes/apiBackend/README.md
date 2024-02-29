@@ -27,7 +27,7 @@ HTTPSで外部公開できるコンテナアプリケーションをビルドし
 
 ## Platform
 
-Kubernetes, Microsoft Azure
+Microsoft Azure, Kubernetes
 
 ## Module
 
@@ -141,19 +141,26 @@ Sample: サンプル実装
 
 ## Application Resources
 
-| Resource ID | Provider | PaaS | API version | Kind | Description |
-| --- | --- | --- | --- | --- | --- |
-| AzureDnsRecordSet_aRecord | Azure | Azure DNS | | | レコードセットに新たにAレコードを追加します。 |
-| MysqlDatabase_apiBackend | MySQL | Azure Database for MySQL | | | MySQLサーバーに新たにデータベースを作成します。 |
-| MysqlUser_apiBackend | MySQL | Azure Database for MySQL | | | MySQLサーバーに新たにユーザーを作成します。 |
-| MysqlGrant_apiBackend | MySQL | Azure Database for MySQL | | | ユーザーに作成したデータベースへの権限を付与します。 |
-| RandomPassword_apiBackend | Random | | | | 新規作成するMySQLユーザーパスワードを16文字の英大数字で生成します。 |
-| AzureKeyVaultSecret_user | Azure | Azure Key Valut | | | 新規作成したMySQLユーザー名を格納したシークレットを作成します。 |
-| AzureKeyVaultSecret_password | Azure | Azure Key Valut | | | 新規作成したMySQLユーザーパスワードを格納したシークレットを作成します。 |
-| K8sIngress_apiBackend | kubernetes | | v1 | Ingress | Serviceに対する外部からのアクセスを管理します |
-| K8sService_apiBackend | kubernetes | | v1 | Service | 各Node上で、静的なポートでServiceを公開します |
-| K8sDeployment_apiBackend | kubernetes | | apps/v1 | Deployment | デプロイするPodリソース（アプリケーション）を定義します |
-| K8sExternalSecret_apiBackend | kubernetes | | external-secrets.io/v1beta1 | ExternalSecret | 外部プロバイダの機密情報をSecretリソースとして使用できるようにします |
+### Azure Resources
+
+| Resource ID | Provider | Resource Name | Description |
+| --- | --- | --- | --- |
+| aRecord | Azure | Azure DNS | レコードセットに新たにAレコードを追加します。 |
+| database | MySQL | Database | MySQLサーバーに新たにデータベースを作成します。 |
+| user | MySQL | User | MySQLサーバーに新たにユーザーを作成します。 |
+| grant | MySQL | Grant | 作成したデータベースへの権限をユーザーに付与します。 |
+| dbRandomPassword | Random | RandomPassword | 新規作成するMySQLユーザーパスワードを16文字の英大数字で生成します。 |
+| dbUserSecret | Azure | Azure Key Valut | 新規作成したMySQLユーザー名を格納したシークレットを作成します。 |
+| dbPasswordSecret | Azure | Azure Key Valut | 新規作成したMySQLユーザーパスワードを格納したシークレットを作成します。 |
+
+### Kubernetes Resources
+
+| Resource ID | Provider | API version | Kind | Description |
+| --- | --- | --- | --- | --- |
+| ingress | kubernetes | v1 | Ingress | Serviceに対する外部からのアクセスを管理します。 |
+| service | kubernetes | v1 | Service | 各Node上で、静的なポートでServiceを公開します。 |
+| deployment | kubernetes | apps/v1 | Deployment | デプロイするPodリソース（アプリケーション）を定義します。 |
+| externalSecret | kubernetes | external-secrets.io/v1beta1 | ExternalSecret | 外部プロバイダの機密情報をSecretリソースとして使用できるようにします。 |
 
 ## Pipeline Resources
 

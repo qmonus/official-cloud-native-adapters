@@ -1,6 +1,5 @@
 # Shared Infrastructure Adapter
 
-
 静的WebアプリケーションをAzure上にデプロイするために、必要なAzureリソース群をデプロイするCloud Native Adapterです。
 
 以下のリソースを作成します。
@@ -153,9 +152,7 @@ Sample: サンプル実装
 | azureSubscriptionId         | string | yes      | -       | AzureのSubscriptionID                             |                                                      | yes          |
 | azureClientSecretName       | string | yes      | -       | AzureのClientSecretを保管しているSecret名                 |                                                      | yes          |
 
-## Resources
-
-### Azure Resources
+## Application Resources
 
 | Resource ID                            | Provider | Resource Name                | Description                                                                        |
 |----------------------------------------|----------|------------------------------|------------------------------------------------------------------------------------|
