@@ -31,7 +31,7 @@ spec:
 
 ## Platform
 
-Azure Static Web Apps, Microsoft Azure
+Microsoft Azure
 
 ## Module
 
@@ -115,7 +115,7 @@ Sample: サンプル実装
 
 ## Application Resources
 
-| Resource ID            | Provider | PaaS                  | Description                                  |
+| Resource ID            | Provider | Resource Name         | Description                                  |
 |------------------------|----------|-----------------------|----------------------------------------------|
 | staticSite             | Azure    | Azure Static Web Apps | Webアプリケーションをデプロイします                          |
 | cnameRecord            | Azure    | Azure DNS             | レコードセットに新たにCNAMEレコードを追加します                   |

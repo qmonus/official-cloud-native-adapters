@@ -17,7 +17,7 @@ HTTPSで外部公開できるアプリケーションを Azure App Service 上�
 
 ## Platform
 
-App Service, Microsoft Azure
+Microsoft Azure
 
 ## Module
 
@@ -119,16 +119,16 @@ Sample: サンプル実装
 
 ## Application Resources
 
-| Resource ID                   | Provider | PaaS              | API version | Kind | Description                                                |
-|-------------------------------|----------|-------------------|-------------|------|------------------------------------------------------------|
-| cnameRecord                   | Azure    | Azure DNS         |             |      | レコードセットに新たにCNAMEレコードを追加します。                                |
-| txtRecord                     | Azure    | Azure DNS         |             |      | レコードセットに新たにTXTレコードを追加します。（カスタムドメインの紐付けの際の検証に使用します）         |
-| appServicePlan                | Azure    | Azure App Service |             |      | Web App Service をホスティングするための  App Service Plan を作成します。     |
-| webAppForContainer            | Azure    | Azure App Service |             |      | コンテナ化されたアプリケーションをデプロイするための Web App Service を作成します。         |
-| webAppHostNameBinding         | Azure    | Azure App Service |             |      | デプロイした Web App Service にカスタムドメインをバインドします。                  |
-| managedCertificate            | Azure    | Azure App Service |             |      | 無料の App Service マネージド証明書を作成します。                            |
-| certBinding                   | Azure    | Azure App Service |             |      | カスタムドメインに マネージド証明書をバインドします。                                |
-| keyVaultAccessPolicyForWebApp | Azure    | Azure Key Vault   |             |      | Web App Service が Key vault のシークレットを参照するためのアクセスポリシーを追加します。 |
+| Resource ID                   | Provider | Resource Name     | Description                                                |
+|-------------------------------|----------|-------------------|------------------------------------------------------------|
+| cnameRecord                   | Azure    | Azure DNS         | レコードセットに新たにCNAMEレコードを追加します。 |
+| txtRecord                     | Azure    | Azure DNS         | レコードセットに新たにTXTレコードを追加します。（カスタムドメインの紐付けの際の検証に使用します） |
+| appServicePlan                | Azure    | Azure App Service | Web App Service をホスティングするための  App Service Plan を作成します。 |
+| webAppForContainer            | Azure    | Azure App Service | コンテナ化されたアプリケーションをデプロイするための Web App Service を作成します。 |
+| webAppHostNameBinding         | Azure    | Azure App Service | デプロイした Web App Service にカスタムドメインをバインドします。 |
+| managedCertificate            | Azure    | Azure App Service | 無料の App Service マネージド証明書を作成します。 |
+| certBinding                   | Azure    | Azure App Service | カスタムドメインに マネージド証明書をバインドします。 |
+| keyVaultAccessPolicyForWebApp | Azure    | Azure Key Vault   | Web App Service が Key vault のシークレットを参照するためのアクセスポリシーを追加します。 |
 
 ## Pipeline Resources
 
