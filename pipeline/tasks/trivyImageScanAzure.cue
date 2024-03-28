@@ -1,4 +1,4 @@
-package trivyImageScanGcp
+package trivyImageScanAzure
 
 import (
 	"qmonus.net/adapter/official/pipeline/schema"
@@ -14,14 +14,16 @@ import (
 
 #Builder: schema.#TaskBuilder
 #Builder: {
-	name:            "trivy-image-scan-gcp"
+	name:            "trivy-image-scan-azure"
 	input:           #BuildInput
 	prefix:          input.image
 	prefixAllParams: true
 
 	params: {
-		imageName: desc:                   "The image name"
-		gcpServiceAccountSecretName: desc: "The secret name of GCP SA credential"
+		imageName: desc:             "The image name"
+		azureTenantId: desc:         "Azure Tenant ID"
+		azureApplicationId: desc:    "Azure Application ID"
+		azureClientSecretName: desc: "Credential Name of Azure Client Secret"
 		mentionTarget: {
 			desc:    "mention target of Slack"
 			default: ""
@@ -42,13 +44,19 @@ import (
 			"$(params.imageName)",
 		]
 		env: [{
-			name:  "GOOGLE_APPLICATION_CREDENTIALS"
-			value: "/secret/account.json"
-		}]
-		volumeMounts: [{
-			name:      "user-gcp-secret"
-			mountPath: "/secret"
-			readOnly:  true
+			name:  "AZURE_TENANT_ID"
+			value: "$(params.azureTenantId)"
+		}, {
+			name:  "AZURE_CLIENT_ID"
+			value: "$(params.azureApplicationId)"
+		}, {
+			name: "AZURE_CLIENT_SECRET"
+			valueFrom: {
+				secretKeyRef: {
+					name: "$(params.azureClientSecretName)"
+					key:  "password"
+				}
+			}
 		}]
 		resources: {
 			if input.resourcePriority == "medium" {
@@ -112,15 +120,4 @@ import (
 			]
 		},
 	]
-
-	volumes: [{
-		name: "user-gcp-secret"
-		secret: {
-			items: [{
-				key:  "serviceaccount"
-				path: "account.json"
-			}]
-			secretName: "$(params.gcpServiceAccountSecretName)"
-		}
-	}]
 }
