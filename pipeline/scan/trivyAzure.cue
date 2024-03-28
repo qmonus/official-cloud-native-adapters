@@ -1,9 +1,9 @@
-package trivyGcp
+package trivyAzure
 
 import (
 	"strings"
 	"qmonus.net/adapter/official/pipeline:utils"
-	"qmonus.net/adapter/official/pipeline/tasks:trivyImageScanGcp"
+	"qmonus.net/adapter/official/pipeline/tasks:trivyImageScanAzure"
 )
 
 DesignPattern: {
@@ -20,18 +20,18 @@ DesignPattern: {
 	if pipelineParameters.image != "" {
 		_scanTask: {
 			utils.#concatkebab
-			input: [_imageName, "image-scan-gcp"]
+			input: [_imageName, "image-scan-azure"]
 		}.out
 	}
 	if pipelineParameters.image == "" {
-		_scanTask: "image-scan-gcp"
+		_scanTask: "image-scan-azure"
 	}
 
 	pipelines: {
 		scan: {
 			tasks: {
 				"\(_scanTask)": {
-					trivyImageScanGcp.#Builder & {
+					trivyImageScanAzure.#Builder & {
 						input: {
 							shouldNotify:     pipelineParameters.shouldNotify
 							resourcePriority: pipelineParameters.resourcePriority
