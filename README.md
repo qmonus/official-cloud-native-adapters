@@ -2,7 +2,7 @@
 
 ## はじめに
 
-Cloud Native Adapterは、Qmonus Value Stream独自のInfrastructure as Code(IaC)の実装です。Official Cloud Native Adapterは、多くの商用プロダクト開発や運用で得られたベストプラクティスを提供するCloud Native Adapterとなります。
+Cloud Native Adapterは、[Qmonus Value Stream](https://www.valuestream.qmonus.net/)独自のInfrastructure as Code(IaC)の実装です。Official Cloud Native Adapterは、多くの商用プロダクト開発や運用で得られたベストプラクティスを提供するCloud Native Adapterとなります。
 
 このOfficial Cloud Native Adapterには2種類のカテゴリに分けられ、1つ目はクラウドアーキテクチャを構成するInfrastructure Adapterで、2つ目はアプリケーションの試験・ビルド・デプロイ等のCI/CDパイプラインを構成するCI/CD Adapterです。
 
@@ -100,4 +100,4 @@ QVS ConfigでAdapterを指定する際の記載例を示します。
 See the LICENSE file for license rights and limitations (MIT).
 
 
-&copy; NTT Communications 2022
+&copy; NTT Communications 2024
