@@ -18,6 +18,8 @@ HTTPSで外部公開できるアプリケーションをAzure上にデプロイ�
     * MySQLのパスワードやRedisのアクセスキーを格納します。
     * アクセスポリシーを使用して、Qmonus Value Streamに登録されたサービスプリンシパル、および任意のユーザからのシークレットへのアクセスを許可します。
     * 論理削除が有効であるため、同名のシークレットを再作成するには物理削除をAzure Portal等から行う必要があります。
+* Azure Log Analytics Workspace
+    * ログを格納する Log Analytics Workspace を作成します。
 * Azure Network Security Group
     * App Service用のNSGを作成してサブネットに関連付けます。
     * セキュリティ規則は任意のポート・プロトコル・IPアドレスからのアクセスを許可します。
@@ -151,6 +153,12 @@ Sample: サンプル実装
 | keyVaultAccessAllowedObjectIds | array  | yes      | -              | Key Vaultのシークレットにアクセスを許可するオブジェクトIDのリスト <br> 以下を参考に、アクセスを許可したいユーザプリンシパルまたはADアプリケーションに対応するオブジェクトIDを指定してください。 <br> https://learn.microsoft.com/ja-jp/partner-center/marketplace/find-tenant-object-id#find-user-object-id                                     | "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa,bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" | no           |
 | mysqlSkuName                   | string | no       | B_Standard_B2s | MySQLのSKU名<br>以下を参考に、SKU名を指定してください。<br>https://learn.microsoft.com/ja-jp/azure/mysql/flexible-server/concepts-service-tiers-storage<br>また、指定するコンピューティング レベルに従ってプレフィックスをつける必要があります。<br>例：コンピューティング レベル`Burstable`の場合はB、`General Purpose`の場合はGPをプレフィックスとします。 | GP_Standard_D16ds_v4                                                        | no           |
 | mysqlVersion                   | string | no       | "8.0.21"       | MySQLのバージョン<br>`5.7`,`8.0.21`のいずれかを指定します。                                                                                                                                                                                                                  | "5.7"                                                                       | no           |
+| enableContainerLog             | string | no       | "true"           | ログ機能の有効/無効。`true`` にした場合、Log Analytics Workspace の作成が行われます。 | "true" | no |
+| retentionInDays                | string | no | "30" | `enableContainerLog` が `"true"` の場合のみ設定できます。各ログのテーブルを対話型で保持する期間を設定します。最長で 730 (2年間) まで指定することができます | "30" | no |
+| location                       | string | no | "Japaneast" | `enableContainerLog` が `"true"` の場合のみ設定できます。Log Analytics Workspace をデプロイするロケーションを設定します | Japaneast | no |
+| capacityReservationLevel       | string | no | "100" | `enableContainerLog` が `"true"` の場合のみ設定できます。sku に `CapacityReservation` を設定した際、コミットメントレベルを指定します。詳細は[公式の「 Log Analytics ワークスペースの価格レベルを変更する」](https://learn.microsoft.com/ja-jp/azure/azure-monitor/logs/change-pricing-tier?tabs=azure-portal))を確認してください | "100" | no |
+| dailyQuotaGb                   | string | no | "-1"  | `enableContainerLog` が `"true"` の場合のみ設定できます。Log Analytics Workspace に対する1日当たりのログの日次上限で単位はGBです。デフォルトは無制限になっています。 | "-1" | no |
+| workspaceAccessMode | string | no | "resource" | `enableContainerLog` が `"true"` の場合のみ設定できます。Log Analytics Workspace へのアクセスモードを指定します。`resource` の場合、ユーザはアクセス許可のあるリソースのログを確認することが可能です。ワークスペース全体へのアクセスはできません。`workspace` の場合、ユーザがログにアクセスするためには、明示的にワークスペースへアクセス許可を付与される必要があります。| "resource" or "workspace"  | no |
 
 ## CI/CD Parameters
 
@@ -180,6 +188,13 @@ Sample: サンプル実装
 | azureSubscriptionId         | string | yes      | -       | AzureのSubscriptionID                             |                                                      | yes          |
 | azureClientSecretName       | string | yes      | -       | AzureのClientSecretを保管しているSecret名                 |                                                      | yes          |
 
+### Results Parameters
+
+| Parameter Name | Pipeline | Type | Description | Example |
+| --- | --- | --- | --- | --- |
+| logAnalyticsWorkspaceId | deploy | string | Log Analytics Workspace のID | /subscriptions/xxxxx-yyyyyyyyy-zzzzz/resourceGroups/sample-rg/providers/Microsoft.OperationalInsights/workspaces/sample-workspace |
+| LogAnworkspaceName | deploy | string | Log Analytics Workspace の名前 | sample-workspace |
+
 ## Application Resources
 
 | Resource ID                            | Provider | Resource Name                | Description                                                                        |
@@ -204,6 +219,7 @@ Sample: サンプル実装
 | resourceGroup                          | Azure    | Azure Resource Manager       | リソースグループを作成します。                                                                    |
 | keyVaultAccessPolicyForQvs             | Azure    | Azure Key Vault              | Qmonus Value Streamに登録したサービスプリンシパルがKeyvaultに対して値の読み取り・書き込みを行うために必要なアクセスポリシーを生成します。 |
 | keyVaultAccessPolicyForUser            | Azure    | Azure Key Vault              | 任意のオブジェクトIDがKeyvaultに対して値の読み取り・書き込みを行うために必要なアクセスポリシーを生成します。                        |
+| logAnalyticsWorkspace                  | Azure    | Log Analytics Workspace      | ログを格納するワークスペースを作成します。 |
 
 ## Pipeline Resources
 
@@ -213,7 +229,7 @@ Sample: サンプル実装
 
 | Resource ID | Description                                                                                                            |
 |-------------|------------------------------------------------------------------------------------------------------------------------|
-| deploy      | git-checkout(-ssh), compile-adapter-into-pulumi-yaml(-ssh), deploy-by-pulumi-yaml のTaskを順番に実行し、アプリケーションを指定の環境にデプロイします。 |
+| deploy      | git-checkout(-ssh), compile-adapter-into-pulumi-yaml(-ssh), deploy-by-pulumi-yaml のTaskを順番に実行し、アプリケーションを指定の環境にデプロイします。また、`enableContainerLog` が true の場合は get-log-analytics-workspace-info のTaskを実行し、作成された Log Analytics Workspace の情報をPipeline Resultsに格納します。 |
 
 ### Task
 
@@ -223,7 +239,9 @@ Sample: サンプル実装
 | git-checkout-ssh                     | deploy   | -                                                                        | 指定のGitリポジトリをクローンし、対象のリビジョン・ブランチにチェックアウトします。クローンする際の認証にはSSH Keyを使用します。AdapterOptionsのuseSshKeyがTrueまたはrepositoryKindがbitbucket, backlogの場合に作成されます。                 |
 | compile-adapter-into-pulumi-yaml     | deploy   | git-checkout                                                             | リポジトリ内の QVS Config に記載されている Cloud Native Adapter をコンパイルし、PulumiYamlのプロジェクトファイルを生成します。AdapterOptionsのuseSshKeyがFalseかつrepositoryKindがgithub, gitlabの場合に作成されます。     |
 | compile-adapter-into-pulumi-yaml-ssh | deploy   | git-checkout-ssh                                                         | リポジトリ内の QVS Config に記載されている Cloud Native Adapter をコンパイルし、PulumiYamlのプロジェクトファイルを生成します。AdapterOptionsのuseSshKeyがTrueまたはrepositoryKindがbitbucket, backlogの場合に作成されます。 |
-| deploy-by-pulumi-yaml                | deploy   | compile-adapter-into-pulumi-yaml or compile-adapter-into-pulumi-yaml-ssh | コンパイルされたPulumiYamlのプロジェクトファイルを指定の環境にデプロイします。                                                                                                                      |
+| deploy-by-pulumi-yaml                | deploy   | compile-adapter-into-pulumi-yaml or compile-adapter-into-pulumi-yaml-ssh | コンパイルされたPulumiYamlのプロジェクトファイルを指定の環境にデプロイします。                                 
+| get-log-analytics-workspace-info | get-info |  | deploy pipeline で作成された Log Analytics Workspace の情報として ワークスペースのIDである `logAnalyticsWorkspaceId` とワークスペース名である `logAnalyticsWorkspaceName` を Pipeline Resultsに格納します。出力した値はAssemblyLine Resultsとして出力することができます。|
+
 
 ## Usage
 
@@ -236,6 +254,7 @@ designPatterns:
       azureTenantId: $(params.azureTenantId)
       azureSubscriptionId: $(params.azureSubscriptionId)
       keyVaultAccessAllowedObjectIds: [ "$(params.keyVaultAccessAllowedObjectIds[*])" ]
+      enableContainerLog: $(paramas.enableContainerLog)
 ```
 
 ## Code

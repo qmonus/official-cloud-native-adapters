@@ -78,7 +78,7 @@ Adapter を利用して API バックエンドアプリケーションをデプ�
    QVS Config をアプリケーションのリポジトリに登録してください。リポジトリに最小パラメータで利用できる [qvs.yaml](./qvsconfig/qvs.yaml) と、全パラメータを設定する [full_params_qvs.yaml](./qvsconfig/full_params_qvs.yaml) を配置しているので適宜利用してください。
    ユースケースに応じた設定変更は [こちら](#ユースケースに応じた設定変更) をご参照ください。
 
-   以下にデフォルト設定の QVS Config を示します。
+   以下に最小パラメータの QVS Config を示します。
 
    ```bash
      params:
@@ -104,7 +104,7 @@ Adapter を利用して API バックエンドアプリケーションをデプ�
          type: string
      modules:
        - name: github.com/qmonus/official-cloud-native-adapters
-         revision: main
+         revision: v0.21.0
      designPatterns:
        - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend
          params:
@@ -162,7 +162,7 @@ Adapter を利用して API バックエンドアプリケーションをデプ�
 
 1. QVS config にパラメータを追加し、アプリケーションのリポジトリにコミットします。
 
-   QVS config は [custom_domain.yaml](./qvsconfig/custom_domain.yaml) を利用してください。以下にデフォルトとの差分を示します。
+   QVS config は [custom_domain.yaml](./qvsconfig/custom_domain.yaml) を利用してください。以下に最小パラメータのQVS Configとの差分を示します。
 
    ```diff
      params:
@@ -190,7 +190,7 @@ Adapter を利用して API バックエンドアプリケーションをデプ�
    +     type: string
      modules:
        - name: github.com/qmonus/official-cloud-native-adapters
-         revision: main
+         revision: v0.21.0
      designPatterns:
        - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend
          params:
@@ -226,36 +226,36 @@ Adapter を利用して API バックエンドアプリケーションをデプ�
 
 1. QVS Config にパラメータを追加し、アプリケーションのリポジトリにコミットします。
 
-   QVS config は [qvs_args.yaml](./qvsconfig/qvs_args.yaml) を利用してください。以下にデフォルトとの差分を示します。
+   QVS config は [qvs_args.yaml](./qvsconfig/qvs_args.yaml) を利用してください。以下に最小パラメータのQVS Configとの差分を示します。
 
    ```diff
       params:
-      - name: appName
-         type: string
-      - name: azureSubscriptionId
-         type: string
-      - name: azureResourceGroupName
-         type: string
-      - name: azureDnsZoneResourceGroupName
-         type: string
-      - name: containerRegistryName
-         type: string
-      - name: dbHost
-         type: string
-      - name: redisHost
-         type: string
-      - name: azureKeyVaultName
-         type: string
-      - name: imageFullNameTag
-         type: string
-   +  - name: args
-   +     type: array
+        - name: appName
+          type: string
+        - name: azureSubscriptionId
+          type: string
+        - name: azureResourceGroupName
+          type: string
+        - name: azureDnsZoneResourceGroupName
+          type: string
+        - name: containerRegistryName
+          type: string
+        - name: dbHost
+          type: string
+        - name: redisHost
+          type: string
+        - name: azureKeyVaultName
+          type: string
+        - name: imageFullNameTag
+          type: string
+   +    - name: args
+   +      type: array
       modules:
-      - name: github.com/qmonus/official-cloud-native-adapters
-         revision: main
+        - name: github.com/qmonus/official-cloud-native-adapters
+          revision: v0.21.0
       designPatterns:
-      - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend
-         params:
+        - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend
+          params:
             appName: $(params.appName)
             azureResourceGroupName: $(params.azureResourceGroupName)
             azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
@@ -283,39 +283,39 @@ Adapter を利用して API バックエンドアプリケーションをデプ�
 
 1. QVS Config にパラメータを追加し、アプリケーションのリポジトリにコミットします。
 
-   QVS config は [qvs_env.yaml](./qvsconfig/qvs_env.yaml) を利用してください。以下にデフォルトとの差分を示します。
+   QVS config は [qvs_env.yaml](./qvsconfig/qvs_env.yaml) を利用してください。以下に最小パラメータのQVS Configとの差分を示します。
    [qvs_env.yaml](./qvsconfig/qvs_env.yaml) のENV1, ENV2部分は、設定したい環境変数に置き換えてご利用ください。
 
    ```diff
       params:
-      - name: appName
-         type: string
-      - name: azureSubscriptionId
-         type: string
-      - name: azureResourceGroupName
-         type: string
-      - name: azureDnsZoneResourceGroupName
-         type: string
-      - name: containerRegistryName
-         type: string
-      - name: dbHost
-         type: string
-      - name: redisHost
-         type: string
-      - name: azureKeyVaultName
-         type: string
-      - name: imageFullNameTag
-         type: string
-   +  - name: env1
-   +     type: string
-   +  - name: env2
-   +     type: string
+        - name: appName
+          type: string
+        - name: azureSubscriptionId
+          type: string
+        - name: azureResourceGroupName
+          type: string
+        - name: azureDnsZoneResourceGroupName
+          type: string
+        - name: containerRegistryName
+          type: string
+        - name: dbHost
+          type: string
+        - name: redisHost
+          type: string
+        - name: azureKeyVaultName
+          type: string
+        - name: imageFullNameTag
+          type: string
+   +    - name: env1
+   +      type: string
+   +    - name: env2
+   +      type: string
       modules:
-      - name: github.com/qmonus/official-cloud-native-adapters
-         revision: main
+        - name: github.com/qmonus/official-cloud-native-adapters
+          revision: v0.21.0
       designPatterns:
-      - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend
-         params:
+        - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend
+          params:
             appName: $(params.appName)
             azureResourceGroupName: $(params.azureResourceGroupName)
             azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
@@ -326,8 +326,8 @@ Adapter を利用して API バックエンドアプリケーションをデプ�
             azureKeyVaultName: $(params.azureKeyVaultName)
             imageFullNameTag: $(params.imageFullNameTag)
    +        environmentVariables:
-   +           ENV1: $(params.env1)
-   +           ENV2: $(params.env2)
+   +          ENV1: $(params.env1)
+   +          ENV2: $(params.env2)
    ```
 
 2. コミット後、Pipeline および Task の更新のため、再度 Pipelines/Tasks のコンパイルを実施してください。
@@ -346,51 +346,51 @@ Adapter を利用して API バックエンドアプリケーションをデプ�
 
 1. QVS Config にパラメータを追加し、アプリケーションのリポジトリにコミットします。
 
-   QVS config は [qvs_secret.yaml](./qvsconfig/qvs_secret.yaml) を利用してください。以下にデフォルトとの差分を示します。
+   QVS config は [qvs_secret.yaml](./qvsconfig/qvs_secret.yaml) を利用してください。以下に最小パラメータのQVS Configとの差分を示します。
    [qvs_secret.yaml](./qvsconfig/qvs_secret.yaml) のSECRET1, SECRET2部分は、設定したい環境変数に置き換えてご利用ください。
 
    ```diff
-      params:
-      - name: appName
+     params:
+       - name: appName
          type: string
-      - name: azureSubscriptionId
+       - name: azureSubscriptionId
          type: string
-      - name: azureResourceGroupName
+       - name: azureResourceGroupName
          type: string
-      - name: azureDnsZoneResourceGroupName
+       - name: azureDnsZoneResourceGroupName
          type: string
-      - name: containerRegistryName
+       - name: containerRegistryName
          type: string
-      - name: dbHost
+       - name: dbHost
          type: string
-      - name: redisHost
+       - name: redisHost
          type: string
-      - name: azureKeyVaultName
+       - name: azureKeyVaultName
          type: string
-      - name: imageFullNameTag
+       - name: imageFullNameTag
          type: string
-   +  - name: secret1
+   +   - name: secret1
    +     type: secret
-   +  - name: secret2
+   +   - name: secret2
    +     type: secret
-      modules:
-      - name: github.com/qmonus/official-cloud-native-adapters
-         revision: main
-      designPatterns:
-      - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend
+     modules:
+       - name: github.com/qmonus/official-cloud-native-adapters
+         revision: v0.21.0
+     designPatterns:
+       - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend
          params:
-            appName: $(params.appName)
-            azureResourceGroupName: $(params.azureResourceGroupName)
-            azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
-            azureSubscriptionId: $(params.azureSubscriptionId)
-            containerRegistryName: $(params.containerRegistryName)
-            dbHost: $(params.dbHost)
-            redisHost: $(params.redisHost)
-            azureKeyVaultName: $(params.azureKeyVaultName)
-            imageFullNameTag: $(params.imageFullNameTag)
-   +        secrets:
-   +           SECRET1: $(params.secret1)
-   +           SECRET2: $(params.secret2)
+           appName: $(params.appName)
+           azureResourceGroupName: $(params.azureResourceGroupName)
+           azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
+           azureSubscriptionId: $(params.azureSubscriptionId)
+           containerRegistryName: $(params.containerRegistryName)
+           dbHost: $(params.dbHost)
+           redisHost: $(params.redisHost)
+           azureKeyVaultName: $(params.azureKeyVaultName)
+           imageFullNameTag: $(params.imageFullNameTag)
+   +       secrets:
+   +         SECRET1: $(params.secret1)
+   +         SECRET2: $(params.secret2)
    ```
 
 2. コミット後、Pipeline および Task の更新のため、再度 Pipelines/Tasks のコンパイルを実施してください。
@@ -403,7 +403,7 @@ Adapter を利用して API バックエンドアプリケーションをデプ�
 
 1. QVS Config にパラメータを追加し、アプリケーションのリポジトリにコミットします。
 
-   QVS Config は [qvs_allowedSourceIps.yaml](./qvsconfig/qvs_allowedSourceIps.yaml) を利用してください。以下にデフォルトとの差分を示します。
+   QVS Config は [qvs_allowedSourceIps.yaml](./qvsconfig/qvs_allowedSourceIps.yaml) を利用してください。以下に最小パラメータのQVS Configとの差分を示します。
 
    ```diff
    params:
@@ -472,7 +472,7 @@ Adapter を利用して API バックエンドアプリケーションをデプ�
 
 2. QVS Config にパラメータを追加し、アプリケーションのリポジトリにコミットします。
 
-   QVS Config は [qvs_another.yaml](./qvsconfig/qvs_another.yaml) を利用してください。以下にデフォルトとの差分を示します。
+   QVS Config は [qvs_another.yaml](./qvsconfig/qvs_another.yaml) を利用してください。以下に最小パラメータのQVS Configとの差分を示します。
 
    ```diff
    params:
@@ -524,6 +524,69 @@ Adapter を利用して API バックエンドアプリケーションをデプ�
 
    ```yaml
    subDomainName: api2
+   ```
+
+### アプリケーションのログを取得したい
+
+事前に [Shared Infrastructure Adapter](../../../../../adapters/azure/serverless/webApp/apiBackend/sharedInfrastructure/README.md) でデプロイしたLog Analytics Workspace にデプロイしたアプリケーションの stdout および stderr の出力を転送しログの収集(※)を行うことができます。[ログの設定](../../../api-backend/azure/container/log/README.md) についてもユースケースごとに記載しているため、適宜ご参照ください。
+(共有リソースでログ機能を無効化している場合はログの収集ができません。)
+
+1. QVS Config にパラメータを追加し、アプリケーションのリポジトリにコミットします。
+
+  QVS config は [qvs_collect_log.yaml](./qvsconfig/qvs_collect_log.yaml) を利用してください。以下に最小パラメータのQVS Configとの差分を示します。
+
+  ```diff
+     params:
+       - name: appName
+         type: string
+       - name: azureSubscriptionId
+         type: string
+       - name: azureResourceGroupName
+         type: string
+       - name: azureDnsZoneResourceGroupName
+         type: string
+       - name: containerRegistryName
+         type: string
+       - name: dbHost
+         type: string
+       - name: redisHost
+         type: string
+       - name: azureKeyVaultName
+         type: string
+       - name: imageFullNameTag
+         type: string
+  +    - name: enableContainerLog
+  +      type: string
+  +    - name: logAnalyticsWorkspaceId
+  +      type: string
+     modules:
+       - name: github.com/qmonus/official-cloud-native-adapters
+         revision: v0.21.0
+     designPatterns:
+       - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend
+         params:
+         appName: $(params.appName)
+         azureResourceGroupName: $(params.azureResourceGroupName)
+         azureDnsZoneResourceGroupName: $(params.azureDnsZoneResourceGroupName)
+         azureSubscriptionId: $(params.azureSubscriptionId)
+         containerRegistryName: $(params.containerRegistryName)
+         dbHost: $(params.dbHost)
+         redisHost: $(params.redisHost)
+         azureKeyVaultName: $(params.azureKeyVaultName)
+         imageFullNameTag: $(params.imageFullNameTag)
+  +      enableContainerLog: $(params.enableContainerLog)
+  +      logAnalyticsWorkspaceId: $(params.logAnalyticsWorkspaceId)
+  ```
+
+2. コミット後、Pipeline および Task の更新のため、再度 Pipelines/Tasks のコンパイルを実施してください。
+
+3. QVS の画面から Deployment Config に以下のパラメータを追加します。
+
+   Shared Infrastructure で共有リソースをデプロイした際 `get-log-analytics-workspace-info` タスクの結果として、 Pipeline Results にデプロイした Log Analytics Workspace の Workspace ID が出力されます。
+   AssemblyLine Results として出力するように設定し AssemblyLine Resultsから参照するか、デプロイ時のVSのログの出力を参照してDeployment Configに入力してください。
+
+   ```yaml
+   logAnalyticsWorkspaceId: /subscriptions/xxxxx-yyyyyyyyy-zzzzz/resourceGroups/sample-rg/providers/Microsoft.OperationalInsights/workspaces/sample-workspace
    ```
 
 そのほか指定可能なパラメータについては [API Backend Adapter](../../../../../adapters/azure/serverless/webApp/apiBackend/main.cue)をご参照ください。

@@ -5,9 +5,12 @@ import (
 	"qmonus.net/adapter/official/types:base"
 	"qmonus.net/adapter/official/adapters/azure/component:azureAppServicePlan"
 	"qmonus.net/adapter/official/adapters/azure/component:azureWebAppForContainers"
+	"qmonus.net/adapter/official/adapters/azure/component:azureDiagnosticSetting"
 	"qmonus.net/adapter/official/pipeline/build:buildkitAzure"
 	"qmonus.net/adapter/official/pipeline/deploy:simpleDeployByPulumiYaml"
 	"qmonus.net/adapter/official/pipeline/sample:getUrlOfAzureAppService"
+
+	"strconv"
 )
 
 DesignPattern: {
@@ -28,7 +31,11 @@ DesignPattern: {
 		environmentVariables: [string]: string
 		secrets: [string]:              base.#Secret
 		appServiceAllowedSourceIps: [...string] | *[]
+		logAnalyticsWorkspaceId?:   string
+		enableContainerLog:         string | *"true"
 	}
+
+	let _enableContainerLog = strconv.ParseBool(parameters.enableContainerLog)
 
 	pipelineParameters: {
 		// common parameters derived from multiple adapters
@@ -75,6 +82,18 @@ DesignPattern: {
 				image:          ""
 				repositoryKind: pipelineParameters.repositoryKind
 				useSshKey:      pipelineParameters.useSshKey
+			}
+		},
+		if _enableContainerLog {
+			{
+				pattern: azureDiagnosticSetting.DesignPattern
+				params: {
+					appName:                parameters.appName
+					azureResourceGroupName: parameters.azureResourceGroupName
+					if parameters.logAnalyticsWorkspaceId != _|_ {
+						logAnalyticsWorkspaceId: parameters.logAnalyticsWorkspaceId
+					}
+				}
 			}
 		},
 		{

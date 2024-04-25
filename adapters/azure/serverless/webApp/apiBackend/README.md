@@ -12,6 +12,8 @@ HTTPSで外部公開できるアプリケーションを Azure App Service 上�
     * Web Apps for Containers
     * App Service Managed Certificate
         * CNAMEレコードとして払い出したドメインを指定し、HTTPS接続を可能にするための証明書を発行します。
+    * Diagnostics Settings
+        * ログ機能をONにした場合、アプリケーションの `stdout`および`stderr` を収集してワークスペースに格納する設定を診断設定に追加します。
 
 <img src="images/image.png" class="img_zoom">
 
@@ -39,6 +41,8 @@ Sample: サンプル実装
     * Azure Database for MySQL
     * Azure Key Vault
         * MySQL, Redisの接続に使用するパスワードを格納したKey Vaultシークレット
+    * Log Analytics Workspace
+        * ログ機能をONにする場合のみ、コンソール出力されたログを格納するワークスペースが必要です。
 
 ### Constraints
 
@@ -80,6 +84,8 @@ Sample: サンプル実装
 | environmentVariables          | object | no       | -       | アプリケーションに渡される環境変数名と値のペア                                                      | ENV: prod                                                                                                                                                   | no           |
 | args                          | array  | no       | -       | アプリケーションに渡される引数。カンマ区切りの文字列がコンテナのargsに配列として渡されます。                             | "--debug,--profile"                                                                                                                                         | no           |
 | appServiceAllowedSourceIps | array | no | [] | App Serviceへのアクセスを許可するソースIPアドレスのリスト <br> アプリケーションへのアクセスを許可したいIPアドレスを、CIDR表記で指定してください。複数のIPアドレスを指定する場合はカンマ区切りの文字列で指定します。指定を省略した場合は、インターネットの全てのIPアドレスからのアクセスが許可されます。 | "192.168.0.1/32,172.16.0.0/12" | no |
+| enableContainerLog             | string | no       | "true"           | ログ機能の有効/無効。`true` にした場合、診断設定に`App Service Console Logs` を取得する設定が追加されます。 "true" の場合、`logAnalyticsWorkspaceId` の指定が必要です。 | "true" | no |
+| logAnalyticsWorkspaceId             | string | -       | /subscriptions/xxxxxxx-xxxxx-xxxx-xxxx-xxxxxxxxx/resourceGroups/sample-rg/providers/Microsoft.OperationalInsights/workspaces/qvs-sample-log-ws           |  `enableContainerLog` が `"true"` の場合のみ設定できます。事前に作成しているワークスペースIDを指定することで、アプリケーションが出力したコンソールログを指定したワークスペースに送信します。|  | no |
 
 ## CI/CD Parameters
 
@@ -119,16 +125,17 @@ Sample: サンプル実装
 
 ## Application Resources
 
-| Resource ID                   | Provider | Resource Name     | Description                                                |
-|-------------------------------|----------|-------------------|------------------------------------------------------------|
-| cnameRecord                   | Azure    | Azure DNS         | レコードセットに新たにCNAMEレコードを追加します。 |
-| txtRecord                     | Azure    | Azure DNS         | レコードセットに新たにTXTレコードを追加します。（カスタムドメインの紐付けの際の検証に使用します） |
-| appServicePlan                | Azure    | Azure App Service | Web App Service をホスティングするための  App Service Plan を作成します。 |
-| webAppForContainer            | Azure    | Azure App Service | コンテナ化されたアプリケーションをデプロイするための Web App Service を作成します。 |
-| webAppHostNameBinding         | Azure    | Azure App Service | デプロイした Web App Service にカスタムドメインをバインドします。 |
-| managedCertificate            | Azure    | Azure App Service | 無料の App Service マネージド証明書を作成します。 |
-| certBinding                   | Azure    | Azure App Service | カスタムドメインに マネージド証明書をバインドします。 |
-| keyVaultAccessPolicyForWebApp | Azure    | Azure Key Vault   | Web App Service が Key vault のシークレットを参照するためのアクセスポリシーを追加します。 |
+| Resource ID                   | Provider | PaaS              | API version | Kind | Description                                                |
+|-------------------------------|----------|-------------------|-------------|------|------------------------------------------------------------|
+| cnameRecord                   | Azure    | Azure DNS         |             |      | レコードセットに新たにCNAMEレコードを追加します。                                |
+| txtRecord                     | Azure    | Azure DNS         |             |      | レコードセットに新たにTXTレコードを追加します。（カスタムドメインの紐付けの際の検証に使用します）         |
+| appServicePlan                | Azure    | Azure App Service |             |      | Web App Service をホスティングするための  App Service Plan を作成します。     |
+| webAppForContainer            | Azure    | Azure App Service |             |      | コンテナ化されたアプリケーションをデプロイするための Web App Service を作成します。         |
+| webAppHostNameBinding         | Azure    | Azure App Service |             |      | デプロイした Web App Service にカスタムドメインをバインドします。                  |
+| managedCertificate            | Azure    | Azure App Service |             |      | 無料の App Service マネージド証明書を作成します。                            |
+| certBinding                   | Azure    | Azure App Service |             |      | カスタムドメインに マネージド証明書をバインドします。                                |
+| keyVaultAccessPolicyForWebApp | Azure    | Azure Key Vault   |             |      | Web App Service が Key vault のシークレットを参照するためのアクセスポリシーを追加します。 |
+| AzureDiagnosticSetting        | Azure    | Azure App Service |             |      | Web App Service が 出力したコンソールログをログワークスペースに送信する設定を追加します。 |
 
 ## Pipeline Resources
 
@@ -181,6 +188,8 @@ designPatterns:
         ENV2: $(params.env2)
       args: [ "$(params.args[*])" ]
       appServiceAllowedSourceIps: ["$(params.appServiceAllowedSourceIps[*])"]
+      enableContainerLog: $(params.enableContainerLog)
+      logAnalyticsWorkspaceId: $(params.logAnalyticsWorkspaceId)
 ```
 
 ## Code
