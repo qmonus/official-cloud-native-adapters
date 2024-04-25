@@ -40,8 +40,8 @@ import (
 		workingDir: "$(workspaces.shared.path)/source"
 		script: """
 			az login --service-principal -u "${AZURE_CLIENT_ID}" -p "${AZURE_CLIENT_SECRET}" --tenant "${AZURE_TENANT_ID}"
-			# get url of custom domain url
-			results=$(az webapp config hostname list --webapp-name "qvs-$(params.appName)-web-app" --resource-group "$(params.azureResourceGroupName)" --query "[].name" -o tsv)
+			# get url of custom domain url.  "|| true" is forced exit code 0 when deleting a resource because it has no target and exits. ( az target resource is not found )
+			results=$(az webapp config hostname list --webapp-name "qvs-$(params.appName)-web-app" --resource-group "$(params.azureResourceGroupName)" --query "[].name" -o tsv 2> /dev/null || true)
 			if [ -z "${results}" ]; then
 				echo ""  | tee /tekton/results/defaultDomain
 				echo ""  | tee /tekton/results/customDomain

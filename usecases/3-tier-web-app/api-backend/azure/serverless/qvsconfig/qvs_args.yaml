@@ -21,7 +21,7 @@ params:
     type: array
 modules:
   - name: github.com/qmonus/official-cloud-native-adapters
-    revision: main
+    revision: v0.26.0
 designPatterns:
   - pattern: qmonus.net/adapter/official/adapters/azure/serverless/webApp/apiBackend
     params:

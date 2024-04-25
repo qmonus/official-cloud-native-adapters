@@ -11,6 +11,8 @@ import (
 	"qmonus.net/adapter/official/adapters/azure/component:azureKeyVault"
 	"qmonus.net/adapter/official/adapters/azure/component:azureResourceGroup"
 	"qmonus.net/adapter/official/adapters/azure/component:azureVirtualNetwork"
+	"qmonus.net/adapter/official/adapters/azure/component:azureLogAnalyticsWorkspace"
+	"qmonus.net/adapter/official/pipeline/tasks:getIdAndNameOfLogAnalyticsWorkspace"
 	"qmonus.net/adapter/official/pipeline/deploy:simpleDeployByPulumiYaml"
 )
 
@@ -23,8 +25,14 @@ DesignPattern: {
 		mysqlSkuName:           string | *"B_Standard_B2s"
 		mysqlVersion:           string | *"8.0.21"
 		keyVaultAccessAllowedObjectIds: [...string]
-		useMySQL: string | *"true"
-		useRedis: string | *"true"
+		useMySQL:                  string | *"true"
+		useRedis:                  string | *"true"
+		enableContainerLog:        string | *"true"
+		retentionInDays:           string | *"30"
+		location:                  string | *"Japaneast"
+		capacityReservationLevel?: string
+		dailyQuotaGb:              string | *"-1"
+		workspaceAccessMode:       string | *"resource"
 	}
 
 	pipelineParameters: {
@@ -34,6 +42,7 @@ DesignPattern: {
 
 	let _useMySQL = strconv.ParseBool(parameters.useMySQL)
 	let _useRedis = strconv.ParseBool(parameters.useRedis)
+	let _enableContainerLog = strconv.ParseBool(parameters.enableContainerLog)
 
 	composites: [
 		{
@@ -100,6 +109,23 @@ DesignPattern: {
 				useBastionSshCred: false
 			}
 		},
+		if _enableContainerLog {
+			{
+				{
+					pattern: azureLogAnalyticsWorkspace.DesignPattern
+					params: {
+						appName:         parameters.appName
+						retentionInDays: parameters.retentionInDays
+						location:        parameters.location
+						if parameters.capacityReservationLevel != _|_ {
+							capacityReservationLevel: parameters.capacityReservationLevel
+						}
+						dailyQuotaGb:        parameters.dailyQuotaGb
+						workspaceAccessMode: parameters.workspaceAccessMode
+					}
+				}
+			}
+		},
 	]
 
 	let _azureProvider = "AzureProvider"
@@ -120,5 +146,19 @@ DesignPattern: {
 		"\(_randomProvider)": random.#RandomProvider
 	}
 
-	pipelines: _
+	pipelines: {
+		deploy: {
+			tasks: {
+				"get-log-analytics-workspace-info": {
+					getIdAndNameOfLogAnalyticsWorkspace.#Builder & {
+						runAfter: ["deploy"]
+					}
+				}
+			}
+			results: {
+				"logAnalyticsWorkspaceId":   tasks["get-log-analytics-workspace-info"].results.logAnalyticsWorkspaceId
+				"logAnalyticsWorkspaceName": tasks["get-log-analytics-workspace-info"].results.logAnalyticsWorkspaceName
+			}
+		}
+	}
 }

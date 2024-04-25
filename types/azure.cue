@@ -181,6 +181,11 @@ import "qmonus.net/adapter/official/types:base"
 	properties: tags: #QvsManagedLabel
 }
 
+#AzureDiagnosticSetting: {
+	base.#Resource
+	type: "azure-native:insights:DiagnosticSetting"
+}
+
 #AzureWebApp: {
 	base.#Resource
 	type: "azure-native:web:WebApp"
