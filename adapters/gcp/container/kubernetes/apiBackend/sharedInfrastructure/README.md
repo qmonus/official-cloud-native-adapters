@@ -84,7 +84,7 @@ Sample: サンプル実装
         * シングルゾーンクラスタとして `asia-northeast1-a` ゾーンに作成します。
         * 限定公開クラスタとして作成します。
         * コントロールプレーンアドレスの範囲は172.16.0.0/28として作成します。
-        * コントロールプレーン承認済みネットワークに0.0.0.0/0が設定されます。このため、インターネット上の全てのIPアドレスからコントロールプレーンにアクセスできます。
+        * インターネット上の全てのIPアドレス、もしくは指定したCIDR範囲からのみコントロールプレーンにアクセスできます。
         * 垂直Pod自動スケーリングは無効になります。
     * ノードプール
         * ノードイメージには `cos_containerd` イメージを使用します。
@@ -137,11 +137,14 @@ Sample: サンプル実装
 | gkeNodeDiskSizeGb | string | no | "32" | GKEノードのブートディスクのサイズ（GB） | "32" | no |
 | gkeNodeMachineType | string | no | e2-medium | GKEノードのマシンタイプ。以下を参考に指定してください。<br>https://cloud.google.com/compute/docs/general-purpose-machines?hl=ja | e2-medium | no |
 | gkeNodeCount | string | no | "1" | GKEノードの数 | "1" | no |
+| gkeNodeLocation | string | no | "asia-northeast1" | GKEクラスタのノードをデプロイするロケーション。リージョン名またはゾーン名のいずれかを設定できます。リージョン名の場合は、GKEクラスタがリージョンクラスタとして作成されます。ゾーン名の場合は、GKEクラスタがシングルゾーンクラスタとして作成されます。 | "asia-northeast1" | no |
+| gkeMasterAuthorizedNetworks | array | no | [] | GKEのコントロールプレーン承認済みネットワークとして追加するソースIPアドレスのリスト。コントロールプレーンへのアクセスを許可したいCIDR範囲を指定してください。指定を省略した場合は、インターネットの全てのIPアドレスからのアクセスが許可されます。 | ["192.0.2.0/24","198.51.100.0/24","203.0.113.0/24"] | no |
 | esoVersion | string | no | "0.9.9" | External Secrets Operatorのバージョン | "0.9.9" | no |
 | mysqlCpuCount | string | no | "2" | Cloud SQL for MySQLインスタンスのvCPUの数。1または2～96の間の偶数に設定して下さい。 | "2" | no |
 | mysqlMemorySizeMb | string | no | "4096" | Cloud SQL for MySQLインスタンスのメモリのサイズ（MB）。vCPUあたり0.9～6.5GB、かつ256MBの倍数、かつ3840MB以上の条件を満たす値に設定して下さい。 | "4096" | no |
 | mysqlDatabaseVersion | string | no | "MYSQL_8_0" | Cloud SQL for MySQLインスタンスのデータベースのバージョン。利用可能なバージョンは以下で確認できます。<br>https://cloud.google.com/sdk/gcloud/reference/sql/instances/create#--database-version | "MYSQL_8_0" | no |
 | mysqlAvailabilityType | string | no | "ZONAL" | Cloud SQL for MySQLインスタンスの可用性。`"ZONAL"`, `"REGIONAL"` のいずれかを設定できます。`"ZONAL"` の場合は、インスタンスとバックアップを1つのゾーンに配置し、停止時にフェイルオーバーは発生しません。 | "ZONAL" | no |
+| useMySql | string | no | "true" | falseを設定すると、Cloud SQL for MySQLインスタンスが作成されなくなります。 | "true" | no |
 
 ## CI/CD Parameters
 

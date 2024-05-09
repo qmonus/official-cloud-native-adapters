@@ -205,22 +205,22 @@ Sample: サンプル実装
 | dnsZoneProjectId | string | yes | - | 事前に用意したCloud DNSゾーンが所属するGoogle CloudプロジェクトID | sample-dns-zone-project | no |
 | dnsZoneName | string | yes | - | 事前に用意したCloud DNSゾーン名 | sample-dns-zone | no |
 | dnsARecordSubdomain | string | yes | - | 新たに作成するAレコードに設定するサブドメインのFQDN。末尾のルート（ `.` ）まで含めて指定してください。 | www.example.com. | no |
-| mysqlInstanceId | string | yes | - | 事前に用意したCloud SQL for MySQLインスタンスのインスタンスID | sample-instance | no |
-| mysqlDatabaseName | string | yes | - | 新たに作成するCloud SQL for MySQLのデータベース名 | sampledb | no |
-| mysqlUserName | string | yes | - | 新たに作成するCloud SQL for MySQLのユーザ名 | dbuser | no |
-| cloudArmorAllowedSourceIps | array | no | [] | アプリケーション用に構成される外部アプリケーションロードバランサへのアクセスを許可するソースIPアドレスのリスト <br> アプリケーションへのアクセスを許可したいIPアドレスまたはCIDR範囲を指定してください。複数のIPアドレスを指定する場合はカンマ区切りの文字列で指定します。指定を省略した場合は、インターネットの全てのIPアドレスからのアクセスが許可されます。 | "192.168.0.1,172.16.0.0/12" | no |
+| mysqlInstanceId | string | no | - | 事前に用意したCloud SQL for MySQLインスタンスのインスタンスID | sample-instance | no |
+| mysqlDatabaseName | string | no | - | 新たに作成するCloud SQL for MySQLのデータベース名 | sampledb | no |
+| mysqlUserName | string | no | - | 新たに作成するCloud SQL for MySQLのユーザ名 | dbuser | no |
+| cloudArmorAllowedSourceIps | array | no | [] | アプリケーション用に構成される外部アプリケーションロードバランサへのアクセスを許可するソースIPアドレスのリスト <br> アプリケーションへのアクセスを許可したいIPアドレスまたはCIDR範囲を指定してください。複数のIPアドレスを指定する場合はカンマ区切りの文字列で指定します。指定を省略した場合は、インターネットの全てのIPアドレスからのアクセスが許可されます。 | ["192.168.0.1","172.16.0.0/12"] | no |
 | k8sNamespace | string | yes | - | アプリケーションをデプロイする対象のNamespace | qvs-sample | yes |
 | imageName | string | yes | - | デプロイするDocker Image | nginx:latest | no |
 | replicas | string | no | "1" | 作成するPodのレプリカ数 | "1" | no |
 | portEnvironmentVariableName | string | no | PORT | アプリケーションが利用するポート番号としてアプリケーションPodに渡される環境変数名 | PORT | no |
 | port | string | yes | - | アプリケーションが利用するポート番号 | "3000" | no |
 | mysqlInstanceIpAddressEnvironmentVariableName | string | no | DB_HOST | Cloud SQL for MySQLインスタンスのIPアドレスとしてアプリケーションPodに渡される環境変数名 | DB_HOST | no |
-| mysqlInstanceIpAddress | string | yes | - | Cloud SQL for MySQLインスタンスのIPアドレス | 192.168.0.1 | no |
+| mysqlInstanceIpAddress | string | no | - | Cloud SQL for MySQLインスタンスのIPアドレス。指定しない場合、MySQL関連のリソースは作成されません。 | 192.168.0.1 | no |
 | mysqlUserNameEnvironmentVariableName | string | no | DB_USER | Cloud SQL for MySQLに接続するユーザ名としてアプリケーションPodに渡される環境変数名 | DB_USER | no |
 | mysqlUserPasswordEnvironmentVariableName | string | no | DB_PASS | Cloud SQL for MySQLに接続するユーザのパスワードとしてアプリケーションPodに渡される環境変数名 | DB_PASS | no |
 | secrets | object | no | - | アプリケーションPodに渡される環境変数名とDeployment Secret名のペア | PASSWORD: password | no |
 | environmentVariables | object | no | - | アプリケーションPodに渡される環境変数名と値のペア | ENV: prod | no |
-| args | array  | no | - | アプリケーションPodに渡される引数。カンマ区切りの文字列がコンテナのargsに配列として渡されます。 | "--debug,--profile" | no |
+| args | array  | no | - | アプリケーションPodに渡される引数。カンマ区切りの文字列がコンテナのargsに配列として渡されます。 | ["--debug","--profile"] | no |
 
 ## CI/CD Parameters
 

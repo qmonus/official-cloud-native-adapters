@@ -21,9 +21,9 @@ DesignPattern: {
 		dnsZoneProjectId:                              string
 		dnsZoneName:                                   string
 		dnsARecordSubdomain:                           strings.HasSuffix(".")
-		mysqlInstanceId:                               string
-		mysqlDatabaseName:                             string
-		mysqlUserName:                                 string
+		mysqlInstanceId?:                              string
+		mysqlDatabaseName?:                            string
+		mysqlUserName?:                                string
 		cloudArmorAllowedSourceIps:                    [...string] | *[]
 		k8sNamespace:                                  string
 		imageName:                                     string
@@ -31,7 +31,7 @@ DesignPattern: {
 		portEnvironmentVariableName:                   string | *"PORT"
 		port:                                          string
 		mysqlInstanceIpAddressEnvironmentVariableName: string | *"DB_HOST"
-		mysqlInstanceIpAddress:                        string
+		mysqlInstanceIpAddress?:                       string
 		mysqlUserNameEnvironmentVariableName:          string | *"DB_USER"
 		mysqlUserPasswordEnvironmentVariableName:      string | *"DB_PASS"
 		secrets: [string]:              base.#Secret
@@ -91,6 +91,8 @@ DesignPattern: {
 	let _deployment = "deployment"
 	let _service = "service"
 	let _ingress = "ingress"
+	let _useMySQL = (parameters.mysqlInstanceIpAddress != _|_)
+	let _useExternalSecret = _useMySQL || len(parameters.secrets) > 0
 
 	parameters: #resourceId: {
 		gcpProvider:                       _googleCloudProvider
@@ -165,71 +167,73 @@ DesignPattern: {
 			}
 		}
 
-		"\(_mysqlDatabase)": gcp.#GcpCloudSqlDatabase & {
-			options: _gcpProvider
-			properties: {
-				instance: parameters.mysqlInstanceId
-				name:     parameters.mysqlDatabaseName
-				charset:  "utf8mb4"
-			}
-		}
-
-		"\(_mysqlUser)": gcp.#GcpCloudSqlUser & {
-			options: _gcpProvider
-			properties: {
-				instance: parameters.mysqlInstanceId
-				name:     parameters.mysqlUserName
-				host:     "%"
-				password: "${\(_mysqlUserPassword).result}"
-			}
-		}
-
-		"\(_mysqlUserPassword)": random.#RandomPassword & {
-			properties: {
-				length:     16
-				minLower:   1
-				minUpper:   1
-				minNumeric: 1
-				special:    false
-			}
-		}
-
-		"\(_mysqlUserNameSecret)": gcp.#GcpSecretManagerSecret & {
-			options: _gcpProvider
-			properties: {
-				replication: {
-					auto: {}
-				}
-				secretId: "qvs-\(parameters.appName)-mysql-user-name-${\(_resourceSuffix).result}"
-			}
-		}
-
-		"\(_mysqlUserNameSecretVersion)": gcp.#GcpSecretManagerSecretVersion & {
-			options: _gcpProvider
-			properties: {
-				secret: "${\(_mysqlUserNameSecret).id}"
-				secretData: {
-					"fn::secret": "${\(_mysqlUser).name}"
+		if _useMySQL {
+			"\(_mysqlDatabase)": gcp.#GcpCloudSqlDatabase & {
+				options: _gcpProvider
+				properties: {
+					instance: parameters.mysqlInstanceId
+					name:     parameters.mysqlDatabaseName
+					charset:  "utf8mb4"
 				}
 			}
-		}
 
-		"\(_mysqlUserPasswordSecret)": gcp.#GcpSecretManagerSecret & {
-			options: _gcpProvider
-			properties: {
-				replication: {
-					auto: {}
+			"\(_mysqlUser)": gcp.#GcpCloudSqlUser & {
+				options: _gcpProvider
+				properties: {
+					instance: parameters.mysqlInstanceId
+					name:     parameters.mysqlUserName
+					host:     "%"
+					password: "${\(_mysqlUserPassword).result}"
 				}
-				secretId: "qvs-\(parameters.appName)-mysql-user-password-${\(_resourceSuffix).result}"
 			}
-		}
 
-		"\(_mysqlUserPasswordSecretVersion)": gcp.#GcpSecretManagerSecretVersion & {
-			options: _gcpProvider
-			properties: {
-				secret: "${\(_mysqlUserPasswordSecret).id}"
-				secretData: {
-					"fn::secret": "${\(_mysqlUserPassword).result}"
+			"\(_mysqlUserPassword)": random.#RandomPassword & {
+				properties: {
+					length:     16
+					minLower:   1
+					minUpper:   1
+					minNumeric: 1
+					special:    false
+				}
+			}
+
+			"\(_mysqlUserNameSecret)": gcp.#GcpSecretManagerSecret & {
+				options: _gcpProvider
+				properties: {
+					replication: {
+						auto: {}
+					}
+					secretId: "qvs-\(parameters.appName)-mysql-user-name-${\(_resourceSuffix).result}"
+				}
+			}
+
+			"\(_mysqlUserNameSecretVersion)": gcp.#GcpSecretManagerSecretVersion & {
+				options: _gcpProvider
+				properties: {
+					secret: "${\(_mysqlUserNameSecret).id}"
+					secretData: {
+						"fn::secret": "${\(_mysqlUser).name}"
+					}
+				}
+			}
+
+			"\(_mysqlUserPasswordSecret)": gcp.#GcpSecretManagerSecret & {
+				options: _gcpProvider
+				properties: {
+					replication: {
+						auto: {}
+					}
+					secretId: "qvs-\(parameters.appName)-mysql-user-password-${\(_resourceSuffix).result}"
+				}
+			}
+
+			"\(_mysqlUserPasswordSecretVersion)": gcp.#GcpSecretManagerSecretVersion & {
+				options: _gcpProvider
+				properties: {
+					secret: "${\(_mysqlUserPasswordSecret).id}"
+					secretData: {
+						"fn::secret": "${\(_mysqlUserPassword).result}"
+					}
 				}
 			}
 		}
@@ -239,8 +243,8 @@ DesignPattern: {
 			properties: {
 				let _appName = {utils.#trim & {str: parameters.appName, limit: 48}}.out
 				name: "qvs-\(_appName)-policy-${\(_resourceSuffix).result}"
-
-				if len(parameters.cloudArmorAllowedSourceIps) == 0 {
+				let _numberOfAllowedSourceIps = len(parameters.cloudArmorAllowedSourceIps)
+				if _numberOfAllowedSourceIps == 0 {
 					rules: [
 						{
 							action:      "allow"
@@ -257,35 +261,50 @@ DesignPattern: {
 						},
 					]
 				}
-				if len(parameters.cloudArmorAllowedSourceIps) > 0 {
-					rules: [
+				if _numberOfAllowedSourceIps > 0 {
+
+					// Cloud Armor allows up to 10 IPs in a single rule.
+					// if there are more than 10 IPs, the rule is divided and configured.
+					// see https://cloud.google.com/armor/quotas#limits
+					let _maximumNumberOfIpRanges = 10
+					#rules: [ for _startIndex in list.Range(0, _numberOfAllowedSourceIps, _maximumNumberOfIpRanges) {
 						{
 							action:      "allow"
 							description: "Managed by Qmonus Value Stream"
-							priority:    2000
+							priority:    2000 + _startIndex
 							match: {
 								versionedExpr: "SRC_IPS_V1"
-								config: {
-									srcIpRanges: parameters.cloudArmorAllowedSourceIps
-								}
+								config: srcIpRanges: [
+
+									// configure 10 IPs from the list of IPs to the rule.
+									if _startIndex+_maximumNumberOfIpRanges < _numberOfAllowedSourceIps {
+										list.Slice(parameters.cloudArmorAllowedSourceIps, _startIndex, _startIndex+_maximumNumberOfIpRanges)
+									},
+
+									// configure the remaining IPs from the list of IPs to the rule.
+									list.Slice(parameters.cloudArmorAllowedSourceIps, _startIndex, _numberOfAllowedSourceIps),
+								][0]
 							}
-						},
-						{
-							action:      "deny(404)"
-							description: "Managed by Qmonus Value Stream"
-							priority:    2147483647
-							match: {
-								versionedExpr: "SRC_IPS_V1"
-								config: {
-									srcIpRanges: [
-										"*",
-									]
-								}
+						}
+					}]
+					#additionalRules: [...]
+					#denyRule: [{
+						action:      "deny(404)"
+						description: "Managed by Qmonus Value Stream"
+						priority:    2147483647
+						match: {
+							versionedExpr: "SRC_IPS_V1"
+							config: {
+								srcIpRanges: [
+									"*",
+								]
 							}
-						},
-					]
+						}
+					}]
+					rules: #rules + #additionalRules + #denyRule
 				}
 			}
+
 		}
 
 		"\(_managedCertificate)": kubernetes.#K8sManagedCertificate & {
@@ -322,67 +341,82 @@ DesignPattern: {
 		}
 
 		let _secretName = "\(parameters.appName)-secret"
-		"\(_externalSecret)": kubernetes.#K8sExternalSecret & {
-			options: {
-				dependsOn: [
-					"${\(_mysqlUserNameSecretVersion)}",
-					"${\(_mysqlUserPasswordSecretVersion)}",
-				]
-			}
-			properties: {
-				metadata: {
-					name:      "\(parameters.appName)-external-secret"
-					namespace: parameters.k8sNamespace
+		if _useExternalSecret {
+			"\(_externalSecret)": kubernetes.#K8sExternalSecret & {
+				if _useMySQL {
+					options: {
+						dependsOn: [
+							"${\(_mysqlUserNameSecretVersion)}",
+							"${\(_mysqlUserPasswordSecretVersion)}",
+						]
+					}
 				}
-				spec: {
-					refreshInterval: "0"
-					secretStoreRef: {
-						name: "qvs-global-gcp-store"
-						kind: "ClusterSecretStore"
+				properties: {
+					metadata: {
+						name:      "\(parameters.appName)-external-secret"
+						namespace: parameters.k8sNamespace
 					}
-					target: {
-						name:           _secretName
-						creationPolicy: "Owner"
+					spec: {
+						refreshInterval: "0"
+						secretStoreRef: {
+							name: "qvs-global-gcp-store"
+							kind: "ClusterSecretStore"
+						}
+						target: {
+							name:           _secretName
+							creationPolicy: "Owner"
+						}
+
+						_mysqlSecrets: [...]
+						_userSecrets: [...]
+						if _useMySQL {
+							_mysqlSecrets: _#externalSecretDataList & [
+									{
+									secretKey: parameters.mysqlUserNameEnvironmentVariableName
+									remoteRef: {
+										key:     "${\(_mysqlUserNameSecret).secretId}"
+										version: "latest"
+									}
+								},
+								{
+									secretKey: parameters.mysqlUserPasswordEnvironmentVariableName
+									remoteRef: {
+										key:     "${\(_mysqlUserPasswordSecret).secretId}"
+										version: "latest"
+									}
+								},
+							]
+						}
+						if len(parameters.secrets) > 0 {
+							_userSecrets: _#externalSecretDataList & [
+									for k, v in parameters.secrets {
+									{
+										secretKey: k
+										remoteRef: {
+											key:     v.key
+											version: v.version
+										}
+									}
+								},
+							]
+						}
+						let _dataUnsorted = _mysqlSecrets + _userSecrets
+
+						// sort to make results deterministic
+						data: list.Sort(_dataUnsorted, {x: {}, y: {}, less: x.secretKey < y.secretKey})
 					}
-
-					let _dataUnsorted = _#externalSecretDataList & [
-						{
-							secretKey: parameters.mysqlUserNameEnvironmentVariableName
-							remoteRef: {
-								key:     "${\(_mysqlUserNameSecret).secretId}"
-								version: "latest"
-							}
-						},
-						{
-							secretKey: parameters.mysqlUserPasswordEnvironmentVariableName
-							remoteRef: {
-								key:     "${\(_mysqlUserPasswordSecret).secretId}"
-								version: "latest"
-							}
-						},
-						for k, v in parameters.secrets {
-							{
-								secretKey: k
-								remoteRef: {
-									key:     v.key
-									version: v.version
-								}
-							}
-						},
-					]
-
-					// sort to make results deterministic
-					data: list.Sort(_dataUnsorted, {x: {}, y: {}, less: x.secretKey < y.secretKey})
 				}
 			}
 		}
 
 		let _labelName = strings.Join([{utils.#trim & {str: parameters.appName, limit: 58}}.out, "apps"], "-")
 		"\(_deployment)": kubernetes.#K8sDeployment & {
-			options: {
-				dependsOn: [
-					"${\(_externalSecret)}",
-				]
+			if _useExternalSecret {
+				options: {
+					dependsOn: [
+						"${\(_externalSecret)}",
+					]
+				}
 			}
 			properties: {
 				metadata: {
@@ -414,9 +448,11 @@ DesignPattern: {
 											name:  parameters.portEnvironmentVariableName
 											value: parameters.port
 										},
-										{
-											name:  parameters.mysqlInstanceIpAddressEnvironmentVariableName
-											value: parameters.mysqlInstanceIpAddress
+										if _useMySQL {
+											{
+												name:  parameters.mysqlInstanceIpAddressEnvironmentVariableName
+												value: parameters.mysqlInstanceIpAddress
+											}
 										},
 										for k, v in parameters.environmentVariables {
 											{
@@ -428,12 +464,13 @@ DesignPattern: {
 
 									// sort to make results deterministic
 									env: list.Sort(_envUnsorted, {x: {}, y: {}, less: x.name < y.name})
-
-									envFrom: [
-										{
-											secretRef: name: _secretName
-										},
-									]
+									if _useExternalSecret {
+										envFrom: [
+											{
+												secretRef: name: _secretName
+											},
+										]
+									}
 									ports: [{
 										containerPort: strconv.Atoi(parameters.port)
 									}, ...]
