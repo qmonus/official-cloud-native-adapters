@@ -45,7 +45,11 @@ import (
 			f = open('./.pulumi/stacks/local/\(_stack).json', 'r')
 			json_object = json.load(f)
 			found = False
-			for resource in json_object["checkpoint"]["latest"]["resources"]:
+			resources = json_object["checkpoint"]["latest"]["resources"]
+			if len(resources) == 1 and resources[0]["type"] == "pulumi:pulumi:Stack":
+			  print("SKIP: resources not found")
+			  sys.exit(0)
+			for resource in resources:
 			  if (resource["type"] == "azure-native:keyvault:Secret") and (resource["outputs"]["name"] == "kubeconfig"):
 			    with open("/tmp/vault-name", mode="w") as vn:
 			      vn.write(resource["inputs"]["vaultName"])

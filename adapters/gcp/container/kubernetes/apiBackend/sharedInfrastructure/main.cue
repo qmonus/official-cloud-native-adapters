@@ -13,19 +13,22 @@ import (
 
 DesignPattern: {
 	parameters: {
-		appName:               string
-		gcpProjectId:          string
-		gkeReleaseChannel:     *"REGULAR" | "RAPID" | "STABLE" | "UNSPECIFIED"
-		gkeNodeAutoUpgrade:    *"true" | "false"
-		gkeNodeVersion?:       string
-		gkeNodeDiskSizeGb:     string | *"32"
-		gkeNodeMachineType:    string | *"e2-medium"
-		gkeNodeCount:          string | *"1"
-		esoVersion:            string | *"0.9.9"
-		mysqlCpuCount:         string | *"2"
-		mysqlMemorySizeMb:     string | *"4096"
-		mysqlDatabaseVersion:  strings.HasPrefix("MYSQL_") | *"MYSQL_8_0"
-		mysqlAvailabilityType: *"ZONAL" | "REGIONAL"
+		appName:                     string
+		gcpProjectId:                string
+		gkeReleaseChannel:           *"REGULAR" | "RAPID" | "STABLE" | "UNSPECIFIED"
+		gkeMasterAuthorizedNetworks: [...string] | *[]
+		gkeNodeAutoUpgrade:          *"true" | "false"
+		gkeNodeVersion?:             string
+		gkeNodeDiskSizeGb:           string | *"32"
+		gkeNodeMachineType:          string | *"e2-medium"
+		gkeNodeCount:                string | *"1"
+		gkeNodeLocation:             string | *"asia-northeast1"
+		esoVersion:                  string | *"0.9.9"
+		mysqlCpuCount:               string | *"2"
+		mysqlMemorySizeMb:           string | *"4096"
+		mysqlDatabaseVersion:        strings.HasPrefix("MYSQL_") | *"MYSQL_8_0"
+		mysqlAvailabilityType:       *"ZONAL" | "REGIONAL"
+		useMySQL:                    *"true" | "false"
 	}
 
 	pipelineParameters: {
@@ -83,6 +86,8 @@ DesignPattern: {
 	let _mysqlRootPassword = "mysqlRootPassword"
 	let _mysqlRootPasswordSecret = "mysqlRootPasswordSecret"
 	let _mysqlRootPasswordSecretVersion = "mysqlRootPasswordSecretVersion"
+
+	let _useMySQL = strconv.ParseBool(parameters.useMySQL)
 
 	parameters: #resourceId: {
 		gcpProvider:                                              _googleCloudProvider
@@ -175,15 +180,15 @@ DesignPattern: {
 					clusterSecondaryRangeName:  "${\(_subnet).secondaryIpRanges[0].rangeName}"
 					servicesSecondaryRangeName: "${\(_subnet).secondaryIpRanges[1].rangeName}"
 				}
-				location: "asia-northeast1-a"
-				masterAuthorizedNetworksConfig: {
-					cidrBlocks: [
-						{
-							cidrBlock:   "0.0.0.0/0"
-							displayName: "All"
-						},
-					]
+				if len(parameters.gkeMasterAuthorizedNetworks) > 0 {
+					masterAuthorizedNetworksConfig: {
+						cidrBlocks: [ for i in parameters.gkeMasterAuthorizedNetworks {
+							cidrBlock:   "\(i)"
+							displayName: "Managed by Qmonus Value Stream"
+						}]
+					}
 				}
+				location:       parameters.gkeNodeLocation
 				name:           "qvs-\(_appName)-cluster"
 				network:        "${\(_vpcNetwork).name}"
 				networkingMode: "VPC_NATIVE"
@@ -494,73 +499,74 @@ DesignPattern: {
 				repositoryId: "qvs-\(_appName)-registry"
 			}
 		}
-
-		"\(_mysqlInstance)": gcp.#GcpCloudSqlInstance & {
-			options: _gcpProvider
-			properties: {
-				let _appName = {utils.#trim & {str: parameters.appName, limit: 66}}.out
-				name:               "qvs-\(_appName)-mysql"
-				region:             "asia-northeast1"
-				databaseVersion:    parameters.mysqlDatabaseVersion
-				deletionProtection: false
-				settings: {
-					availabilityType: parameters.mysqlAvailabilityType
-					backupConfiguration: {
-						binaryLogEnabled: true
-						enabled:          true
+		if _useMySQL {
+			"\(_mysqlInstance)": gcp.#GcpCloudSqlInstance & {
+				options: _gcpProvider
+				properties: {
+					let _appName = {utils.#trim & {str: parameters.appName, limit: 66}}.out
+					name:               "qvs-\(_appName)-mysql"
+					region:             "asia-northeast1"
+					databaseVersion:    parameters.mysqlDatabaseVersion
+					deletionProtection: false
+					settings: {
+						availabilityType: parameters.mysqlAvailabilityType
+						backupConfiguration: {
+							binaryLogEnabled: true
+							enabled:          true
+						}
+						edition: "ENTERPRISE"
+						ipConfiguration: {
+							ipv4Enabled: true
+							authorizedNetworks: [
+								{
+									value: "0.0.0.0/0"
+									name:  "All"
+								},
+							]
+							sslMode: "ENCRYPTED_ONLY"
+						}
+						tier: "db-custom-\(parameters.mysqlCpuCount)-\(parameters.mysqlMemorySizeMb)"
 					}
-					edition: "ENTERPRISE"
-					ipConfiguration: {
-						ipv4Enabled: true
-						authorizedNetworks: [
-							{
-								value: "0.0.0.0/0"
-								name:  "All"
-							},
-						]
-						sslMode: "ENCRYPTED_ONLY"
-					}
-					tier: "db-custom-\(parameters.mysqlCpuCount)-\(parameters.mysqlMemorySizeMb)"
 				}
 			}
-		}
 
-		"\(_mysqlRootUser)": gcp.#GcpCloudSqlUser & {
-			options: _gcpProvider
-			properties: {
-				instance: "${\(_mysqlInstance).name}"
-				name:     "root"
-				host:     "%"
-				password: "${\(_mysqlRootPassword).result}"
-			}
-		}
-
-		"\(_mysqlRootPassword)": random.#RandomPassword & {
-			properties: {
-				length:     16
-				minLower:   1
-				minNumeric: 1
-				minSpecial: 1
-				minUpper:   1
-			}
-		}
-
-		"\(_mysqlRootPasswordSecret)": gcp.#GcpSecretManagerSecret & {
-			options: _gcpProvider
-			properties: {
-				replication: {
-					auto: {}
+			"\(_mysqlRootUser)": gcp.#GcpCloudSqlUser & {
+				options: _gcpProvider
+				properties: {
+					instance: "${\(_mysqlInstance).name}"
+					name:     "root"
+					host:     "%"
+					password: "${\(_mysqlRootPassword).result}"
 				}
-				secretId: "qvs-\(parameters.appName)-mysql-root-password"
 			}
-		}
 
-		"\(_mysqlRootPasswordSecretVersion)": gcp.#GcpSecretManagerSecretVersion & {
-			options: _gcpProvider
-			properties: {
-				secret: "${\(_mysqlRootPasswordSecret).id}"
-				secretData: {
-					"fn::secret": "${\(_mysqlRootPassword).result}"
+			"\(_mysqlRootPassword)": random.#RandomPassword & {
+				properties: {
+					length:     16
+					minLower:   1
+					minNumeric: 1
+					minSpecial: 1
+					minUpper:   1
+				}
+			}
+
+			"\(_mysqlRootPasswordSecret)": gcp.#GcpSecretManagerSecret & {
+				options: _gcpProvider
+				properties: {
+					replication: {
+						auto: {}
+					}
+					secretId: "qvs-\(parameters.appName)-mysql-root-password"
+				}
+			}
+
+			"\(_mysqlRootPasswordSecretVersion)": gcp.#GcpSecretManagerSecretVersion & {
+				options: _gcpProvider
+				properties: {
+					secret: "${\(_mysqlRootPasswordSecret).id}"
+					secretData: {
+						"fn::secret": "${\(_mysqlRootPassword).result}"
+					}
 				}
 			}
 		}
