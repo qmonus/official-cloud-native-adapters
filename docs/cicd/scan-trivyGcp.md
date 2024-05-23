@@ -34,6 +34,8 @@ Qmonus Value Streamへ認証情報を登録するサービスアカウントの�
 | --- | --- | --- | --- | --- | --- | --- |
 | gcpServiceAccountSecretName | string | yes | - | GCP サービスアカウントのjsonキーを保管しているk8s Secret名 | | yes |
 | imageName | string | yes | - | コンテナレジストリのイメージ名のフルパス | asia-northeast1-docker.pkg.dev/${project_id}/sample/nginx:latest<br>or<br>asia-northeast1-docker.pkg.dev/${project_id}/sample/nginx@sha256:xxxxxxxxxxxx | no |
+| severity | string | yes | CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN | スキャン対象の脆弱性の重大度を指定します。例えば、HIGH,CRITICALを指定した場合、HIGH, CRITICAL以外の重大度の脆弱性はレポート対象から除外されます。 | CRITICAL,HIGH | no |
+| ignoreVulnerability | string | yes | false | true を指定すると、脆弱性が見つかってもPipelineは失敗せずに後続の処理を継続できます。 | true | no |
 | mentionTarget | string | no | "" | Slackへ通知するメッセージのメンション先。**ユーザやグループのID**を指定する必要があります | <@U024BE7LH> or <!subteam^SAZ94GDB8> or <!here> | no |
 
 Slackのメンションの詳細については、[ドキュメント](https://api.slack.com/reference/surfaces/formatting#advanced)をご確認ください。
