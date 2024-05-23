@@ -24,6 +24,14 @@ import (
 		azureTenantId: desc:         "Azure Tenant ID"
 		azureApplicationId: desc:    "Azure Application ID"
 		azureClientSecretName: desc: "Credential Name of Azure Client Secret"
+		severity: {
+			desc:    "The severity of vulnerabilities to be scanned"
+			default: "CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN"
+		}
+		ignoreVulnerability: {
+			desc:    "Ignore the vulnerability scan result"
+			default: "false"
+		}
 		mentionTarget: {
 			desc:    "mention target of Slack"
 			default: ""
@@ -34,13 +42,20 @@ import (
 	}]
 
 	steps: [{
-		name:  "image-scan"
-		image: "aquasec/trivy:0.49.1"
+		name:    "image-scan"
+		image:   "aquasec/trivy:0.50.4"
+		onError: "continue"
 		args: [
 			"image",
 			"--no-progress",
 			"--output",
-			"$(workspaces.shared.path)/trivy-result.txt",
+			"$(workspaces.shared.path)/trivy-result.json",
+			"-f",
+			"json",
+			"--severity",
+			"$(params.severity)",
+			"--exit-code",
+			"1",
 			"$(params.imageName)",
 		]
 		env: [{
@@ -81,6 +96,17 @@ import (
 			}
 		}
 	}, {
+		name:  "convert-result-to-table"
+		image: "aquasec/trivy:0.50.4"
+		args: [
+			"convert",
+			"--format",
+			"table",
+			"--output",
+			"$(workspaces.shared.path)/trivy-result.txt",
+			"$(workspaces.shared.path)/trivy-result.json",
+		]
+	}, {
 		name:  "dump-result"
 		image: "bash:latest"
 		script: """
@@ -118,6 +144,23 @@ import (
 					valueFrom: fieldRef: fieldPath: "metadata.annotations['\(base.config.vsApiEndpointKey)']"
 				},
 			]
+		}, {
+			name:  "validate-scan-result"
+			image: "bash:latest"
+			script: """
+				if ! grep -q -B 2 "^Total" "$(workspaces.shared.path)/trivy-result.txt"; then
+					echo "No vulnerabilities were found."
+					exit 0
+				fi
+
+				if [ "$(params.ignoreVulnerability)" == "true" ]; then
+					echo "Vulnerabilities were found but ignore the scan result."
+					exit 0
+				fi
+
+				echo "Vulnerabilities were found."
+				exit 1
+				"""
 		},
 	]
 }
