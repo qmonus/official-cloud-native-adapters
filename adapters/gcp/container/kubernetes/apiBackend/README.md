@@ -205,6 +205,7 @@ Sample: サンプル実装
 | dnsZoneProjectId | string | yes | - | 事前に用意したCloud DNSゾーンが所属するGoogle CloudプロジェクトID | sample-dns-zone-project | no |
 | dnsZoneName | string | yes | - | 事前に用意したCloud DNSゾーン名 | sample-dns-zone | no |
 | dnsARecordSubdomain | string | yes | - | 新たに作成するAレコードに設定するサブドメインのFQDN。末尾のルート（ `.` ）まで含めて指定してください。 | www.example.com. | no |
+| hostNames | array | no | [] | 公開するアプリケーションのホスト名のリスト。アプリケーションを `dnsARecordSubdomain` 以外のドメインで公開する場合、このパラメータを設定します。 | ["host01.example.com","host02.example.com"] | no |
 | mysqlInstanceId | string | no | - | 事前に用意したCloud SQL for MySQLインスタンスのインスタンスID | sample-instance | no |
 | mysqlDatabaseName | string | no | - | 新たに作成するCloud SQL for MySQLのデータベース名 | sampledb | no |
 | mysqlUserName | string | no | - | 新たに作成するCloud SQL for MySQLのユーザ名 | dbuser | no |

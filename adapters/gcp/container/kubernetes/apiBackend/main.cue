@@ -16,15 +16,16 @@ import (
 
 DesignPattern: {
 	parameters: {
-		appName:                                       string
-		gcpProjectId:                                  string
-		dnsZoneProjectId:                              string
-		dnsZoneName:                                   string
-		dnsARecordSubdomain:                           strings.HasSuffix(".")
-		mysqlInstanceId?:                              string
-		mysqlDatabaseName?:                            string
-		mysqlUserName?:                                string
-		cloudArmorAllowedSourceIps:                    [...string] | *[]
+		appName:             string
+		gcpProjectId:        string
+		dnsZoneProjectId:    string
+		dnsZoneName:         string
+		dnsARecordSubdomain: strings.HasSuffix(".")
+		hostNames: [...string]
+		mysqlInstanceId?:   string
+		mysqlDatabaseName?: string
+		mysqlUserName?:     string
+		cloudArmorAllowedSourceIps: [...string]
 		k8sNamespace:                                  string
 		imageName:                                     string
 		replicas:                                      string | *"1"
@@ -523,7 +524,7 @@ DesignPattern: {
 					}
 				}
 				spec: {
-					rules: [
+					_ruleForDnsARecordSubdomain: [
 						{
 							host: strings.TrimSuffix(parameters.dnsARecordSubdomain, ".")
 							http: {
@@ -542,6 +543,23 @@ DesignPattern: {
 							}
 						},
 					]
+					rules: _ruleForDnsARecordSubdomain + [ for _hostName in parameters.hostNames {
+						host: _hostName
+						http: {
+							paths: [{
+								path:     "/*"
+								pathType: "ImplementationSpecific"
+								backend: {
+									service: {
+										name: "${\(_service).metadata.name}"
+										port: {
+											number: 80
+										}
+									}
+								}
+							}]
+						}
+					}]
 				}
 			}
 		}

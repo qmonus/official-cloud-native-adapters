@@ -147,7 +147,7 @@ import (
 					"params.append({'name': 'pathToSharedSource', 'value': '$(workspaces.shared.path)/source/'})", // Reserved parameter passing source code path to manfiest.
 				],
 				[ for k in appconfigParams {
-					"params.append({'name': '\(k)', 'value': '$(params.\(k))'})"
+					"params.append({'name': '\(k)', 'value': '''$(params.\(k))'''})"
 				}],
 				[
 					"vs_secrets = os.environ.get('VS_SECRETS')",

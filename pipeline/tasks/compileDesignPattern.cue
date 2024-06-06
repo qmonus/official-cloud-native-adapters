@@ -131,7 +131,7 @@ import (
 					"params = []",
 				],
 				[ for k in appconfigParams {
-					"params.append({'name': '\(k)', 'value': '$(params.\(k))'})"
+					"params.append({'name': '\(k)', 'value': '''$(params.\(k))'''})"
 				}],
 				[
 					"vs_secrets = os.environ.get('VS_SECRETS')",
