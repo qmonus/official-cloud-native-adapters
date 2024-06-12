@@ -16,10 +16,6 @@ import (
 
 	params: {
 		appName: desc: "Application Name of QmonusVS"
-		buildTargetDir: {
-			desc:    "The path to the frontend build working directory"
-			default: "."
-		}
 		deployTargetDir: {
 			desc:    "The path to the frontend deploy working directory"
 			default: "dist"
@@ -34,13 +30,14 @@ import (
 	steps: [{
 		image:      "bash:5.2-alpine3.19"
 		name:       "make-configration-files"
-		workingDir: "$(workspaces.shared.path)/source/$(params.buildTargetDir)"
+		workingDir: "$(workspaces.shared.path)/source"
 		script: """
 			#!/usr/bin/env bash
 			if [ -e $(workspaces.shared.path)/siteId ]; then
 			  FIREBASE_HOSTING_SITE_ID=$(cat $(workspaces.shared.path)/siteId)
 			  echo '{"projects": {"default": "'$GCP_PROJECT_ID'"}, "targets": {"'$GCP_PROJECT_ID'": {"hosting": {"'$FIREBASE_HOSTING_SITE_ID'": ["'$FIREBASE_HOSTING_SITE_ID'"]}}},"etags": {}}' > .firebaserc
 			  echo '{"hosting": [{"target": "'$FIREBASE_HOSTING_SITE_ID'", "public": "'$DEPLOY_TARGET_DIR'", "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]}]}' > firebase.json
+			  echo "Successfully created configration files."
 			else
 			  echo "SKIP: firebase hosting site not found"
 			fi
@@ -55,7 +52,7 @@ import (
 	}, {
 		image:      "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/firebase-tools:\(base.config.firebaseToolsImageTag)"
 		name:       "deploy"
-		workingDir: "$(workspaces.shared.path)/source/$(params.buildTargetDir)"
+		workingDir: "$(workspaces.shared.path)/source"
 		script: """
 			#!/usr/bin/env bash
 			if [ -e $(workspaces.shared.path)/siteId ]; then
