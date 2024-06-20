@@ -9,6 +9,7 @@ import (
 	image:            string | *""
 	shouldNotify:     bool | *false
 	resourcePriority: "high" | *"medium"
+	extraImageScanOptions: {[string]: string}
 	...
 }
 
@@ -34,6 +35,10 @@ import (
 			desc:    "mention target of Slack"
 			default: ""
 		}
+		extraImageScanOptions: {
+			desc:    "Extra arguments for trivy image command"
+			default: ""
+		}
 	}
 	workspaces: [{
 		name: "shared"
@@ -43,19 +48,12 @@ import (
 		name:    "image-scan"
 		image:   "aquasec/trivy:0.50.4"
 		onError: "continue"
-		args: [
-			"image",
-			"--no-progress",
-			"--output",
-			"$(workspaces.shared.path)/trivy-result.json",
-			"--format",
-			"json",
-			"--severity",
-			"$(params.severity)",
-			"--exit-code",
-			"1",
-			"$(params.imageName)",
-		]
+		script: """
+			set -x
+			trivy image --no-progress --output $(workspaces.shared.path)/trivy-result.json --format json \\
+			  --severity $(params.severity) --exit-code 1 $(params.imageName) \\
+			  $(params.extraImageScanOptions)
+			"""
 		env: [{
 			name:  "GOOGLE_APPLICATION_CREDENTIALS"
 			value: "/secret/account.json"
@@ -113,13 +111,14 @@ import (
 			set -o xtrace
 			set -o pipefail
 
-			# extract target name and number of vulnerabilities
-			results=$(cat $(workspaces.shared.path)/trivy-result.txt | grep -B 2 "^Total")
-			if  [ $? -eq 1 ]; then
+			grep -q '"Vulnerabilities": \\[' $(workspaces.shared.path)/trivy-result.json
+			if [ $? -eq 1 ]; then
 			  echo "No vulnerabilities were found."
 			  exit 0
 			fi
-			# remove separator and decorate results
+
+			# extract target name and number of vulnerabilities
+			results=$(cat $(workspaces.shared.path)/trivy-result.txt | grep -B 2 "^Total")
 			results=$(echo "${results}" | sed '/^=/d' | sed 's/\\(^Total.*$\\)/\\*\\1\\*/' | sed ':l; N; s/\\n/\\\\n/; b l;')
 			if [ -z "$(params.mentionTarget)" ]; then
 			  message=":x: *Image scan completed.*\\n${results}"
@@ -137,9 +136,10 @@ import (
 		]
 	}, {
 		name:  "validate-scan-result"
-		image: "bash:latest"
+		image: "docker.io/stedolan/jq@sha256:a61ed0bca213081b64be94c5e1b402ea58bc549f457c2682a86704dd55231e09"
 		script: """
-			if ! grep -q -B 2 "^Total" "$(workspaces.shared.path)/trivy-result.txt"; then
+			vulnExists=$(jq '[.Results[] | if .Vulnerabilities then 1 else 0 end] | add' "$(workspaces.shared.path)/trivy-result.json")
+			if [ $vulnExists -eq 0 ]; then
 				echo "No vulnerabilities were found."
 				exit 0
 			fi
