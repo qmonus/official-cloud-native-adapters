@@ -61,7 +61,7 @@ Container Registry/Artifact Registry, Google Cloud
 ### Task
 | Resource ID | Pipeline | runAfter | Description |
 | --- | --- | --- | --- |
-| image-promote | build | - | 指定されたコンテナイメージを別のレジストリにコピーします。 |
+| image-promote | promote | - | 指定されたコンテナイメージを別のレジストリにコピーします。 |
 
 ## Usage
 ``` yaml
