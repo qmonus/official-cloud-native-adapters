@@ -19,7 +19,7 @@ DesignPattern: {
 
 	if pipelineParameters.image != "" {
 		_scanTask: {
-			utils.#concatkebab
+			utils.#concatKebab
 			input: [_imageName, "image-scan-azure"]
 		}.out
 	}
@@ -33,6 +33,7 @@ DesignPattern: {
 				"\(_scanTask)": {
 					trivyImageScanAzure.#Builder & {
 						input: {
+							image:            _imageName
 							shouldNotify:     pipelineParameters.shouldNotify
 							resourcePriority: pipelineParameters.resourcePriority
 						}

@@ -19,7 +19,7 @@ DesignPattern: {
 
 	if pipelineParameters.image != "" {
 		_scanTask: {
-			utils.#concatkebab
+			utils.#concatKebab
 			input: [_imageName, "image-scan-gcp"]
 		}.out
 	}
@@ -33,6 +33,7 @@ DesignPattern: {
 				"\(_scanTask)": {
 					trivyImageScanGcp.#Builder & {
 						input: {
+							image:            _imageName
 							shouldNotify:     pipelineParameters.shouldNotify
 							resourcePriority: pipelineParameters.resourcePriority
 						}

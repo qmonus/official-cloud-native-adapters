@@ -44,13 +44,24 @@ import (
 		name: "shared"
 	}]
 
+	_trivyResultJsonFile: string | *"trivy-result.json"
+	_trivyResultTxtFile:  string | *"trivy-result.txt"
+	if prefix != "" {
+		_trivyResultJsonFile: "\(prefix)-trivy-result.json"
+		_trivyResultTxtFile:  "\(prefix)-trivy-result.txt"
+	}
+
 	steps: [{
 		name:    "image-scan"
 		image:   "aquasec/trivy:0.50.4"
 		onError: "continue"
-		script: """
+		script:  """
 			set -x
-			trivy image --no-progress --output $(workspaces.shared.path)/trivy-result.json --format json \\
+			
+			mkdir -p $(workspaces.shared.path)/scan-results
+
+			trivy image --no-progress --format json \\
+			  --output $(workspaces.shared.path)/scan-results/\(_trivyResultJsonFile) \\
 			  --severity $(params.severity) --exit-code 1 $(params.imageName) \\
 			  $(params.extraImageScanOptions)
 			"""
@@ -93,32 +104,32 @@ import (
 			"--format",
 			"table",
 			"--output",
-			"$(workspaces.shared.path)/trivy-result.txt",
-			"$(workspaces.shared.path)/trivy-result.json",
+			"$(workspaces.shared.path)/scan-results/\(_trivyResultTxtFile)",
+			"$(workspaces.shared.path)/scan-results/\(_trivyResultJsonFile)",
 		]
 	}, {
-		name:  "dump-result"
-		image: "bash:latest"
+		name:   "dump-result"
+		image:  "bash:5.2"
 		script: """
-			cat $(workspaces.shared.path)/trivy-result.txt
+			cat $(workspaces.shared.path)/scan-results/\(_trivyResultTxtFile)
 			"""
 	}, if input.shouldNotify {
-		name:  "notice-result"
-		image: "curlimages/curl:8.6.0"
+		name:   "notice-result"
+		image:  "curlimages/curl:8.6.0"
 		script: """
 			#!/bin/sh
 			set -o nounset
 			set -o xtrace
 			set -o pipefail
 
-			grep -q '"Vulnerabilities": \\[' $(workspaces.shared.path)/trivy-result.json
+			grep -q '"Vulnerabilities": \\[' $(workspaces.shared.path)/scan-results/\(_trivyResultJsonFile)
 			if [ $? -eq 1 ]; then
 			  echo "No vulnerabilities were found."
 			  exit 0
 			fi
 
 			# extract target name and number of vulnerabilities
-			results=$(cat $(workspaces.shared.path)/trivy-result.txt | grep -B 2 "^Total")
+			results=$(cat $(workspaces.shared.path)/scan-results/\(_trivyResultTxtFile) | grep -B 2 "^Total")
 			results=$(echo "${results}" | sed '/^=/d' | sed 's/\\(^Total.*$\\)/\\*\\1\\*/' | sed ':l; N; s/\\n/\\\\n/; b l;')
 			if [ -z "$(params.mentionTarget)" ]; then
 			  message=":x: *Image scan completed.*\\n${results}"
@@ -135,10 +146,12 @@ import (
 			},
 		]
 	}, {
-		name:  "validate-scan-result"
-		image: "docker.io/stedolan/jq@sha256:a61ed0bca213081b64be94c5e1b402ea58bc549f457c2682a86704dd55231e09"
+		name:   "validate-scan-result"
+		image:  "docker.io/stedolan/jq@sha256:a61ed0bca213081b64be94c5e1b402ea58bc549f457c2682a86704dd55231e09"
 		script: """
-			vulnExists=$(jq '[.Results[] | if .Vulnerabilities then 1 else 0 end] | add' "$(workspaces.shared.path)/trivy-result.json")
+			#!/bin/bash
+			
+			vulnExists=$(jq '[.Results[] | if .Vulnerabilities then 1 else 0 end] | add' "$(workspaces.shared.path)/scan-results/\(_trivyResultJsonFile)")
 			if [ $vulnExists -eq 0 ]; then
 				echo "No vulnerabilities were found."
 				exit 0
