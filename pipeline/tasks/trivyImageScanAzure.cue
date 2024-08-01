@@ -6,10 +6,11 @@ import (
 )
 
 #BuildInput: {
-	image:            string | *""
-	shouldNotify:     bool | *false
-	resourcePriority: "high" | *"medium"
-	extraImageScanOptions: {[string]: string}
+	image:             string | *""
+	sbomFormat:        string | *"cyclonedx"
+	uploadScanResults: bool | *false
+	shouldNotify:      bool | *false
+	resourcePriority:  "high" | *"medium"
 	...
 }
 
@@ -23,6 +24,7 @@ import (
 	params: {
 		imageName: desc:             "The image name"
 		azureTenantId: desc:         "Azure Tenant ID"
+		azureSubscriptionId: desc:   "Azure Subscription ID"
 		azureApplicationId: desc:    "Azure Application ID"
 		azureClientSecretName: desc: "Credential Name of Azure Client Secret"
 		severity: {
@@ -42,30 +44,52 @@ import (
 			default: ""
 		}
 	}
+	if input.uploadScanResults {
+		params: {
+			scanResultsBlobStorageContainerName: desc: "The Azure Blob Storage Container Name to store scan results"
+			azureStorageAccountName: desc:             "Azure Storage Account Name"
+		}
+		results: {
+			uploadedScanResultsUrl: description: "The URL of uploaded scan results"
+		}
+	}
 	workspaces: [{
 		name: "shared"
 	}]
 
-	_trivyResultJsonFile: string | *"trivy-result.json"
-	_trivyResultTxtFile:  string | *"trivy-result.txt"
-	if prefix != "" {
-		_trivyResultJsonFile: "\(prefix)-trivy-result.json"
-		_trivyResultTxtFile:  "\(prefix)-trivy-result.txt"
+	let scanResultsDir = {
+		if prefix != "" {
+			"$(workspaces.shared.path)/scan-results/\(prefix)"
+		}
+		if prefix == "" {
+			"$(workspaces.shared.path)/scan-results"
+		}
 	}
 
+	let sbomFile = {
+		if input.sbomFormat == "cyclonedx" {
+			"sbom-cyclonedx.json"
+		}
+		if input.sbomFormat == "spdx" {
+			"sbom.spdx"
+		}
+		if input.sbomFormat == "spdx-json" {
+			"sbom-spdx.json"
+		}
+	}
+
+	let trivyResultJsonFile = "trivy-result.json"
+
+	let trivyResultTxtFile = "trivy-result.txt"
+
 	steps: [{
-		name:    "image-scan"
-		image:   "aquasec/trivy:0.50.4"
-		onError: "continue"
-		script:  """
+		name:   "generate-sbom"
+		image:  "aquasec/trivy:0.50.4"
+		script: """
 			set -x
 			
-			mkdir -p $(workspaces.shared.path)/scan-results
-
-			trivy image --no-progress --format json \\
-			  --output $(workspaces.shared.path)/scan-results/\(_trivyResultJsonFile) \\
-			  --severity $(params.severity) --exit-code 1 $(params.imageName) \\
-			  $(params.extraImageScanOptions)
+			mkdir -p \(scanResultsDir)
+			trivy image --format \(input.sbomFormat) --output \(scanResultsDir)/\(sbomFile) $(params.imageName)
 			"""
 		env: [{
 			name:  "AZURE_TENANT_ID"
@@ -105,6 +129,41 @@ import (
 			}
 		}
 	}, {
+		name:    "scan-image"
+		image:   "aquasec/trivy:0.50.4"
+		onError: "continue"
+		script:  """
+			set -x
+			
+			trivy sbom --no-progress --format json \\
+			  --output \(scanResultsDir)/\(trivyResultJsonFile) \\
+			  --severity $(params.severity) --exit-code 1 \\
+			  \(scanResultsDir)/\(sbomFile) \\
+			  $(params.extraImageScanOptions)
+			"""
+		resources: {
+			if input.resourcePriority == "medium" {
+				requests: {
+					cpu:    "0.5"
+					memory: "512Mi"
+				}
+				limits: {
+					cpu:    "0.5"
+					memory: "512Mi"
+				}
+			}
+			if input.resourcePriority == "high" {
+				requests: {
+					cpu:    "1"
+					memory: "1Gi"
+				}
+				limits: {
+					cpu:    "1"
+					memory: "1Gi"
+				}
+			}
+		}
+	}, {
 		name:  "convert-result-to-table"
 		image: "aquasec/trivy:0.50.4"
 		args: [
@@ -112,15 +171,55 @@ import (
 			"--format",
 			"table",
 			"--output",
-			"$(workspaces.shared.path)/scan-results/\(_trivyResultTxtFile)",
-			"$(workspaces.shared.path)/scan-results/\(_trivyResultJsonFile)",
+			"\(scanResultsDir)/\(trivyResultTxtFile)",
+			"\(scanResultsDir)/\(trivyResultJsonFile)",
 		]
 	}, {
 		name:   "dump-result"
 		image:  "bash:5.2"
 		script: """
-			cat $(workspaces.shared.path)/scan-results/\(_trivyResultTxtFile)
+			cat \(scanResultsDir)/\(trivyResultTxtFile)
 			"""
+	}, if input.uploadScanResults {
+		name:   "upload-scan-result"
+		image:  "mcr.microsoft.com/azure-cli:2.51.0"
+		script: """
+			#!/bin/bash
+			image_name="$(params.imageName)"
+			if [[ "$image_name" == *":"* ]]; then
+				converted_path=$(echo "$image_name" | sed 's/:/\\//')
+			else
+				converted_path="${image_name}/latest"
+			fi
+
+			az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID} > /dev/null
+			az storage blob upload-batch -s \(scanResultsDir) -d $(params.scanResultsBlobStorageContainerName)/${converted_path} --account-name ${AZURE_STORAGE_ACCOUNT_NAME} --overwrite
+			
+			storage_account_id=$(az storage account show --name ${AZURE_STORAGE_ACCOUNT_NAME} --query id --output tsv)
+			encoded_storage_account_id=$(echo "$storage_account_id" | sed 's/\\//%2F/g')
+			results_url="https://portal.azure.com/#view/Microsoft_Azure_Storage/ContainerMenuBlade/~/overview/storageAccountId/${encoded_storage_account_id}/path/$(params.scanResultsBlobStorageContainerName)/${converted_path}"
+			echo "Scan result is uploaded to ${results_url}"
+			echo ${results_url} > /tekton/results/uploadedScanResultsUrl
+			"""
+		env: [{
+			name:  "AZURE_TENANT_ID"
+			value: "$(params.azureTenantId)"
+		}, {
+			name:  "AZURE_SUBSCRIPTION_ID"
+			value: "$(params.azureSubscriptionId)"
+		}, {
+			name:  "AZURE_CLIENT_ID"
+			value: "$(params.azureApplicationId)"
+		}, {
+			name: "AZURE_CLIENT_SECRET"
+			valueFrom: secretKeyRef: {
+				name: "$(params.azureClientSecretName)"
+				key:  "password"
+			}
+		}, {
+			name:  "AZURE_STORAGE_ACCOUNT_NAME"
+			value: "$(params.azureStorageAccountName)"
+		}]
 	},
 		if input.shouldNotify {
 			name:   "notice-result"
@@ -131,14 +230,14 @@ import (
 				set -o xtrace
 				set -o pipefail
 
-				grep -q '"Vulnerabilities": \\[' $(workspaces.shared.path)/scan-results/\(_trivyResultJsonFile)
+				grep -q '"Vulnerabilities": \\[' \(scanResultsDir)/\(trivyResultJsonFile)
 				if [ $? -eq 1 ]; then
 				  echo "No vulnerabilities were found."
 				  exit 0
 				fi
 
 				# extract target name and number of vulnerabilities
-				results=$(cat $(workspaces.shared.path)/scan-results/\(_trivyResultTxtFile) | grep -B 2 "^Total")
+				results=$(cat \(scanResultsDir)/\(trivyResultTxtFile) | grep -B 2 "^Total")
 				results=$(echo "${results}" | sed '/^=/d' | sed 's/\\(^Total.*$\\)/\\*\\1\\*/' | sed ':l; N; s/\\n/\\\\n/; b l;')
 				if [ -z "$(params.mentionTarget)" ]; then
 				  message=":x: *Image scan completed.*\\n${results}"
@@ -160,7 +259,7 @@ import (
 			script: """
 				#!/bin/bash
 
-				vulnExists=$(jq '[.Results[] | if .Vulnerabilities then 1 else 0 end] | add' "$(workspaces.shared.path)/scan-results/\(_trivyResultJsonFile)")
+				vulnExists=$(jq '[.Results[] | if .Vulnerabilities then 1 else 0 end] | add' "\(scanResultsDir)/\(trivyResultJsonFile)")
 				if [ $vulnExists -eq 0 ]; then
 					echo "No vulnerabilities were found."
 					exit 0
