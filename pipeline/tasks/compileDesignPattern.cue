@@ -86,7 +86,7 @@ import (
 			# Extract adapter_revision
 			module_revision=$(yq -r '.modules[0].revision' $(params.qvsConfigPath))
 			module_local_path=$(yq -r '.modules[0].local.path' $(params.qvsConfigPath))
-			module_remote_revision=$(yq -r '.modules[0].remote.revision' $(params.qvsConfigPath))			
+			module_remote_revision=$(yq -r '.modules[0].remote.revision' $(params.qvsConfigPath))
 						
 			if [ "$module_revision" == "null" ]; then
 				case "$module_local_path" in
