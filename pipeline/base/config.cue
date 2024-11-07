@@ -9,6 +9,6 @@ config: {
 	qmonusVsConfirmationRevision:   "7b38a178515b1ecd5c488e266157528d43eed0dd"
 	qmonusVsSecretKey:              "pipeline.qmonus.net/secrets"
 	vsApiEndpointKey:               "vs.axis-dev.io/api-endpoint"
-	pulumiPatchedImageTag:          "5400b7e5505ee885374caf629f4ab838d6b48cae"
+	pulumiPatchedImageTag:          "d14deb7a0c422f24c53d68be3fea4fa3cd3f56e5"
 	firebaseToolsImageTag:          "2024.01.29"
 }
