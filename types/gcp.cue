@@ -132,3 +132,53 @@ import "qmonus.net/adapter/official/types:base"
 	base.#Resource
 	type: "gcp:compute:Network"
 }
+
+#GcpCloudrunService: {
+	base.#Resource
+	type: "gcp:cloudrunv2:Service"
+}
+
+#GcpCloudrunServiceIamMember: {
+	base.#Resource
+	type: "gcp:cloudrunv2:ServiceIamMember"
+}
+
+#GcpManagedSslCertificate: {
+	base.#Resource
+	type: "gcp:compute:ManagedSslCertificate"
+}
+
+#GcpBackendService: {
+	base.#Resource
+	type: "gcp:compute:BackendService"
+}
+
+#GcpUrlMap: {
+	base.#Resource
+	type: "gcp:compute:URLMap"
+}
+
+#GcpTargetHttpsProxy: {
+	base.#Resource
+	type: "gcp:compute:TargetHttpsProxy"
+}
+
+#GcpGlobalForwardingRule: {
+	base.#Resource
+	type: "gcp:compute:GlobalForwardingRule"
+}
+
+#GcpRegionNetworkEndpointGroup: {
+	base.#Resource
+	type: "gcp:compute:RegionNetworkEndpointGroup"
+}
+
+#GcpServiceNetworkingConnection: {
+	base.#Resource
+	type: "gcp:servicenetworking:Connection"
+}
+
+#GcpSecretIamMember: {
+	base.#Resource
+	type: "gcp:secretmanager:SecretIamMember"
+}
