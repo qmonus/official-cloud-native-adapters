@@ -40,13 +40,11 @@ import (
 
 	steps: [{
 		name:  "image-promote"
-		image: "gcr.io/go-containerregistry/gcrane:v0.12.1"
-		args: [
-			"cp",
-			"--",
-			"$(params.imageNameFrom)",
-			"$(params.imageRegistryPath)/$(params.imageShortName):$(params.imageTag)",
-		]
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/gcrane:aec5f5a0a636e669a62b634b90fdcc7d2317e63e"
+		script: """
+			#!/busybox/sh -x
+			gcrane cp -- $(params.imageNameFrom) $(params.imageRegistryPath)/$(params.imageShortName):$(params.imageTag)
+			"""
 		env: [{
 			name:  "GOOGLE_APPLICATION_CREDENTIALS"
 			value: "/secret/account.json"
@@ -58,13 +56,12 @@ import (
 		}]
 	}, {
 		name:  "resolve-digest"
-		image: "gcr.io/go-containerregistry/gcrane:debug"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/gcrane:aec5f5a0a636e669a62b634b90fdcc7d2317e63e"
 		script: """
 			#!/busybox/sh -x
 			set -o nounset
 			set -o xtrace
-			gcrane digest $(params.imageRegistryPath)/$(params.imageShortName):$(params.imageTag) \\
-			| tee /tekton/results/imageDigest
+			gcrane digest $(params.imageRegistryPath)/$(params.imageShortName):$(params.imageTag)	| tee /tekton/results/imageDigest
 			"""
 		env: [{
 			name:  "GOOGLE_APPLICATION_CREDENTIALS"
