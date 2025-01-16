@@ -84,7 +84,7 @@ import (
 
 	steps: [{
 		name:   "generate-sbom"
-		image:  "aquasec/trivy:0.50.4"
+		image:  "aquasec/trivy:0.58.1"
 		script: """
 			set -x
 			
@@ -130,7 +130,7 @@ import (
 		}
 	}, {
 		name:    "scan-image"
-		image:   "aquasec/trivy:0.50.4"
+		image:   "aquasec/trivy:0.58.1"
 		onError: "continue"
 		script:  """
 			set -x
@@ -165,7 +165,7 @@ import (
 		}
 	}, {
 		name:  "convert-result-to-table"
-		image: "aquasec/trivy:0.50.4"
+		image: "aquasec/trivy:0.58.1"
 		args: [
 			"convert",
 			"--format",
@@ -182,7 +182,7 @@ import (
 			"""
 	}, if input.uploadScanResults {
 		name:   "upload-scan-result"
-		image:  "mcr.microsoft.com/azure-cli:2.51.0"
+		image:  "mcr.microsoft.com/azure-cli:2.67.0"
 		script: """
 			#!/bin/bash
 			image_name="$(params.imageName)"
@@ -223,7 +223,7 @@ import (
 	},
 		if input.shouldNotify {
 			name:   "notice-result"
-			image:  "curlimages/curl:8.6.0"
+			image:  "curlimages/curl:8.11.1"
 			script: """
 				#!/bin/sh
 				set -o nounset
