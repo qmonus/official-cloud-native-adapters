@@ -1,4 +1,4 @@
-package trivyImageScanGcp
+package trivyImageScanAws
 
 import (
 	"qmonus.net/adapter/official/pipeline/schema"
@@ -16,14 +16,15 @@ import (
 
 #Builder: schema.#TaskBuilder
 #Builder: {
-	name:            "trivy-image-scan-gcp"
+	name:            "trivy-image-scan-aws"
 	input:           #BuildInput
 	prefix:          input.image
 	prefixAllParams: true
 
 	params: {
-		imageName: desc:                   "The image name"
-		gcpServiceAccountSecretName: desc: "The secret name of GCP SA credential"
+		imageName: desc:         "The image name"
+		awsCredentialName: desc: "The secret name of AWS credential"
+		awsRegion: desc:         ""
 		severity: {
 			desc:    "The severity of vulnerabilities to be scanned"
 			default: "CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN"
@@ -43,7 +44,7 @@ import (
 	}
 	if input.uploadScanResults {
 		params: {
-			scanResultsGcsBucketName: desc: "The GCS bucket name to store scan results"
+			scanResultsS3BucketName: desc: "The S3 bucket name to store scan results"
 		}
 		results: {
 			uploadedScanResultsUrl: description: "The URL of uploaded scan results"
@@ -88,12 +89,15 @@ import (
 			trivy image --format \(input.sbomFormat) --output \(scanResultsDir)/\(sbomFile) $(params.imageName)
 			"""
 		env: [{
-			name:  "GOOGLE_APPLICATION_CREDENTIALS"
-			value: "/secret/account.json"
+			name:  "AWS_DEFAULT_REGION"
+			value: "$(params.awsRegion)"
+		}, {
+			name:  "AWS_SHARED_CREDENTIALS_FILE"
+			value: "/secret/aws/credentials"
 		}]
 		volumeMounts: [{
-			name:      "user-gcp-secret"
-			mountPath: "/secret"
+			name:      "aws-secret"
+			mountPath: "/secret/aws"
 			readOnly:  true
 		}]
 		resources: {
@@ -172,7 +176,7 @@ import (
 			"""
 	}, if input.uploadScanResults {
 		name:   "upload-scan-result"
-		image:  "google/cloud-sdk:504.0.1-slim"
+		image:  "amazon/aws-cli:2.22.23"
 		script: """
 			#!/bin/bash
 
@@ -182,17 +186,23 @@ import (
 			else
 				converted_path="${image_name}/latest"
 			fi
-			dst=gs://$(params.scanResultsGcsBucketName)/$converted_path
+			dst="s3://$(params.scanResultsS3BucketName)/${converted_path}/"
 			
-			gcloud auth activate-service-account --key-file=/secret/account.json
-			gsutil -m cp \(scanResultsDir)/* ${dst}
-			results_url="https://console.cloud.google.com/storage/browser/$(params.scanResultsGcsBucketName)/${converted_path}/"
+			aws s3 cp --recursive \(scanResultsDir) ${dst}
+			results_url="https://$(params.awsRegion).console.aws.amazon.com/s3/buckets/$(params.scanResultsS3BucketName)?prefix=${converted_path}/"
 			echo "Scan result is uploaded to ${results_url}"
 			echo ${results_url} > /tekton/results/uploadedScanResultsUrl
 			"""
+		env: [{
+			name:  "AWS_DEFAULT_REGION"
+			value: "$(params.awsRegion)"
+		}, {
+			name:  "AWS_SHARED_CREDENTIALS_FILE"
+			value: "/secret/aws/credentials"
+		}]
 		volumeMounts: [{
-			name:      "user-gcp-secret"
-			mountPath: "/secret"
+			name:      "aws-secret"
+			mountPath: "/secret/aws"
 			readOnly:  true
 		}]
 	}, if input.shouldNotify {
@@ -251,13 +261,13 @@ import (
 	]
 
 	volumes: [{
-		name: "user-gcp-secret"
+		name: "aws-secret"
 		secret: {
 			items: [{
-				key:  "serviceaccount"
-				path: "account.json"
+				key:  "credentials"
+				path: "credentials"
 			}]
-			secretName: "$(params.gcpServiceAccountSecretName)"
+			secretName: "$(params.awsCredentialName)"
 		}
 	}]
 }

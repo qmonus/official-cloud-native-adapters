@@ -30,7 +30,7 @@ Qmonus Value Streamへ認証情報を登録するサービスプリンシパル�
 | image | string | no | "" | 生成されるTaskのtrivy-image-scan-azureに接頭語を付与します。また、[Results Parameters](#results-parameters) の変数名にも同様に接頭語を与えます。複数のビルド Taskを使用してValue Streamを実行する際、本パラメータにビルドするイメージ名を指定することでTaskを区別することができます。| nginx |
 | sbomFormat | string | no | cyclonedx | 出力するSBOMファイルのフォーマットを指定します。cyclonedx, spdx, spdx-jsonのいずれかを設定できます。| sdpx-json |
 | uploadScanResults | bool | no | false | trueを指定すると、スキャン結果をAzure Blob Storageコンテナにアップロードします。| true |
-| shouldNotify | bool | no | false | trueを指定すると、Slack通知を設定したAssemblyLineを用いて本Adapterを利用した際に、脆弱性診断の結果をSlackで通知します。AssemblyLineにSlack通知を設定する方法については [ドキュメント](https://docs.valuestream.qmonus.net/guide/slack-notification.html) をご参照ください。 | true |
+| shouldNotify | bool | no | false | trueを指定すると、Slack通知を設定したAssemblyLineを用いて本Adapterを利用した際に、脆弱性診断の結果をSlackで通知します。AssemblyLineにSlack通知を設定する方法については [ドキュメント](https://docs.valuestream.qmonus.net/guide/notification/slack-notification) をご参照ください。 | true |
 | resourcePriority | string | no | medium | イメージをスキャンするTekton Task に割り当てるリソース量を設定します。 medium もしくは high のいずれかを設定でき、それぞれの割り当て量は下記の通りです。<br>・ medium → cpu:0.5, memory: 512MiB <br> ・ high → cpu:1, memory: 1GiB | high |
 
 ### Parameters
