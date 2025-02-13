@@ -138,11 +138,12 @@ import (
 		fi
 		while read -r PREVIEW; do
 		  URN=$(echo "${PREVIEW}" | jq -r '.urn')
-		  if grep -q "pulumi:pulumi:Stack" <<< "$URN"; then
+		  ACTION=$(echo "${PREVIEW}" | jq -r '.action')
+		  if [ "$ACTION" = "same" ]; then 
+		    ACTION="unchanged"
+		  elif [ "$ACTION" = "refresh" ]; then 
 		    continue
 		  fi
-		  ACTION=$(echo "${PREVIEW}" | jq -r '.action')
-		  if [ "$ACTION" = "same" ]; then ACTION="unchanged"; fi
 		  SPLIT_URN=(${URN//::/ })
 		  echo ${SPLIT_URN[2]} ${SPLIT_URN[3]} ${ACTION}
 		  echo "$PREVIEW" >> \(_previewListFileName)
