@@ -23,6 +23,23 @@ import "qmonus.net/adapter/official/types:base"
 	properties: tags: #QvsManagedLabel
 }
 
+#AwsCertificate: {
+	base.#Resource
+	type: "aws:acm:Certificate"
+	properties: tags: #QvsManagedLabel
+}
+
+#AwsCloudFrontDistribution: {
+	base.#Resource
+	type: "aws:cloudfront:Distribution"
+	properties: tags: #QvsManagedLabel
+}
+
+#AwsCloudFrontOAC: {
+	base.#Resource
+	type: "aws:cloudfront:OriginAccessControl"
+}
+
 #AwsCloudwatchLogGroup: {
 	base.#Resource
 	type: "aws:cloudwatch:LogGroup"
@@ -95,6 +112,17 @@ import "qmonus.net/adapter/official/types:base"
 #AwsRouteTableAssociation: {
 	base.#Resource
 	type: "aws:ec2:RouteTableAssociation"
+}
+
+#AwsS3BucketPolicy: {
+	base.#Resource
+	type: "aws:s3:BucketPolicy"
+}
+
+#AwsS3BucketV2: {
+	base.#Resource
+	type: "aws:s3:BucketV2"
+	properties: tags: #QvsManagedLabel
 }
 
 #AwsSecretsManagerSecret: {
