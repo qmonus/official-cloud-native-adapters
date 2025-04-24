@@ -59,7 +59,7 @@ import (
 			name:  "BUILDCTL_CONNECT_RETRIES_MAX"
 			value: "20"
 		}]
-		image:  "moby/buildkit:v0.12.5"
+		image:  "moby/buildkit:v0.20.1"
 		name:   "build-and-push"
 		script: """
 			if [ "$(params.imageTag)" = "buildcache" ]; then
@@ -77,7 +77,7 @@ import (
 			--local dockerfile=$(params.pathToContext) \\
 			--output type=image,name=$(params.imageRegistryPath)/$(params.imageShortName):$(params.imageTag),push=true \\
 			--import-cache type=registry,ref=\(_cacheImageName):buildcache \\
-			--export-cache type=registry,ref=\(_cacheImageName):buildcache \\
+			--export-cache type=registry,ref=\(_cacheImageName):buildcache,image-manifest=true \\
 			--metadata-file $(workspaces.shared.path)/meta.json \\
 			$(params.extraArgs)
 			"""
