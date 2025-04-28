@@ -6,7 +6,7 @@ import (
 	"qmonus.net/adapter/official/pipeline/tasks:gitCheckout"
 	"qmonus.net/adapter/official/pipeline/tasks:gitCheckoutSsh"
 	"qmonus.net/adapter/official/pipeline/tasks:dockerLoginAws"
-	"qmonus.net/adapter/official/pipeline/tasks:buildkitBuild_nocache"
+	"qmonus.net/adapter/official/pipeline/tasks:buildkitBuild"
 )
 
 DesignPattern: {
@@ -97,7 +97,7 @@ DesignPattern: {
 					}
 					runAfter: ["checkout"]
 				}
-				"\(_buildTask)": buildkitBuild_nocache.#Builder & {
+				"\(_buildTask)": buildkitBuild.#Builder & {
 					input: {
 						image: _imageName
 					}

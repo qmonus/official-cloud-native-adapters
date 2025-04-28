@@ -397,6 +397,58 @@ import (
 			set -o pipefail
 
 			cd '\(_workingDir)'
+
+			DEPLOYMENT_STACK_NAME=\(_stack)
+
+			cleanupFiles() {
+			  local dir=$1
+			  if [[ "$dir" == *"history"* ]]; then
+			    for file_type in "checkpoint" "history"; do
+			      local latest_file=$(ls -t "$dir"/"$DEPLOYMENT_STACK_NAME"*.$file_type.json 2>/dev/null | head -n 1)
+			      if [ -z "$latest_file" ]; then
+			        echo "No $file_type files found in $dir."
+			        continue
+			      fi
+			      local sequence=$(basename "$latest_file" | sed -E "s/^([^-]+-)+([0-9]+)\\.$file_type\\.json$/\\2/")
+				  echo "Latest $file_type file: $(basename "$latest_file")"
+			      for old_file in "$dir"/"$DEPLOYMENT_STACK_NAME"*.$file_type.json; do
+			        if [[ -f "$old_file" && "$old_file" != "$latest_file" ]]; then
+			          echo "delete $file_type file: $(basename "$old_file")"
+			          rm "$old_file"
+			        fi
+			      done
+			      for attrs_file in "$dir"/"$DEPLOYMENT_STACK_NAME"*.$file_type.json.attrs; do
+			        if [[ -f "$attrs_file" && "$attrs_file" != *"$sequence"* ]]; then
+			          echo "delete $file_type attrs file: $(basename "$attrs_file")"
+			          rm "$attrs_file"
+			        fi
+			      done
+			    done
+			  else
+			    local latest_file=$(ls -t "$dir"/"$DEPLOYMENT_STACK_NAME"*.json 2>/dev/null | head -n 1)
+			    if [ -z "$latest_file" ]; then
+			      echo "No files found in $dir."
+			      return 1
+			    fi
+			    local sequence=$(basename "$latest_file" | sed -E "s/^([^-]+-)+([0-9]+)\\..*\\.json$/\\2/")
+			    if [ -z "$sequence" ]; then
+			      echo "Failed to extract sequence from file: $latest_file"
+			      return 1
+			    fi
+			    echo "Sequence to retain: $sequence"
+				for file in "$dir"/*; do
+			      if [[ -f "$file" && "$file" != *"$sequence"* ]]; then
+			        echo "delete $file"
+			        rm "$file"
+			      fi
+			    done
+			  fi
+			  echo "Cleanup completed for $dir."
+			}
+
+			cleanupFiles ".pulumi/history/local/$DEPLOYMENT_STACK_NAME"
+			cleanupFiles ".pulumi/backups/local/$DEPLOYMENT_STACK_NAME"
+
 			mkdir -p /tekton/home/pulumi/new
 			tar czvf /tekton/home/pulumi/new/state.tgz .pulumi
 			for i in $(seq 1 5); do
