@@ -187,3 +187,23 @@ import "qmonus.net/adapter/official/types:base"
 	base.#Resource
 	type: "aws:wafv2:WebAclLoggingConfiguration"
 }
+
+#AwsCloudWatchLogDeliverySource: {
+	base.#Resource
+	type: "aws:cloudwatch:LogDeliverySource"
+}
+
+#AwsCloudWatchLogDelivery: {
+	base.#Resource
+	type: "aws:cloudwatch:LogDelivery"
+}
+#AwsCloudWatchLogGroup: {
+	base.#Resource
+	type: "aws:cloudwatch:LogGroup"
+	properties: tags: #QvsManagedLabel
+}
+#AwsCloudWatchLogDeliveryDestination: {
+	base.#Resource
+	type: "aws:cloudwatch:LogDeliveryDestination"
+	properties: tags: #QvsManagedLabel
+}

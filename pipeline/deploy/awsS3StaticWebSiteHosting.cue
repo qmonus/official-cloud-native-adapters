@@ -62,7 +62,8 @@ DesignPattern: {
 				}
 			}
 			results: {
-				"publicUrl": tasks["get-url"].results.publicUrl
+				"publicUrl":         tasks["get-url"].results.publicUrl
+				"uploadedBucketUrl": tasks["deploy"].results.uploadedBucketUrl
 			}
 		}
 	}

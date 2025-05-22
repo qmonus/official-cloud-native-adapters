@@ -2,7 +2,6 @@ package frontend
 
 import (
 	"strconv"
-
 	"qmonus.net/adapter/official/types:aws"
 	"qmonus.net/adapter/official/types:random"
 	publishSite "qmonus.net/adapter/official/pipeline/deploy:awsS3StaticWebSiteHosting"
@@ -10,6 +9,7 @@ import (
 )
 
 DesignPattern: {
+
 	parameters: {
 		appName:           string
 		awsRegion:         string
@@ -17,8 +17,11 @@ DesignPattern: {
 		dnsZoneId:         string
 		bucketName:        string
 		indexDocumentName: string
+		awsAccountId:      string
 		environmentVariables: [string]: string
-		enableWaf: *"true" | "false"
+		enableWaf:                *"true" | "false"
+		enableAccessLogging:      *"true" | "false"
+		accessLogRetentionInDays: string | *"365"
 	}
 
 	pipelineParameters: {
@@ -56,7 +59,6 @@ DesignPattern: {
 
 	let _amazonWebServicesProvider = "awsProvider"
 	let _amazonWebServicesProviderUS = "awsProviderUS"
-	let _resourceSuffix = "resourceSuffix"
 	let _awsCertificate = "awsCertificate"
 	let _awsCertificateValidationRecord = "awsCertificateValidationRecord"
 	let _contentBucket = "contentBucket"
@@ -65,10 +67,26 @@ DesignPattern: {
 	let _cloudFrontDistribution = "cloudFrontDistribution"
 	let _dnsRecord = "dnsRecord"
 	let _awsWaf = "awsWaf"
-
+	let _awsCloudWatchLogDeliverySource = "awsCloudWatchLogDeliverySource"
+	let _awsCloudWatchLogDelivery = "awsCloudWatchLogDelivery"
+	let _awsCloudWatchLogGroup = "awsCloudWatchLogGroup"
+	let _awsCloudWatchLogDeliveryDestination = "awsCloudWatchLogDeliveryDestination"
 	let _enableWaf = strconv.ParseBool(parameters.enableWaf)
+	let _enableAccessLogging = strconv.ParseBool(parameters.enableAccessLogging)
+	let _accessLogRetentionInDays = strconv.Atoi(parameters.accessLogRetentionInDays)
+	let _resourceSuffix = "resourceSuffix"
+	let _logResourcePolicyForCloudFrontDistribution = "logResourcePolicyForCloudFrontDistribution"
 
 	resources: app: {
+
+		"\(_resourceSuffix)": random.#RandomString & {
+			properties: {
+				length:  3
+				special: false
+				upper:   false
+			}
+		}
+
 		_awsProvider: provider:   "${\(_amazonWebServicesProvider)}"
 		_awsProviderUS: provider: "${\(_amazonWebServicesProviderUS)}"
 
@@ -81,14 +99,6 @@ DesignPattern: {
 		"\(_amazonWebServicesProviderUS)": aws.#AwsProvider & {
 			properties: {
 				region: "us-east-1"
-			}
-		}
-
-		"\(_resourceSuffix)": random.#RandomString & {
-			properties: {
-				length:  3
-				special: false
-				upper:   false
 			}
 		}
 
@@ -114,7 +124,6 @@ DesignPattern: {
 				ttl: 300
 			}
 		}
-
 		"\(_contentBucket)": aws.#AwsS3BucketV2 & {
 			options: _awsProvider
 			properties: {
@@ -248,6 +257,96 @@ DesignPattern: {
 			}
 		}
 
+		if _enableAccessLogging {
+
+			"\(_awsCloudWatchLogGroup)": aws.#AwsCloudWatchLogGroup & {
+				options: _awsProviderUS
+				properties: {
+					name:            "qvs-\(parameters.appName)-cloudfront-log-group-${\(_resourceSuffix).result}"
+					retentionInDays: _accessLogRetentionInDays
+				}
+			}
+
+			"\(_logResourcePolicyForCloudFrontDistribution)": aws.#AwsCloudwatchLogResourcePolicy & {
+				options: _awsProviderUS
+				properties: {
+					policyDocument: {
+						"fn::invoke": {
+							function: "aws:iam:getPolicyDocument"
+							options:  _awsProviderUS
+							arguments: {
+								statements: [
+									{
+										actions: [
+											"logs:CreateLogStream",
+											"logs:PutLogEvents",
+										]
+										effect: "Allow"
+										resources: [
+											"${\(_awsCloudWatchLogGroup).arn}:log-stream:*",
+										]
+										principals: [
+											{
+												type: "Service"
+												identifiers: [
+													"delivery.logs.amazonaws.com",
+												]
+											},
+										]
+										conditions: [
+											{
+												test:     "StringEquals"
+												variable: "aws:SourceAccount"
+												values: [
+													parameters.awsAccountId,
+												]
+											},
+											{
+												test:     "ArnLike"
+												variable: "aws:SourceArn"
+												values: [
+													"arn:aws:logs:${\(_amazonWebServicesProviderUS).region}:\(parameters.awsAccountId):*",
+												]
+											},
+										]
+									},
+								]
+							}
+							return: "json"
+						}
+					}
+					policyName: "qvs-\(parameters.appName)-clf-logging-policy-${\(_resourceSuffix).result}"
+				}
+			}
+
+			"\(_awsCloudWatchLogDeliverySource)": aws.#AwsCloudWatchLogDeliverySource & {
+				options: _awsProviderUS
+				properties: {
+					name:        "qvs-\(parameters.appName)-cloudfront-log-delivery-source-${\(_resourceSuffix).result}"
+					logType:     "ACCESS_LOGS"
+					resourceArn: "${\(_cloudFrontDistribution).arn}"
+				}
+			}
+
+			"\(_awsCloudWatchLogDeliveryDestination)": aws.#AwsCloudWatchLogDeliveryDestination & {
+				options: _awsProviderUS
+				properties: {
+					name: "qvs-\(parameters.appName)-cloudfront-log-destination-${\(_resourceSuffix).result}"
+					deliveryDestinationConfiguration: {
+						destinationResourceArn: "${\(_awsCloudWatchLogGroup).arn}"
+					}
+				}
+			}
+
+			"\(_awsCloudWatchLogDelivery)": aws.#AwsCloudWatchLogDelivery & {
+				options: _awsProviderUS
+				properties: {
+					deliverySourceName:     "${\(_awsCloudWatchLogDeliverySource).name}"
+					deliveryDestinationArn: "${\(_awsCloudWatchLogDeliveryDestination).arn}"
+				}
+			}
+		}
+
 		"\(_cloudFrontDistribution)": aws.#AwsCloudFrontDistribution & {
 			options: _awsProvider
 			properties: {
@@ -312,6 +411,5 @@ DesignPattern: {
 			}
 		}
 	}
-
 	pipelines: _
 }

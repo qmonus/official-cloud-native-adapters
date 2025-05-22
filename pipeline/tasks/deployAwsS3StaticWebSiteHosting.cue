@@ -12,7 +12,10 @@ import (
 #Builder: {
 	name:  "deploy-aws-static-website"
 	input: #BuildInput
-
+	results:
+		uploadedBucketUrl: {
+			description: "The URL of the S3 bucket where the file was uploaded"
+		}
 	params: {
 		awsRegion: desc:         "Aws Default Region"
 		bucketName: desc:        "The name of the S3 bucket to deploy the static website"
@@ -37,8 +40,12 @@ import (
 				echo $DEPLOY_TARGET_DIR
 				if aws s3 ls "s3://$BUCKET_NAME" > /dev/null 2>&1; then
 					aws s3 cp "$DEPLOY_TARGET_DIR" "s3://$BUCKET_NAME/" --recursive
+					results_url="https://$(params.awsRegion).console.aws.amazon.com/s3/buckets/$(params.bucketName)"
+					echo "files were uploaded to ${results_url}"
+					echo ${results_url} > /tekton/results/uploadedBucketUrl
 				else
 					echo "SKIP: s3: bucket not found"
+					echo "" > /tekton/results/uploadedBucketUrl
 				fi
 				"""
 			volumeMounts: [{
@@ -63,7 +70,8 @@ import (
 				},
 			]
 			securityContext: runAsUser: 0
-		}]
+		},
+	]
 	volumes: [{
 		name: "aws-secret"
 		secret: {

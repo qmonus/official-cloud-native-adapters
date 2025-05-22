@@ -5,18 +5,21 @@
 以下のリソースを作成します。
 
 * Amazon S3
-    * 静的Webアプリケーションをホストするバケット
+  * 静的Webアプリケーションをホストするバケット
 * Amazon CloudFront
-    * ディストリビューション
+  * ディストリビューション
 * AWS Certificate Manager
-    * CloudFrontディストリビューションにカスタムドメインを設定するために以下のリソースを作成します。
-        * パブリック証明書
+  * CloudFrontディストリビューションにカスタムドメインを設定するために以下のリソースを作成します。
+    * パブリック証明書
 * Amazon Route 53
-    * CloudFrontディストリビューションにカスタムドメインを設定するために以下のリソースを作成します。
-        * ALIASレコード
+  * CloudFrontディストリビューションにカスタムドメインを設定するために以下のリソースを作成します。
+    * ALIASレコード
 * AWS WAF
-    * Web ACL
-        * Web ACLを使用する場合のみ、作成します。
+  * Web ACL
+    * Web ACLを使用する場合のみ、作成します。
+* Amazon CloudWatch Logs
+  * CloudFrontディストリビューションのアクセスログを記録するためのロググループ
+    * CloudFrontディストリビューションのアクセスログを有効化する場合のみ、作成します。
 
 <img src="images/image.png" class="img_zoom">
 
@@ -38,11 +41,11 @@ Sample: サンプル実装
 ### Prerequisites
 
 * 事前にIAMユーザーを作成し、Qmonus Value Streamへ認証情報を登録する必要があります。以下のポリシーをIAMユーザーに付与してください。
-    * AmazonRoute53FullAccess
-    * AmazonS3FullAccess
-    * AWSCertificateManagerFullAccess
-    * AWSWAFFullAccess
-    * CloudFrontFullAccess
+  * AmazonRoute53FullAccess
+  * AmazonS3FullAccess
+  * AWSCertificateManagerFullAccess
+  * AWSWAFFullAccess
+  * CloudFrontFullAccess
 
 * 事前にDNSゾーンを作成する必要があります。AWSにRoute 53ホストゾーンを作成し、各委譲元のDNSプロバイダで委譲設定を行ってください。
 
@@ -52,20 +55,24 @@ Sample: サンプル実装
 * デプロイ対象のフロントエンドプロジェクトがルートディレクトリに存在しない場合は、buildTargetDir　及び、deployTargetDirのパラメータで適切なパスを指定してください。
 * 環境変数を追加する場合はQVS ConfigにenvironmentVariablesパラメータを設定してください。
 * 以下のリソースでは、リソース名にサフィックスとしてランダムな3文字を付与します。
-    * Web ACL
+  * Web ACL
 * S3
-    * バケット
-        * 本Adapterによって作成されるCloudFrontディストリビューションからのアクセスのみを許可するバケットポリシーを設定します。
+  * バケット
+    * 本Adapterによって作成されるCloudFrontディストリビューションからのアクセスのみを許可するバケットポリシーを設定します。
 * Amazon CloudFront
-    * ディストリビューション
-        * オリジンアクセスコントロール（OAC）を使用して、S3バケットへのアクセスを制限します。
-        * 本Adapterのパラメータ `indexDocumentName` で設定したファイルが、デフォルトルートオブジェクトになります。
+  * ディストリビューション
+    * オリジンアクセスコントロール（OAC）を使用して、S3バケットへのアクセスを制限します。
+    * 本Adapterのパラメータ `indexDocumentName` で設定したファイルが、デフォルトルートオブジェクトになります。
 * AWS WAF
-    * Web ACL
-        * 以下のAWSマネージドルールグループを追加します。
-            * `AWSManagedRulesAmazonIpReputationList`
-            * `AWSManagedRulesCommonRuleSet`
-            * `AWSManagedRulesKnownBadInputsRuleSet`
+  * Web ACL
+    * 以下のAWSマネージドルールグループを追加します。
+      * `AWSManagedRulesAmazonIpReputationList`
+      * `AWSManagedRulesCommonRuleSet`
+      * `AWSManagedRulesKnownBadInputsRuleSet`
+* Amazon CloudWatch Logs
+  * CloudFrontディストリビューションのアクセスログを記録するためのロググループ
+    * CloudFrontディストリビューションからのログ送信を有効化するためにリソースポリシーが設定されます。
+      * 設定されたリソースポリシーは `aws logs describe-resource-policies` コマンドで確認できます。
 
 ## Infrastructure Parameters
 
@@ -73,12 +80,15 @@ Sample: サンプル実装
 | --- | --- | --- | --- | --- | --- | --- |
 | appName | string | yes | - | QVSにおけるApplication名 | sample | yes |
 | awsRegion | string | yes | - | AWSリソースの作成に使用するリージョン | ap-northeast-1 | yes |
-| customDomainName | string | yes | - | CloudFrontディストリビューションに設定するカスタムドメイン | www.example.com | no |
+| awsAccountId | string | yes | - | AWSリソースの作成に使用するアカウントID | "012345678912" | yes |
+| customDomainName | string | yes | - | CloudFrontディストリビューションに設定するカスタムドメイン | <www.example.com> | no |
 | dnsZoneId | string | yes | - | 事前に用意したRoute 53ホストゾーンのホストゾーンID | Z0123456789ABCDEFGHIJ | no |
 | bucketName | string | yes | - | 新たに作成するS3のバケット名 | content-bucket-20250101 | no |
 | indexDocumentName | string | yes | - | トップページとなるファイル名 | index.html | no |
 | environmentVariables | object | no | - | ビルド時にアプリケーションに渡される環境変数名と値のペア | ENV: prod | no |
 | enableWaf | string | no | "true" | CloudFrontディストリビューションにWeb ACLを設定するか否か。`"true"`, `"false"` のいずれかを設定できます。 | "true" | no |
+| enableAccessLogging | string | no | "true" | CloudFrontディストリビューションのアクセスログを有効化するか否か。`"true"`, `"false"` のいずれかを設定できます。 | "true" | no |
+| accessLogRetentionInDays | string | no | "365" | CloudFrontディストリビューションのアクセスログを記録するためのロググループにおいてログが保持される日数。1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653, 0のいずれかの数値を設定してください。0を設定した場合は、無制限で保持されます。 | "365" | no |
 
 ## CI/CD Parameters
 
@@ -106,12 +116,15 @@ Sample: サンプル実装
 | awsCredentialName | string | yes | - | AWSのIAMユーザーの認証情報を保管しているSecret名 | aws-default-xxxxxxxxxxxxxxxxxxxx | yes |
 | buildTargetDir | string | no | . | ビルド対象のフロントエンドアプリケーションディレクトリへのパス | apps/frontend | no |
 | deployTargetDir | string | no | dist | ビルド結果のフロントエンドファイルが格納されているディレクトリへのパス | apps/frontend/dist | no |
+| buildOptions | string | no | - | yarnでbuildを行う時に指定するオプション | -- --mode production | no |
+| packageManagerName | string | no | yarn | install,buildを行うパッケージマネージャー名（yarn,npmから選択）| npm | no |
 
 ### Results Parameters
 
 | Parameter Name | Type | Description | Example |
 | --- | --- | --- | --- |
 | publicUrl | string | デプロイしたCloudFrontディストリビューションのドメイン名 | `https://xxxxxxxxxxxxxx.cloudfront.net` |
+| uploadedBucketUrl  | string | 作成されたS3バケットのURL | `https://ap-northeast-1.console.aws.amazon.com/s3/buckets/bucketname` |
 
 ## Application Resources
 
@@ -126,6 +139,11 @@ Sample: サンプル実装
 | awsCertificateValidationRecord | aws | Amazon Route 53レコード | パブリック証明書で使用されるカスタムドメインの所有権を検証するためのDNSレコードを作成します。 |
 | dnsRecord | aws | Amazon Route 53レコード | ALIASレコードを作成します。 |
 | awsWaf | aws | AWS WAF Web ACL | Web ACLを作成します。 |
+| awsCloudWatchLogGroup | aws | Amazon CloudWatch Logsロググループ | CloudFrontディストリビューションのアクセスログを記録するためのロググループを作成します。 |
+| logResourcePolicyForCloudFrontDistribution | aws | Amazon CloudWatch Logsリソースポリシー | CloudFrontディストリビューションからロググループへのログ送信を有効化するためのリソースポリシーを作成します。 |
+| awsCloudWatchLogDeliverySource | aws | Amazon CloudWatch Logs | CloudFrontディストリビューションのアクセスログの配信元を作成します。 |
+| awsCloudWatchLogDeliveryDestination | aws | Amazon CloudWatch Logs | CloudFrontディストリビューションのアクセスログの配信先を作成します。 |
+| awsCloudWatchLogDelivery | aws | Amazon CloudWatch Logs | CloudFrontディストリビューションのアクセスログの配信元を配信先に関連づけます。 |
 
 ## Pipeline Resources
 

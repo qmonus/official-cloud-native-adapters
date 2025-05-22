@@ -18,6 +18,14 @@ import (
 			desc:    "The path to the frontend build working directory"
 			default: "."
 		}
+		buildOptions: {
+			desc:    "The build options for the frontend"
+			default: ""
+		}
+		packageManagerName: {
+			desc:    "The package manager to use for the build"
+			default: "yarn"
+		}
 	}
 	workspaces: [{
 		name: "shared"
@@ -28,7 +36,7 @@ import (
 	steps: [{
 		name:  "install-dependencies"
 		image: "node:18-alpine3.19"
-		command: ["yarn"]
+		command: ["$(params.packageManagerName)"]
 		args: ["install"]
 		workingDir: "$(workspaces.shared.path)/source/$(params.buildTargetDir)"
 		resources: {
@@ -52,8 +60,16 @@ import (
 			  echo "set environment variables."
 			  source $ENV_FILE_PATH
 			fi
-
-			yarn build
+			if [ $(params.packageManagerName) = "npm" ]; then
+			  echo "npm is used as package manager."
+			  npm run build $(params.buildOptions)
+			elif [ $(params.packageManagerName) = "yarn" ]; then
+			  echo "yarn is used as package manager."
+			  yarn build $(params.buildOptions)
+			else
+			  echo "unsupported package manager: $(params.packageManagerName)"
+			  exit 1
+			fi
 			"""
 		workingDir: "$(workspaces.shared.path)/source/$(params.buildTargetDir)"
 		resources: {
