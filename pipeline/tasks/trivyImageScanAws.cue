@@ -9,6 +9,7 @@ import (
 	image:             string | *""
 	sbomFormat:        string | *"cyclonedx"
 	uploadScanResults: bool | *false
+	useSecurityHub:    bool | *false
 	shouldNotify:      bool | *false
 	resourcePriority:  "high" | *"medium"
 	...
@@ -24,7 +25,7 @@ import (
 	params: {
 		imageName: desc:         "The image name"
 		awsCredentialName: desc: "The secret name of AWS credential"
-		awsRegion: desc:         ""
+		awsRegion: desc:         "AWS Region"
 		severity: {
 			desc:    "The severity of vulnerabilities to be scanned"
 			default: "CRITICAL,HIGH,MEDIUM,LOW,UNKNOWN"
@@ -48,6 +49,11 @@ import (
 		}
 		results: {
 			uploadedScanResultsUrl: description: "The URL of uploaded scan results"
+		}
+	}
+	if input.useSecurityHub {
+		params: {
+			awsAccountId: desc: "AWS Account ID"
 		}
 	}
 	workspaces: [{
@@ -76,8 +82,27 @@ import (
 	}
 
 	let trivyResultJsonFile = "trivy-result.json"
-
 	let trivyResultTxtFile = "trivy-result.txt"
+
+	let scanFindingDir = {
+		if prefix != "" {
+			"$(workspaces.shared.path)/scan-finding/\(prefix)"
+		}
+		if prefix == "" {
+			"$(workspaces.shared.path)/scan-finding"
+		}
+	}
+
+	let findingFile = "findings.asff"
+	let findingFilePath = "\(scanFindingDir)/\(findingFile)"
+
+	let formattedFindingFile = "formatted-findings.asff"
+	let formattedFindingFilePath = "\(scanFindingDir)/\(formattedFindingFile)"
+
+	let overwrittenFindingFile = "overwritten-findings.asff"
+	let overwrittenFindingFilePath = "\(scanFindingDir)/\(overwrittenFindingFile)"
+
+	let segmentedFindingDir = "\(scanFindingDir)/segments"
 
 	steps: [{
 		name:   "generate-sbom"
@@ -174,6 +199,135 @@ import (
 		script: """
 			cat \(scanResultsDir)/\(trivyResultTxtFile)
 			"""
+	}, if input.useSecurityHub {
+		name:   "scan-image-for-security-hub"
+		image:  "aquasec/trivy:0.58.1"
+		script: """
+			set -x
+
+			mkdir -p \(scanFindingDir)
+
+			# generate scan result as ASFF file
+			trivy sbom --no-progress --format template \\
+			  --template "@contrib/asff.tpl" \\
+			  --output \(findingFilePath) \\
+			  --severity CRITICAL,HIGH \\
+			  \(scanResultsDir)/\(sbomFile)
+			"""
+		env: [{
+			name:  "AWS_ACCOUNT_ID"
+			value: "$(params.awsAccountId)"
+		}, {
+			name:  "AWS_REGION"
+			value: "$(params.awsRegion)"
+		}]
+		volumeMounts: [{
+			name:      "aws-secret"
+			mountPath: "/secret/aws"
+			readOnly:  true
+		}]
+		resources: {
+			if input.resourcePriority == "medium" {
+				requests: {
+					cpu:    "0.5"
+					memory: "512Mi"
+				}
+				limits: {
+					cpu:    "0.5"
+					memory: "512Mi"
+				}
+			}
+			if input.resourcePriority == "high" {
+				requests: {
+					cpu:    "1"
+					memory: "1Gi"
+				}
+				limits: {
+					cpu:    "1"
+					memory: "1Gi"
+				}
+			}
+		}
+	}, if input.useSecurityHub {
+		name:   "process-result-for-security-hub"
+		image:  "docker.io/stedolan/jq@sha256:a61ed0bca213081b64be94c5e1b402ea58bc549f457c2682a86704dd55231e09"
+		script: """
+			#!/bin/bash
+
+			# clean up existing directory
+			if [ -d \(segmentedFindingDir) ]; then
+				rm -rf \(segmentedFindingDir)
+			fi
+
+			mkdir -p \(segmentedFindingDir)
+
+			# extract array of findings from the ASFF file
+			cat \(findingFilePath) | jq '.Findings' > \(formattedFindingFilePath)
+
+			# 1. overwrite some attributes with the same image name
+			#      to merge results from the same image on Security Hub console
+			# 2. overwrite "Id" attribute not to merge results
+			#      about the same vulnerability from different images/packages on Security Hub console
+			# 3. fill out "Description" attribute if it is empty
+			#      to make Security Hub API request successful
+			cat \(formattedFindingFilePath) \\
+			  | jq '.[].Resources[]?.Id = "$(params.imageName)"' \\
+			  | jq '.[].Resources[]?.Details.Container.ImageName |= if . then "$(params.imageName)" else empty end' \\
+			  | jq '[ .[] | .Id = "$(params.imageName)" + "/" + .Resources[0].Details.Other["CVE ID"] + "/" + .Resources[0].Details.Other.PkgName ]' \\
+			  | jq '.[].Description |= if . == "" then "No description." else . end' \\
+			  > \(overwrittenFindingFilePath)
+
+			# count findings
+			totalFindings=$(jq 'length' \(overwrittenFindingFilePath))
+			echo "Number of findings: $totalFindings"
+
+			if [ $totalFindings -eq 0 ]; then
+				echo "SKIP: no findings found"
+				exit 0
+			fi
+
+			# segment finding file by 100 findings for limitation of Security Hub API
+			for ((i = 0, segment = 0; i < totalFindings; i += 100, segment++))
+			do
+				remainderFindings=$((totalFindings - i))
+				if [ $remainderFindings -lt 100 ]; then
+					end=$((i + remainderFindings))
+				else
+					end=$((i + 100))
+				fi
+
+				segmentedFindingFile="findings-$segment.asff"
+				segmentedFindingFilePath="\(segmentedFindingDir)/$segmentedFindingFile"
+				jq ".[$i:$end]" \(overwrittenFindingFilePath) > $segmentedFindingFilePath
+			done
+			"""
+	}, if input.useSecurityHub {
+		name:   "send-vulnerability-to-security-hub"
+		image:  "amazon/aws-cli:2.22.23"
+		script: """
+			#!/bin/bash
+
+			if [ -z "$(ls \(segmentedFindingDir))" ]; then
+				echo "SKIP: no findings found"
+				exit 0
+			fi
+
+			while read -r FILE_NAME; do
+				aws securityhub batch-import-findings --findings file://\(segmentedFindingDir)/$FILE_NAME
+			done < <(ls -tr -1 \(segmentedFindingDir))
+			"""
+		env: [{
+			name:  "AWS_DEFAULT_REGION"
+			value: "$(params.awsRegion)"
+		}, {
+			name:  "AWS_SHARED_CREDENTIALS_FILE"
+			value: "/secret/aws/credentials"
+		}]
+		volumeMounts: [{
+			name:      "aws-secret"
+			mountPath: "/secret/aws"
+			readOnly:  true
+		}]
 	}, if input.uploadScanResults {
 		name:   "upload-scan-result"
 		image:  "amazon/aws-cli:2.22.23"

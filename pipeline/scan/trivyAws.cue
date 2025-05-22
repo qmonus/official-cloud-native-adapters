@@ -11,6 +11,7 @@ DesignPattern: {
 		image:             string | *""
 		sbomFormat:        string | *"cyclonedx"
 		uploadScanResults: bool | *false
+		useSecurityHub:    bool | *false
 		shouldNotify:      bool | *false
 		resourcePriority:  "high" | *"medium"
 	}
@@ -45,6 +46,7 @@ DesignPattern: {
 							image:             _imageName
 							sbomFormat:        pipelineParameters.sbomFormat
 							uploadScanResults: pipelineParameters.uploadScanResults
+							useSecurityHub:    pipelineParameters.useSecurityHub
 							shouldNotify:      pipelineParameters.shouldNotify
 							resourcePriority:  pipelineParameters.resourcePriority
 						}
