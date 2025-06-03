@@ -134,6 +134,10 @@ import (
 					"params.append({'name': '\(k)', 'value': '''$(params.\(k))'''})"
 				}],
 				[
+					"import time"
+					"params.append({'name': 'current_time', 'value': time.time()})"
+				],
+				[
 					"vs_secrets = os.environ.get('VS_SECRETS')",
 					"secrets = json.loads(vs_secrets) if vs_secrets else []",
 				],
