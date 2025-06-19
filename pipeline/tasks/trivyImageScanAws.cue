@@ -397,7 +397,7 @@ import (
 		script: """
 			#!/bin/bash
 			
-			vulnExists=$(jq '[.Results[] | if .Vulnerabilities then 1 else 0 end] | add' "\(scanResultsDir)/\(trivyResultJsonFile)")
+			vulnExists=$(jq '[(.Results // [])[] | if .Vulnerabilities then 1 else 0 end] | add // 0' "\(scanResultsDir)/\(trivyResultJsonFile)")
 			if [ $vulnExists -eq 0 ]; then
 				echo "No vulnerabilities were found."
 				exit 0
