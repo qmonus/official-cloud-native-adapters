@@ -85,7 +85,7 @@ Sample: サンプル実装
 | args                          | array  | no       | -       | アプリケーションに渡される引数。カンマ区切りの文字列がコンテナのargsに配列として渡されます。                             | "--debug,--profile"                                                                                                                                         | no           |
 | appServiceAllowedSourceIps | array | no | [] | App Serviceへのアクセスを許可するソースIPアドレスのリスト <br> アプリケーションへのアクセスを許可したいIPアドレスを、CIDR表記で指定してください。複数のIPアドレスを指定する場合はカンマ区切りの文字列で指定します。指定を省略した場合は、インターネットの全てのIPアドレスからのアクセスが許可されます。 | "192.168.0.1/32,172.16.0.0/12" | no |
 | enableContainerLog             | string | no       | "true"           | ログ機能の有効/無効。`true` にした場合、診断設定に`App Service Console Logs` を取得する設定が追加されます。 "true" の場合、`logAnalyticsWorkspaceId` の指定が必要です。 | "true" | no |
-| logAnalyticsWorkspaceId             | string | -       | /subscriptions/xxxxxxx-xxxxx-xxxx-xxxx-xxxxxxxxx/resourceGroups/sample-rg/providers/Microsoft.OperationalInsights/workspaces/qvs-sample-log-ws           |  `enableContainerLog` が `"true"` の場合のみ設定できます。事前に作成しているワークスペースIDを指定することで、アプリケーションが出力したコンソールログを指定したワークスペースに送信します。|  | no |
+| logAnalyticsWorkspaceId             | string | no       | -    |  `enableContainerLog` が `"true"` の場合のみ設定できます。事前に作成しているLog AnalyticsワークスペースのリソースIDを指定することで、アプリケーションが出力したコンソールログを指定したワークスペースに送信します。| /subscriptions/xxxxxxx-xxxxx-xxxx-xxxx-xxxxxxxxx/resourceGroups/sample-rg/providers/Microsoft.OperationalInsights/workspaces/qvs-sample-log-ws            | no |
 
 ## CI/CD Parameters
 

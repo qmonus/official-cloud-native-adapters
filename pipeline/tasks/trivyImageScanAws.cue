@@ -250,7 +250,7 @@ import (
 		}
 	}, if input.useSecurityHub {
 		name:   "process-result-for-security-hub"
-		image:  "docker.io/stedolan/jq@sha256:a61ed0bca213081b64be94c5e1b402ea58bc549f457c2682a86704dd55231e09"
+		image:  "linuxserver/yq:3.2.3"
 		script: """
 			#!/bin/bash
 
@@ -393,7 +393,7 @@ import (
 		]
 	}, {
 		name:   "validate-scan-result"
-		image:  "docker.io/stedolan/jq@sha256:a61ed0bca213081b64be94c5e1b402ea58bc549f457c2682a86704dd55231e09"
+		image:  "linuxserver/yq:3.2.3"
 		script: """
 			#!/bin/bash
 			

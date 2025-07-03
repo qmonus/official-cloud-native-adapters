@@ -37,7 +37,7 @@ import (
 		workingDir: "$(workspaces.shared.path)/source"
 		script: """
 			#!/usr/bin/env bash
-			az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID} --output none
+			az login --service-principal -u ${AZURE_CLIENT_ID} --password=${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID} --output none
 			# get url of custom domain url
 			result=$(az staticwebapp hostname list --name ${SWA_CLI_APP_NAME} --resource-group ${AZURE_RESOURCE_GROUP} --query '[].domainName' -o tsv || true)
 			if [ -n "${result}" ]; then
