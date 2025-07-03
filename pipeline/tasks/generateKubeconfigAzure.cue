@@ -84,7 +84,7 @@ import (
 			  exit 0
 			fi
 
-			az login --service-principal -u $(params.azureApplicationId) -p $AZURE_CLIENT_SECRET --tenant $(params.azureTenantId) > /dev/null
+			az login --service-principal -u $(params.azureApplicationId) --password=$AZURE_CLIENT_SECRET --tenant $(params.azureTenantId) > /dev/null
 			if az keyvault secret show --name kubeconfig --vault-name $VAULT_NAME --subscription $(params.azureSubscriptionId) --query value -o tsv > /tmp/kubeconfig-admin; then
 			  echo "Successfully downloaded admin kubeconfig."
 			else
@@ -172,7 +172,7 @@ import (
 			else
 			  for ns in $(echo -n "$appK8sNamespaces" | tr "," "\n")
 			  do
-			    az login --service-principal -u $(params.azureApplicationId) -p $AZURE_CLIENT_SECRET --tenant $(params.azureTenantId) > /dev/null
+			    az login --service-principal -u $(params.azureApplicationId) --password=$AZURE_CLIENT_SECRET --tenant $(params.azureTenantId) > /dev/null
 			    if az keyvault secret set --name kubeconfig-${ns} --vault-name $VAULT_NAME --file /tmp/output.kubeconfig-${ns}.yaml --only-show-errors --output none; then
 			      echo "Successfully saved kubeconfig for ${ns}."
 			    else

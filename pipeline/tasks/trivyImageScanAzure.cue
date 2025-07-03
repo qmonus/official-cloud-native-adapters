@@ -192,7 +192,7 @@ import (
 				converted_path="${image_name}/latest"
 			fi
 
-			az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID} > /dev/null
+			az login --service-principal -u ${AZURE_CLIENT_ID} --password=${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID} > /dev/null
 			az storage blob upload-batch -s \(scanResultsDir) -d $(params.scanResultsBlobStorageContainerName)/${converted_path} --account-name ${AZURE_STORAGE_ACCOUNT_NAME} --overwrite
 			
 			storage_account_id=$(az storage account show --name ${AZURE_STORAGE_ACCOUNT_NAME} --query id --output tsv)
@@ -255,7 +255,7 @@ import (
 			]
 		}, {
 			name:   "validate-scan-result"
-			image:  "docker.io/stedolan/jq@sha256:a61ed0bca213081b64be94c5e1b402ea58bc549f457c2682a86704dd55231e09"
+			image:  "linuxserver/yq:3.2.3"
 			script: """
 				#!/bin/bash
 

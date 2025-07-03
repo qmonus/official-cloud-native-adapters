@@ -35,7 +35,7 @@ import (
 		workingDir: "$(workspaces.shared.path)/source"
 		script: """
 			#!/usr/bin/env bash
-			az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID} --output none
+			az login --service-principal -u ${AZURE_CLIENT_ID} --password=${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID} --output none
 			secret=$(az staticwebapp secrets list --name ${SWA_CLI_APP_NAME} --resource-group ${AZURE_RESOURCE_GROUP} --query "properties.apiKey" | tr -d '"')
 			if [ -n "${secret}" ]; then
 			  swa deploy $(params.deployTargetDir) --no-use-keychain --deployment-token ${secret}

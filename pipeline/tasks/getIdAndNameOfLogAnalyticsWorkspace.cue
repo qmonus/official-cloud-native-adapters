@@ -39,7 +39,7 @@ import (
 		image:      "mcr.microsoft.com/azure-cli:2.51.0"
 		workingDir: "$(workspaces.shared.path)/source"
 		script: """
-			az login --service-principal -u ${AZURE_CLIENT_ID} -p ${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID} > /dev/null
+			az login --service-principal -u ${AZURE_CLIENT_ID} --password=${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID} > /dev/null
 			# get url of workspace info
 			echo "get log analytics workspace information"
 			workspace_name=$(az monitor log-analytics workspace list -g $(params.azureResourceGroupName) --query "[].name" -o tsv  | grep $(params.appName) || true)

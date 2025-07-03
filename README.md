@@ -100,4 +100,4 @@ QVS ConfigでAdapterを指定する際の記載例を示します。
 See the LICENSE file for license rights and limitations (MIT).
 
 
-&copy; NTT Communications 2024
+© 2025 NTT DOCOMO BUSINESS, Inc. All Rights Reserved.
