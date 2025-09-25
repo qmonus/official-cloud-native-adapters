@@ -59,7 +59,6 @@ Elastic Container Registry, Amazon Web Services
 | awsCredentialName | string | yes | - | IAMユーザのアクセスキーを保管しているk8s Secret名 | | no |
 | awsProfile | string | no | default | ECRのログインに使用するプロファイル名 | | no |
 | awsRegion | string | yes | - | ECRが所属するリージョン名 | | no |
-| containerRegistry | string | yes | "" | コンテナレジストリのエンドポイント | xxxxxxxxxxxx.dkr.ecr.ap-northeast-1.amazonaws.com | no |
 | dockerfile | string | yes | Dockerfile | ビルドするdockerfileのファイル名 | | no |
 | imageRegistryPath | string | yes | - | ビルドしたイメージをプッシュするコンテナレジストリのイメージ名を含まないパス | xxxxxxxxxxxx.dkr.ecr.ap-northeast-1.amazonaws.com | no |
 | imageShortName | string | yes | - | ビルドするコンテナイメージの省略名。ECRのリポジトリ名を指定する。 | nginx | no |

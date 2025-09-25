@@ -27,8 +27,8 @@ import (
 		awsRegion: {
 			desc: ""
 		}
-		containerRegistry: {
-			desc: ""
+		imageRegistryPath: {
+			desc: "Path of the container registry without image name"
 		}
 		// FIXME: Remove this param
 		gitCheckoutSubDirectory: {
@@ -67,7 +67,7 @@ import (
 			"-c",
 		]
 		args: [
-			"cat $(workspaces.shared.path)/.ecr-credentials.txt | docker --config=$(workspaces.shared.path)/$(params.gitCheckoutSubDirectory)/dockerconfig login --password-stdin --username AWS $(params.containerRegistry)",
+			"cat $(workspaces.shared.path)/.ecr-credentials.txt | docker --config=$(workspaces.shared.path)/$(params.gitCheckoutSubDirectory)/dockerconfig login --password-stdin --username AWS $(params.imageRegistryPath)",
 		]
 	}]
 	volumes: [{
