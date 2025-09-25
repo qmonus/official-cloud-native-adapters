@@ -13,22 +13,27 @@ import (
 
 DesignPattern: {
 	parameters: {
-		appName:                     string
-		gcpProjectId:                string
-		gkeReleaseChannel:           *"REGULAR" | "RAPID" | "STABLE" | "UNSPECIFIED"
-		gkeMasterAuthorizedNetworks: [...string] | *[]
-		gkeNodeAutoUpgrade:          *"true" | "false"
-		gkeNodeVersion?:             string
-		gkeNodeDiskSizeGb:           string | *"32"
-		gkeNodeMachineType:          string | *"e2-medium"
-		gkeNodeCount:                string | *"1"
-		gkeNodeLocation:             string | *"asia-northeast1"
-		esoVersion:                  string | *"0.9.9"
-		mysqlCpuCount:               string | *"2"
-		mysqlMemorySizeMb:           string | *"4096"
-		mysqlDatabaseVersion:        strings.HasPrefix("MYSQL_") | *"MYSQL_8_0"
-		mysqlAvailabilityType:       *"ZONAL" | "REGIONAL"
-		useMySQL:                    *"true" | "false"
+		appName:                          string
+		gcpProjectId:                     string
+		gkeReleaseChannel:                *"REGULAR" | "RAPID" | "STABLE" | "UNSPECIFIED"
+		gkeMasterAuthorizedNetworks:      [...string] | *[]
+		gkeMaintenancePolicy:             *"dailyMaintenanceWindow" | "recurringWindow"
+		gkeDailyMaintenanceStartTime:     string | *"19:30"
+		gkeRecurringMaintenanceStartTime: string | *"2000-01-01T19:30:00Z"
+		gkeRecurringMaintenanceEndTime:   string | *"2000-01-01T23:30:00Z"
+		gkeRecurringMaintenanceWindow:    string | *"FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR"
+		gkeNodeAutoUpgrade:               *"true" | "false"
+		gkeNodeVersion?:                  string
+		gkeNodeDiskSizeGb:                string | *"32"
+		gkeNodeMachineType:               string | *"e2-medium"
+		gkeNodeCount:                     string | *"1"
+		gkeNodeLocation:                  string | *"asia-northeast1"
+		esoVersion:                       string | *"0.9.9"
+		mysqlCpuCount:                    string | *"2"
+		mysqlMemorySizeMb:                string | *"4096"
+		mysqlDatabaseVersion:             strings.HasPrefix("MYSQL_") | *"MYSQL_8_0"
+		mysqlAvailabilityType:            *"ZONAL" | "REGIONAL"
+		useMySQL:                         *"true" | "false"
 	}
 
 	pipelineParameters: {
@@ -188,7 +193,19 @@ DesignPattern: {
 						}]
 					}
 				}
-				location:       parameters.gkeNodeLocation
+				location: parameters.gkeNodeLocation
+				if parameters.gkeMaintenancePolicy == "dailyMaintenanceWindow" {
+					maintenancePolicy: dailyMaintenanceWindow: {
+						startTime: parameters.gkeDailyMaintenanceStartTime
+					}
+				}
+				if parameters.gkeMaintenancePolicy == "recurringWindow" {
+					maintenancePolicy: recurringWindow: {
+						startTime:  parameters.gkeRecurringMaintenanceStartTime
+						endTime:    parameters.gkeRecurringMaintenanceEndTime
+						recurrence: parameters.gkeRecurringMaintenanceWindow
+					}
+				}
 				name:           "qvs-\(_appName)-cluster"
 				network:        "${\(_vpcNetwork).name}"
 				networkingMode: "VPC_NATIVE"
