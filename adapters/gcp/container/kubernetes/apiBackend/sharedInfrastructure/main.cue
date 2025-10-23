@@ -16,6 +16,7 @@ DesignPattern: {
 		appName:                          string
 		gcpProjectId:                     string
 		gkeReleaseChannel:                *"REGULAR" | "RAPID" | "STABLE" | "UNSPECIFIED"
+		gkeMasterMinVersion?:             string
 		gkeMasterAuthorizedNetworks:      [...string] | *[]
 		gkeMaintenancePolicy:             *"dailyMaintenanceWindow" | "recurringWindow"
 		gkeDailyMaintenanceStartTime:     string | *"19:30"
@@ -194,6 +195,9 @@ DesignPattern: {
 					}
 				}
 				location: parameters.gkeNodeLocation
+				if parameters.gkeMasterMinVersion != _|_ {
+					minMasterVersion: parameters.gkeMasterMinVersion
+				}
 				if parameters.gkeMaintenancePolicy == "dailyMaintenanceWindow" {
 					maintenancePolicy: dailyMaintenanceWindow: {
 						startTime: parameters.gkeDailyMaintenanceStartTime
@@ -245,9 +249,15 @@ DesignPattern: {
 				maxPodsPerNode: 100
 				name:           "qvs-\(_appName)-np"
 				nodeConfig: {
-					diskSizeGb:  strconv.Atoi(parameters.gkeNodeDiskSizeGb)
-					diskType:    "pd-balanced"
-					imageType:   "COS_CONTAINERD"
+					diskSizeGb: strconv.Atoi(parameters.gkeNodeDiskSizeGb)
+					diskType:   "pd-balanced"
+					imageType:  "COS_CONTAINERD"
+					// kubeletConfig内のパラメータが無い場合、初期作成後の2回目以降のデプロイに失敗するようになります。
+					kubeletConfig: {
+						cpuManagerPolicy: "none"
+						cpuCfsQuota:      false
+						podPidsLimit:     0
+					}
 					machineType: parameters.gkeNodeMachineType
 					metadata: {
 						"disable-legacy-endpoints": true
