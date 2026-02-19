@@ -59,7 +59,7 @@ import (
 			name:  "BUILDCTL_CONNECT_RETRIES_MAX"
 			value: "20"
 		}]
-		image:  "moby/buildkit:v0.12.5"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/moby/buildkit:v0.12.5"
 		name:   "build-and-push"
 		script: """
 			if [ "$(params.imageTag)" = "buildcache" ]; then
@@ -96,7 +96,7 @@ import (
 			}
 		}
 	}, {
-		image: "linuxserver/yq:3.2.3"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/linuxserver/yq:3.2.3"
 		name:  "resolve-digest"
 		script: """
 			jq -rj ' .[\"containerimage.digest\"]' \\
@@ -106,14 +106,14 @@ import (
 			"""
 	}, {
 		name:  "dump-imagefullnametag"
-		image: "bash:latest"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/bash:5.3.9"
 		script: """
 			#!/usr/bin/env bash
 			echo -n $(params.imageRegistryPath)/$(params.imageShortName):$(params.imageTag) | tee /tekton/results/imageFullNameTag
 			"""
 	}, {
 		name:  "dump-imagefullnamedigest"
-		image: "bash:latest"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/bash:5.3.9"
 		script: """
 			#!/usr/bin/env bash
 			cat <(echo -n $(params.imageRegistryPath)/$(params.imageShortName)@) /tekton/results/imageDigest | tee /tekton/results/imageFullNameDigest

@@ -30,7 +30,7 @@ import (
 	}]
 
 	steps: [{
-		image:      "swacli/static-web-apps-cli:1.1.6"
+		image:      "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/swacli/static-web-apps-cli:1.1.6"
 		name:       "deploy"
 		workingDir: "$(workspaces.shared.path)/source"
 		script: """

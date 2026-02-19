@@ -27,7 +27,7 @@ import (
 
 	steps: [{
 		name:  "install-dependencies"
-		image: "node:18-alpine3.19"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/node:18-alpine3.19"
 		command: ["yarn"]
 		args: ["install"]
 		workingDir: "$(workspaces.shared.path)/source/$(params.buildTargetDir)"
@@ -43,7 +43,7 @@ import (
 		}
 	}, {
 		name:       "build"
-		image:      "swacli/static-web-apps-cli:1.1.6"
+		image:      "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/swacli/static-web-apps-cli:1.1.6"
 		script:     """
 			#!/bin/bash
 
@@ -63,7 +63,7 @@ import (
 			}
 			limits: {
 				cpu:    "1"
-				memory: "512Mi"
+				memory: "1Gi"
 			}
 		}
 		securityContext: runAsUser: 0

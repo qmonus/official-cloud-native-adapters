@@ -46,6 +46,7 @@ Sample: サンプル実装
   * AWSCertificateManagerFullAccess
   * AWSWAFFullAccess
   * CloudFrontFullAccess
+  * CloudWatchLogsFullAccess
 
 * 事前にDNSゾーンを作成する必要があります。AWSにRoute 53ホストゾーンを作成し、各委譲元のDNSプロバイダで委譲設定を行ってください。
 

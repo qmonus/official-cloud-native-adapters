@@ -38,7 +38,7 @@ import (
 
 	steps: [{
 		name:  "gcloud-get-registory-credentials"
-		image: "google/cloud-sdk:278.0.0-alpine"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/google/cloud-sdk:278.0.0-alpine"
 		command: [
 			"/bin/sh",
 			"-c",
@@ -57,7 +57,7 @@ import (
 		}]
 	}, {
 		name:  "docker-login"
-		image: "docker"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/docker:29.1.5"
 		command: [
 			"/bin/sh",
 			"-c",

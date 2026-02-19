@@ -34,7 +34,7 @@ import (
 		}
 	}
 	steps: [{
-		image:      "python"
+		image:      "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/python:3.14.2"
 		name:       "parse-azure-secret-name"
 		script:     """
 			#!/usr/bin/env python3

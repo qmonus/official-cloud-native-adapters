@@ -17,7 +17,7 @@ import (
 	}
 
 	steps: [{
-		image: "line/kubectl-kustomize@sha256:23bf24e557875f061e9230d3ff92fd50a3eb220ff1175772b05f8e70e4657813"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/line/kubectl-kustomize@sha256:23bf24e557875f061e9230d3ff92fd50a3eb220ff1175772b05f8e70e4657813"
 		name:  "kustomization"
 		script: """
 			#!/usr/bin/env sh

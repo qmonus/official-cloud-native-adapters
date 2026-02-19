@@ -37,7 +37,7 @@ import (
 
 	steps: [{
 		name:       "check-env"
-		image:      "linuxserver/yq:3.2.3"
+		image:      "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/linuxserver/yq:3.2.3"
 		script:     """
 			QVS_JSON=`cat $(params.qvsConfigPath) | yq`
 			ENVS=`echo ${QVS_JSON} | jq -c ".designPatterns[]? | .params // empty | .\(_envParamName) // empty"`
@@ -56,7 +56,7 @@ import (
 		workingDir: "$(workspaces.shared.path)/source/"
 	}, {
 		name:   "make-params-json"
-		image:  "python"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/python:3.14.2"
 		script: strings.Join(list.Concat([
 			[
 				"#!/usr/bin/env python3",
@@ -81,7 +81,7 @@ import (
 		workingDir: "$(workspaces.shared.path)/source/"
 	}, {
 		name:       "generate-env-file"
-		image:      "linuxserver/yq:3.2.3"
+		image:      "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/linuxserver/yq:3.2.3"
 		script:     """
 			ENV_FILE_PATH="\(_envFileDir)/\(_envFileName)"
 			ENV_SET_PATH="\(_envFileDir)/\(_envSetName)"

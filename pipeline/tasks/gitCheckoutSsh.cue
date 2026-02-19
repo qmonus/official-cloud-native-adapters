@@ -43,7 +43,7 @@ import (
 
 	steps: [{
 		name:  "clean-dir"
-		image: "docker:git"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/docker:25.0.5-git"
 		env: [{
 			name:  "GIT_REPO_DELETE_EXISTING"
 			value: "$(params.gitRepositoryDeleteExisting)"

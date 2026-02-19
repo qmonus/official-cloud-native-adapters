@@ -38,7 +38,7 @@ import (
 
 	steps: [{
 		name:  "docker-login"
-		image: "docker"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/docker:29.1.5"
 		command: [
 			"/bin/sh",
 			"-c",

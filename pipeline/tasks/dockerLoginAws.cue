@@ -42,7 +42,7 @@ import (
 
 	steps: [{
 		name:  "aws-get-registory-credentials"
-		image: "amazon/aws-cli:2.12.1"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/amazon/aws-cli:2.12.1"
 		command: [
 			"/bin/sh",
 			"-c",
@@ -61,7 +61,7 @@ import (
 		}]
 	}, {
 		name:  "docker-login"
-		image: "docker"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/docker:29.1.5"
 		command: [
 			"/bin/sh",
 			"-c",
