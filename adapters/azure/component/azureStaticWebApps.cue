@@ -51,7 +51,12 @@ DesignPattern: {
 			}
 		}
 		"\(_staticSiteCustomDomain)": azure.#AzureStaticSiteCustomDomain & {
-			options: _azureProvider
+			options: {
+				_azureProvider
+				customTimeouts: {
+					create: "10m"
+				}
+			}
 			properties: {
 				resourceGroupName: parameters.azureResourceGroupName
 				domainName: {

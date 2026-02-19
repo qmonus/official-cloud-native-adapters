@@ -61,6 +61,7 @@ DesignPattern: {
 	let _amazonWebServicesProviderUS = "awsProviderUS"
 	let _awsCertificate = "awsCertificate"
 	let _awsCertificateValidationRecord = "awsCertificateValidationRecord"
+	let _awsCertificateValidation = "awsCertificateValidation"
 	let _contentBucket = "contentBucket"
 	let _cloudFrontOAC = "cloudFrontOAC"
 	let _contentBucketPolicy = "contentBucketPolicy"
@@ -122,6 +123,16 @@ DesignPattern: {
 					"${\(_awsCertificate).domainValidationOptions[0].resourceRecordValue}",
 				]
 				ttl: 300
+			}
+		}
+
+		"\(_awsCertificateValidation)": aws.#AwsCertificateValidation & {
+			options: _awsProviderUS
+			properties: {
+				certificateArn: "${\(_awsCertificate).arn}"
+				validationRecordFqdns: [
+					"${\(_awsCertificateValidationRecord).fqdn}",
+				]
 			}
 		}
 		"\(_contentBucket)": aws.#AwsS3BucketV2 & {
@@ -381,7 +392,7 @@ DesignPattern: {
 					webAclId: "${\(_awsWaf).arn}"
 				}
 				viewerCertificate: {
-					acmCertificateArn: "${\(_awsCertificate).arn}"
+					acmCertificateArn: "${\(_awsCertificateValidation).certificateArn}"
 					sslSupportMethod:  "sni-only"
 				}
 				aliases: [
