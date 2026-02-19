@@ -35,7 +35,7 @@ import (
 	}
 	steps: [{
 		name:       "get-domains"
-		image:      "python:3.12-alpine3.19"
+		image:      "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/python:3.12-alpine3.19"
 		script:     """
 			#!/usr/bin/env python3
 			import json

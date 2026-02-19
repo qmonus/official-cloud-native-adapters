@@ -27,7 +27,7 @@ import (
 
 	steps: [{
 		name:  "install-dependencies"
-		image: "node:18-alpine3.19"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/node:18-alpine3.19"
 		command: ["yarn"]
 		args: ["install"]
 		workingDir: "$(workspaces.shared.path)/source/$(params.buildTargetDir)"
@@ -43,7 +43,7 @@ import (
 		}
 	}, {
 		name:       "build"
-		image:      "node:18.19.0-bookworm"
+		image:      "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/node:18.19.0-bookworm"
 		script:     """
 			#!/bin/bash
 			ENV_FILE_PATH="\(_envFilePath)"

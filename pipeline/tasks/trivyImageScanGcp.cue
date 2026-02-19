@@ -80,7 +80,7 @@ import (
 
 	steps: [{
 		name:   "generate-sbom"
-		image:  "aquasec/trivy:0.58.1"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/aquasec/trivy:0.58.1"
 		script: """
 			set -x
 			
@@ -120,7 +120,7 @@ import (
 		}
 	}, {
 		name:    "scan-image"
-		image:   "aquasec/trivy:0.58.1"
+		image:   "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/aquasec/trivy:0.58.1"
 		onError: "continue"
 		script:  """
 			set -x
@@ -155,7 +155,7 @@ import (
 		}
 	}, {
 		name:  "convert-result-to-table"
-		image: "aquasec/trivy:0.58.1"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/aquasec/trivy:0.58.1"
 		args: [
 			"convert",
 			"--format",
@@ -166,13 +166,13 @@ import (
 		]
 	}, {
 		name:   "dump-result"
-		image:  "bash:5.2"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/bash:5.2"
 		script: """
 			cat \(scanResultsDir)/\(trivyResultTxtFile)
 			"""
 	}, if input.uploadScanResults {
 		name:   "upload-scan-result"
-		image:  "google/cloud-sdk:504.0.1-slim"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/google/cloud-sdk:504.0.1-slim"
 		script: """
 			#!/bin/bash
 
@@ -197,7 +197,7 @@ import (
 		}]
 	}, if input.shouldNotify {
 		name:   "notice-result"
-		image:  "curlimages/curl:8.11.1"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/curlimages/curl:8.11.1"
 		script: """
 			#!/bin/sh
 			set -o nounset
@@ -229,7 +229,7 @@ import (
 		]
 	}, {
 		name:   "validate-scan-result"
-		image:  "linuxserver/yq:3.2.3"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/linuxserver/yq:3.2.3"
 		script: """
 			#!/bin/bash
 			

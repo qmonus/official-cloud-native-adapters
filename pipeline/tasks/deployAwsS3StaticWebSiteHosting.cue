@@ -32,7 +32,7 @@ import (
 	steps: [
 
 		{
-			image:      "amazon/aws-cli:2.23.6"
+			image:      "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/amazon/aws-cli:2.23.6"
 			name:       "deploy"
 			workingDir: "$(workspaces.shared.path)/source"
 			script: """

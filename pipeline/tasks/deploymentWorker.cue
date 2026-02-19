@@ -63,7 +63,7 @@ import (
 	}
 	steps: [{
 		name:   "download-state"
-		image:  "google/cloud-sdk:365.0.1-slim@sha256:2575543b18e06671eac29aae28741128acfd0e4376257f3f1246d97d00059dcb"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/google/cloud-sdk:365.0.1-slim@sha256:2575543b18e06671eac29aae28741128acfd0e4376257f3f1246d97d00059dcb"
 		script: """
 			#!/usr/bin/env bash
 			set -o nounset
@@ -187,7 +187,7 @@ import (
 		workingDir: "/opt"
 	}, {
 		name:   "upload-state"
-		image:  "google/cloud-sdk:365.0.1-slim@sha256:2575543b18e06671eac29aae28741128acfd0e4376257f3f1246d97d00059dcb"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/google/cloud-sdk:365.0.1-slim@sha256:2575543b18e06671eac29aae28741128acfd0e4376257f3f1246d97d00059dcb"
 		script: """
 			#!/usr/bin/env bash
 			set -o nounset

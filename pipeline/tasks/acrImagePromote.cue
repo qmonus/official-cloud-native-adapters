@@ -103,14 +103,14 @@ import (
 		}]
 	}, {
 		name:  "dump-imagefullnametag"
-		image: "bash:latest"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/bash:5.3.9"
 		script: """
 			#!/usr/bin/env bash
 			echo -n $(params.imageRegistryPath)/$(params.imageShortName):$(params.imageTag) | tee /tekton/results/imageFullNameTag
 			"""
 	}, {
 		name:  "dump-imagefullnamedigest"
-		image: "bash:latest"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/bash:5.3.9"
 		script: """
 			#!/usr/bin/env bash
 			cat <(echo -n $(params.imageRegistryPath)/$(params.imageShortName)@) /tekton/results/imageDigest | tee /tekton/results/imageFullNameDigest

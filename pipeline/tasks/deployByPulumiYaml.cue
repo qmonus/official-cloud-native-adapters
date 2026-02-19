@@ -73,7 +73,7 @@ import (
 	}
 	steps: [{
 		name:   "download-state"
-		image:  "google/cloud-sdk:365.0.1-slim@sha256:2575543b18e06671eac29aae28741128acfd0e4376257f3f1246d97d00059dcb"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/google/cloud-sdk:365.0.1-slim@sha256:2575543b18e06671eac29aae28741128acfd0e4376257f3f1246d97d00059dcb"
 		script: """
 			#!/usr/bin/env bash
 			set -o nounset
@@ -389,7 +389,7 @@ import (
 		workingDir: "\(_configPath)"
 	}, {
 		name:   "upload-state"
-		image:  "google/cloud-sdk:365.0.1-slim@sha256:2575543b18e06671eac29aae28741128acfd0e4376257f3f1246d97d00059dcb"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/google/cloud-sdk:365.0.1-slim@sha256:2575543b18e06671eac29aae28741128acfd0e4376257f3f1246d97d00059dcb"
 		script: """
 			#!/usr/bin/env bash
 			set -o nounset
@@ -480,7 +480,7 @@ import (
 	if _input.useBastionSshCred {
 		sidecars: [{
 			name:  "ssh-port-forwarding"
-			image: "linuxserver/openssh-server"
+			image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/linuxserver/openssh-server:10.2_p1-r0-ls213"
 			command: ["ssh"]
 			args: [ "-4",
 				"-NL", "$(params.sshPortForwardingDestinationPort):$(params.sshPortForwardingDestinationHost):$(params.sshPortForwardingDestinationPort)", "$(params.bastionSshUserName)@$(params.bastionSshHost)",

@@ -79,7 +79,7 @@ import (
 
 	steps: [{
 		name:  "build-and-push"
-		image: "gcr.io/kaniko-project/executor:debug"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/kaniko-project/executor:v1.24.0-debug"
 		args:  list.Concat([
 			[
 				"--dockerfile=$(params.pathToDockerFile)",
@@ -138,7 +138,7 @@ import (
 		}
 	}, {
 		name:  "dump-result"
-		image: "bash:latest"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/bash:5.3.9"
 		script: """
 			#!/usr/bin/env bash
 			echo -n $(params.imageRegistryPath)/$(params.imageShortName):$(params.imageTag) | tee /tekton/results/imageFullNameTag

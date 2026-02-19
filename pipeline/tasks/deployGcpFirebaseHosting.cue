@@ -28,7 +28,7 @@ import (
 	}]
 
 	steps: [{
-		image:      "bash:5.2-alpine3.19"
+		image:      "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/bash:5.2-alpine3.19"
 		name:       "make-configration-files"
 		workingDir: "$(workspaces.shared.path)/source"
 		script: """
