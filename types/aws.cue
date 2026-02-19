@@ -103,6 +103,11 @@ import "qmonus.net/adapter/official/types:base"
 	type: "aws:route53:Record"
 }
 
+#AwsCertificateValidation: {
+	base.#Resource
+	type: "aws:acm:CertificateValidation"
+}
+
 #AwsRouteTable: {
 	base.#Resource
 	type: "aws:ec2:RouteTable"
