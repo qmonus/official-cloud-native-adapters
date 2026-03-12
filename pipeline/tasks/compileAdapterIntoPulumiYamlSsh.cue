@@ -82,7 +82,7 @@ import (
 
 	_displayAdapterInfoStep: [{
 		name:  "display-adapter-info"
-		image: "linuxserver/yq:3.2.3"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/linuxserver/yq:3.2.3"
 		script: """
 			#!/usr/bin/env bash
 
@@ -135,7 +135,7 @@ import (
 	_makeParamsJsonStep: [
 		{
 			name:   "make-params-json"
-			image:  "python"
+			image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/python:3.14.2"
 			script: strings.Join(list.Concat([
 				[
 					"#!/usr/bin/env python3",
@@ -236,7 +236,7 @@ import (
 	_debugStep: [
 		if _input.useDebug {
 			name:  "check-manifest"
-			image: "bash:latest"
+			image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/bash:5.3.9"
 			script: """
 				#!/usr/bin/env bash
 				if [ -e $(workspaces.shared.path)/manifests/pulumi/Pulumi.yaml ]; then
