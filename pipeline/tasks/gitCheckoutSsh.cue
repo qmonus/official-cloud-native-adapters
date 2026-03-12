@@ -71,7 +71,7 @@ import (
 			"""
 	}, {
 		name:  "git-clone"
-		image: "docker:git"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/docker:25.0.5-git"
 		env: [{
 			name:  "GIT_SSH_COMMAND"
 			value: "ssh -i /root/.ssh/id_git -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o LogLevel=error"
@@ -94,7 +94,7 @@ import (
 		}]
 	}, {
 		name:  "git-checkout"
-		image: "docker:git"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/docker:25.0.5-git"
 		script: """
 			cd ${GIT_CHECKOUT_DIR}
 			git fetch origin $(params.gitRevision)
