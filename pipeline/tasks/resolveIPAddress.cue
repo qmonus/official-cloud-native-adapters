@@ -26,7 +26,7 @@ import (
 
 	steps: [{
 		name:  "resolve-external-ip-address"
-		image: "gcr.io/cloud-builders/kubectl"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/cloud-builders/kubectl@sha256:2206e63753284c2c6fb967961c82670d07552ed9eabd0b3cd1a445140fa72d21"
 		script: """
 			#!/usr/bin/env sh
 			kubectl -n $(params.k8sNamespace) --kubeconfig $KUBECONFIG get service $(params.appName) -o=jsonpath='{.status.loadBalancer.ingress[0].ip}' | tee tekton/results/ipAddress

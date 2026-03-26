@@ -65,7 +65,7 @@ import (
 			mountPath: "/tmp"
 		}]
 	}, {
-		image: "mcr.microsoft.com/azure-cli"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/azure-cli:2.84.0"
 		name:  "download-admin-kubeconfig"
 		script: """
 			#!/bin/sh
@@ -146,7 +146,7 @@ import (
 			mountPath: "/tmp"
 		}]
 	}, {
-		image: "mcr.microsoft.com/azure-cli"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/azure-cli:2.84.0"
 		name:  "save-namespaced-kubeconfig"
 		script: """
 			#!/bin/sh

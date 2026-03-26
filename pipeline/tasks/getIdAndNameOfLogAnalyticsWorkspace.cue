@@ -36,7 +36,7 @@ import (
 
 	steps: [{
 		name:       "get-log-analytics-workspace-info"
-		image:      "mcr.microsoft.com/azure-cli:2.51.0"
+		image:      "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/azure-cli:2.51.0"
 		workingDir: "$(workspaces.shared.path)/source"
 		script: """
 			az login --service-principal -u ${AZURE_CLIENT_ID} --password=${AZURE_CLIENT_SECRET} --tenant ${AZURE_TENANT_ID} > /dev/null

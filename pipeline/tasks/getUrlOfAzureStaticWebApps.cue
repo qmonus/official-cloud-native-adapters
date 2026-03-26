@@ -33,7 +33,7 @@ import (
 
 	steps: [{
 		name:       "geturl"
-		image:      "mcr.microsoft.com/azure-cli:2.57.0"
+		image:      "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/azure-cli:2.57.0"
 		workingDir: "$(workspaces.shared.path)/source"
 		script: """
 			#!/usr/bin/env bash
