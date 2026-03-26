@@ -42,7 +42,7 @@ import (
 
 	steps: [{
 		name:  "image-promote"
-		image: "mcr.microsoft.com/azure-cli:2.9.1"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/azure-cli:2.9.1"
 		script: """
 			#!/bin/bash
 			set -o nounset
@@ -72,7 +72,7 @@ import (
 		}]
 	}, {
 		name:  "resolve-digest"
-		image: "mcr.microsoft.com/azure-cli:2.9.1"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/azure-cli:2.9.1"
 		script: """
 			#!/bin/bash
 			set -o nounset

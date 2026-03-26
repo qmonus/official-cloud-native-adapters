@@ -33,7 +33,7 @@ import (
 	}
 	steps: [{
 		name:       "get-url"
-		image:      "python:3.12.4-alpine3.20"
+		image:      "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/python:3.12.4-alpine3.20"
 		script:     """
 			#!/usr/bin/env python3
 			import json

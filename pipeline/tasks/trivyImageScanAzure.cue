@@ -182,7 +182,7 @@ import (
 			"""
 	}, if input.uploadScanResults {
 		name:   "upload-scan-result"
-		image:  "mcr.microsoft.com/azure-cli:2.67.0"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/azure-cli:2.67.0"
 		script: """
 			#!/bin/bash
 			image_name="$(params.imageName)"

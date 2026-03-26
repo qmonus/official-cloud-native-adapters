@@ -52,7 +52,7 @@ DesignPattern: {
 	let _stackPath = "\(_workingDir)/.pulumi/stacks/local/\(_stackName).json"
 	steps: [{
 		name:   "download-state"
-		image:  "google/cloud-sdk:365.0.1-slim@sha256:2575543b18e06671eac29aae28741128acfd0e4376257f3f1246d97d00059dcb"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/google/cloud-sdk:365.0.1-slim@sha256:2575543b18e06671eac29aae28741128acfd0e4376257f3f1246d97d00059dcb"
 		script: """
 			#!/usr/bin/env bash
 			set -o nounset
@@ -88,7 +88,7 @@ DesignPattern: {
 		}]
 	}, {
 		name:   "refer-to-pulumi-stack"
-		image:  "linuxserver/yq"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/linuxserver/yq:3.4.3"
 		script: strings.Join(list.Concat([
 			[
 				"#!/bin/bash",
