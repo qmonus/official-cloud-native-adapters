@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"qmonus.net/adapter/official/types:azure"
+	"qmonus.net/adapter/official/types:base"
 )
 
 DesignPattern: {
@@ -22,6 +23,7 @@ DesignPattern: {
 
 	let _staticSite = "staticSite"
 	let _cnameRecord = "cnameRecord"
+	let _waitCnamePropagation = "waitCnamePropagation"
 	let _staticSiteCustomDomain = "staticSiteCustomDomain"
 
 	resources: app: {
@@ -50,12 +52,19 @@ DesignPattern: {
 				ttl:                   strconv.Atoi(parameters.azureCnameRecordTtl)
 			}
 		}
+		"\(_waitCnamePropagation)": base.#Resource & {
+			type: "time:Sleep"
+			options: {
+				dependsOn: ["${\(_cnameRecord)}"]
+			}
+			properties: {
+				createDuration: "2m"
+			}
+		}
 		"\(_staticSiteCustomDomain)": azure.#AzureStaticSiteCustomDomain & {
 			options: {
 				_azureProvider
-				customTimeouts: {
-					create: "10m"
-				}
+				dependsOn: ["${\(_waitCnamePropagation)}"]
 			}
 			properties: {
 				resourceGroupName: parameters.azureResourceGroupName
