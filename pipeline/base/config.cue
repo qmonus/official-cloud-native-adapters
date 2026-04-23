@@ -6,7 +6,7 @@ config: {
 	qmonusQvsctlRevision:           "v0.19.4"
 	qmonusDeploymentWorkerRevision: "7cffe3722aec08ae44a71f322a4074b6b2478267"
 	qmonusSdkUtilsRevision:         "1febd6473b5cbefa856938675b169047a8d98c06"
-	qmonusVsConfirmationRevision:   "7b38a178515b1ecd5c488e266157528d43eed0dd"
+	qmonusVsConfirmationRevision:   "d619ca5bdf036c2065ebb957b39dc0d152bb5a75"
 	qmonusVsSecretKey:              "pipeline.qmonus.net/secrets"
 	vsApiEndpointKey:               "vs.axis-dev.io/api-endpoint"
 	pulumiPatchedImageTag:          "941c6b42020b8d9b05276a2009df0867461dbc4e"
