@@ -40,7 +40,7 @@ import (
 
 	steps: [{
 		name:  "image-promote"
-		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/gcrane:aec5f5a0a636e669a62b634b90fdcc7d2317e63e"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/go-containerregistry/gcrane/debug:v0.21.6"
 		script: """
 			#!/busybox/sh -x
 			gcrane cp -- $(params.imageNameFrom) $(params.imageRegistryPath)/$(params.imageShortName):$(params.imageTag)
@@ -56,7 +56,7 @@ import (
 		}]
 	}, {
 		name:  "resolve-digest"
-		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream/gcrane:aec5f5a0a636e669a62b634b90fdcc7d2317e63e"
+		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/go-containerregistry/gcrane/debug:v0.21.6"
 		script: """
 			#!/busybox/sh -x
 			set -o nounset

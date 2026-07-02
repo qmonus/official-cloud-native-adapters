@@ -6,9 +6,9 @@ config: {
 	qmonusQvsctlRevision:           "v0.19.4"
 	qmonusDeploymentWorkerRevision: "7cffe3722aec08ae44a71f322a4074b6b2478267"
 	qmonusSdkUtilsRevision:         "1febd6473b5cbefa856938675b169047a8d98c06"
-	qmonusVsConfirmationRevision:   "d619ca5bdf036c2065ebb957b39dc0d152bb5a75"
+	qmonusVsConfirmationRevision:   "ee9966aadc685b6bc7327004be53fabe32c34d8d"
 	qmonusVsSecretKey:              "pipeline.qmonus.net/secrets"
 	vsApiEndpointKey:               "vs.axis-dev.io/api-endpoint"
 	pulumiPatchedImageTag:          "941c6b42020b8d9b05276a2009df0867461dbc4e"
-	firebaseToolsImageTag:          "2024.01.29"
+	firebaseToolsImageTag:          "0b9a547c46ad00b60e5ac6cc0f673a79cfef3a16"
 }
