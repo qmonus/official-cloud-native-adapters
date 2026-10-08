@@ -77,7 +77,7 @@ import (
 			--local dockerfile=$(params.pathToContext) \\
 			--output type=image,name=$(params.imageRegistryPath)/$(params.imageShortName):$(params.imageTag),push=true \\
 			--import-cache type=registry,ref=\(_cacheImageName):buildcache \\
-			--export-cache type=registry,ref=\(_cacheImageName):buildcache \\
+			--export-cache type=registry,ref=\(_cacheImageName):buildcache,image-manifest=true \\
 			--metadata-file $(workspaces.shared.path)/meta.json \\
 			--secret id=gitconfig,src=$(workspaces.shared.path)/.gitconfig \\
 			$(params.extraArgs)
