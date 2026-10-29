@@ -3,7 +3,7 @@ package base
 config: {
 	qmonusTektonRevision:           "test"
 	qmonusConfigCompilerRevision:   "ac02c4ff81c493a6e16b477eb63ae35e33378989"
-	qmonusQvsctlRevision:           "v0.19.4"
+	qmonusQvsctlRevision:           "v0.21.2"
 	qmonusDeploymentWorkerRevision: "249c7281584547e92de3d519cc0e43a9146e144e"
 	qmonusSdkUtilsRevision:         "1febd6473b5cbefa856938675b169047a8d98c06"
 	qmonusVsConfirmationRevision:   "ee9966aadc685b6bc7327004be53fabe32c34d8d"
