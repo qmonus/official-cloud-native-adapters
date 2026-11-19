@@ -14,17 +14,35 @@ import (
 	name:  "git-checkout"
 	input: #BuildInput
 
-	// Sets the git-token prefix string for the specified git-provider
-	let _gitToken = {
+	// Sets the git credential for the specified git-provider
+	let _gitCredential = {
 		if input.repositoryKind == "github" {
-			"${GIT_TOKEN}:x-oauth-basic"
+			username: "${GIT_TOKEN}"
+			password: "x-oauth-basic"
 		}
 
 		if input.repositoryKind == "gitlab" {
-			"oauth2:${GIT_TOKEN}"
+			username: "oauth2"
+			password: "${GIT_TOKEN}"
 		}
 
 	}
+
+	// Pass the token via an env-based credential helper instead of embedding it in the clone URL.
+	// A URL with credentials is persisted in .git/config and ends up in container images
+	// when a later build task copies the whole checkout directory (e.g. `COPY . .`).
+	// A credential helper is asked only when the server requires authentication, so public
+	// repositories are cloned without sending the (possibly empty or invalid) token.
+	let _gitAuthScript = """
+		set +x
+		GIT_TOKEN=`echo ${GIT_TOKEN} | sed "s/^ //" | sed "s/^　//" | sed "s/ $//" | sed "s/　$//"`
+		export GIT_TOKEN
+		export GIT_CONFIG_COUNT=2
+		export GIT_CONFIG_KEY_0=credential.helper
+		export GIT_CONFIG_VALUE_0=
+		export GIT_CONFIG_KEY_1=credential.helper
+		export GIT_CONFIG_VALUE_1='!f() { test "$1" = get || exit 0; echo "username=\(_gitCredential.username)"; echo "password=\(_gitCredential.password)"; }; f'
+		"""
 
 	prefixAllParams: true
 
@@ -86,11 +104,10 @@ import (
 		name:   "git-clone"
 		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/docker:25.0.5-git"
 		script: """
-			set +x
-			GIT_REPOSITORY_URL=`echo $(params.gitCloneUrl) | sed "s/https:\\/\\///g"`
-			GIT_TOKEN=`echo ${GIT_TOKEN} | sed "s/^ //" | sed "s/^　//" | sed "s/ $//" | sed "s/　$//"`
-			git clone https://\(_gitToken)@${GIT_REPOSITORY_URL} ${GIT_CHECKOUT_DIR}
+			\(_gitAuthScript)
 			set -x
+			GIT_REPOSITORY_URL=`echo $(params.gitCloneUrl) | sed "s/https:\\/\\///g"`
+			git clone https://${GIT_REPOSITORY_URL} ${GIT_CHECKOUT_DIR}
 			"""
 		env: [{
 			name: "GIT_TOKEN"
@@ -103,9 +120,10 @@ import (
 			value: "$(workspaces.shared.path)/source/$(params.gitCheckoutSubDirectory)"
 		}]
 	}, {
-		name:  "git-checkout"
-		image: "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/docker:25.0.5-git"
+		name:   "git-checkout"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/docker:25.0.5-git"
 		script: """
+			\(_gitAuthScript)
 			cd ${GIT_CHECKOUT_DIR}
 			git fetch origin $(params.gitRevision)
 			git checkout $(params.gitRevision)
@@ -115,6 +133,12 @@ import (
 
 			"""
 		env: [{
+			name: "GIT_TOKEN"
+			valueFrom: secretKeyRef: {
+				key:  "token"
+				name: "$(params.gitTokenSecretName)"
+			}
+		}, {
 			name:  "GIT_CHECKOUT_DIR"
 			value: "$(workspaces.shared.path)/source/$(params.gitCheckoutSubDirectory)"
 		}]
