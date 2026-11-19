@@ -73,7 +73,7 @@ import (
 	}
 	steps: [{
 		name:   "download-state"
-		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/google/cloud-sdk:365.0.1-slim@sha256:2575543b18e06671eac29aae28741128acfd0e4376257f3f1246d97d00059dcb"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/google.com/cloudsdktool/google-cloud-cli:591.0.0-slim@sha256:98c1ee595323614b2047419ac313080c65c033d166eca1f8d642ea6925d47a25"
 		script: """
 			#!/usr/bin/env bash
 			set -o nounset
@@ -389,7 +389,7 @@ import (
 		workingDir: "\(_configPath)"
 	}, {
 		name:   "upload-state"
-		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/google/cloud-sdk:365.0.1-slim@sha256:2575543b18e06671eac29aae28741128acfd0e4376257f3f1246d97d00059dcb"
+		image:  "asia-northeast1-docker.pkg.dev/solarray-pro-83383605/valuestream-public-image-cache/google.com/cloudsdktool/google-cloud-cli:591.0.0-slim@sha256:98c1ee595323614b2047419ac313080c65c033d166eca1f8d642ea6925d47a25"
 		script: """
 			#!/usr/bin/env bash
 			set -o nounset
